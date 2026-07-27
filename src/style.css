@@ -1,0 +1,543 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+/* ============================================================
+   TYPOGRAPHY SCALE
+   ============================================================
+   --fs-display  : 2.5rem  (40px)  Page hero / brand title
+   --fs-h1       : 1.75rem (28px)  Page title
+   --fs-h2       : 1.25rem (20px)  Section title / Card heading
+   --fs-h3       : 1rem    (16px)  Sub-section title
+   --fs-body     : 0.875rem(14px)  Default body text
+   --fs-caption  : 0.75rem (12px)  Helper / meta / badge text
+   --fs-tiny     : 0.65rem (10.4px) Timestamps, footnotes
+   ============================================================ */
+
+/* ============================================================
+   DEFAULT (fallback) VARIABLES
+   ============================================================ */
+:root {
+  /* Typography scale */
+  --fs-display: 2.5rem;
+  --fs-h1: 1.75rem;
+  --fs-h2: 1.25rem;
+  --fs-h3: 1rem;
+  --fs-body: 0.875rem;
+  --fs-caption: 0.75rem;
+  --fs-tiny: 0.65rem;
+
+  /* Weight scale */
+  --fw-light: 300;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-black: 800;
+
+  /* Line heights */
+  --lh-tight: 1.2;
+  --lh-normal: 1.5;
+  --lh-relaxed: 1.65;
+
+  /* Font families */
+  --font-title: 'Outfit', 'DM Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-body: 'Inter', 'DM Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  /* Layout */
+  --sidebar-width: 260px;
+  --header-height: 70px;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  /* Default palette (Midnight Slate) */
+  --bg-primary: #0f1117;
+  --bg-secondary: #171b24;
+  --bg-card: rgba(23, 27, 36, 0.7);
+  --bg-card-hover: rgba(30, 35, 48, 0.85);
+  --bg-elevated: rgba(35, 40, 55, 0.9);
+
+  --border-color: rgba(255, 255, 255, 0.07);
+  --border-color-hover: rgba(255, 255, 255, 0.14);
+
+  --text-primary: #f1f3f8;
+  --text-secondary: #8b95a8;
+  --text-muted: #555d6e;
+
+  --color-primary: #6366f1;
+  --color-secondary: #818cf8;
+  --color-accent: #34d399;
+  --color-danger: #f87171;
+
+  --glow-primary: rgba(99, 102, 241, 0.12);
+  --glow-secondary: rgba(129, 140, 248, 0.12);
+
+  /* Glass effect */
+  --glass-bg: rgba(23, 27, 36, 0.6);
+  --glass-blur: 20px;
+
+  /* Shadow system */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+  /* Semantic surface variables (avoids hardcoded rgba) */
+  --bg-subtle: rgba(255, 255, 255, 0.03);   /* very faint element bg */
+  --bg-hover: rgba(255, 255, 255, 0.07);    /* hover state bg */
+  --bg-input: rgba(0, 0, 0, 0.18);          /* input / code block bg */
+  --sidebar-bg: rgba(18, 18, 26, 0.78);     /* sidebar panel bg */
+}
+
+
+/* ============================================================
+   DARK THEME 1 — Midnight Slate
+   Refined deep navy with cool indigo accents.
+   Clean geometric style, sharp borders.
+   ============================================================ */
+.theme-midnight-slate {
+  --bg-primary: #0f1117;
+  --bg-secondary: #171b24;
+  --bg-card: rgba(23, 27, 36, 0.7);
+  --bg-card-hover: rgba(30, 35, 48, 0.85);
+  --bg-elevated: rgba(35, 40, 55, 0.9);
+  --border-color: rgba(255, 255, 255, 0.07);
+  --border-color-hover: rgba(255, 255, 255, 0.14);
+  --text-primary: #f1f3f8;
+  --text-secondary: #8b95a8;
+  --text-muted: #555d6e;
+  --color-primary: #6366f1;
+  --color-secondary: #818cf8;
+  --color-accent: #34d399;
+  --color-danger: #f87171;
+  --glow-primary: rgba(99, 102, 241, 0.12);
+  --glow-secondary: rgba(129, 140, 248, 0.12);
+  --glass-bg: rgba(23, 27, 36, 0.6);
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --bg-subtle: rgba(255, 255, 255, 0.03);
+  --bg-hover: rgba(255, 255, 255, 0.07);
+  --bg-input: rgba(0, 0, 0, 0.18);
+  --sidebar-bg: rgba(15, 17, 23, 0.82);
+}
+
+
+/* ============================================================
+   DARK THEME 2 — Charcoal Ember
+   Warm dark palette with amber/orange accents.
+   Rounded, editorial feel with soft shadows.
+   ============================================================ */
+.theme-charcoal-ember {
+  --bg-primary: #141210;
+  --bg-secondary: #1c1916;
+  --bg-card: rgba(28, 25, 22, 0.75);
+  --bg-card-hover: rgba(38, 34, 28, 0.88);
+  --bg-elevated: rgba(44, 38, 30, 0.9);
+  --border-color: rgba(255, 200, 120, 0.06);
+  --border-color-hover: rgba(255, 200, 120, 0.14);
+  --text-primary: #f5f0e8;
+  --text-secondary: #a89a86;
+  --text-muted: #6e6254;
+  --color-primary: #f59e0b;
+  --color-secondary: #d97706;
+  --color-accent: #84cc16;
+  --color-danger: #ef4444;
+  --glow-primary: rgba(245, 158, 11, 0.12);
+  --glow-secondary: rgba(217, 119, 6, 0.12);
+  --glass-bg: rgba(28, 25, 22, 0.65);
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --bg-subtle: rgba(255, 255, 255, 0.03);
+  --bg-hover: rgba(255, 255, 255, 0.07);
+  --bg-input: rgba(0, 0, 0, 0.18);
+  --sidebar-bg: rgba(20, 18, 16, 0.82);
+}
+
+
+/* ============================================================
+   DARK THEME 3 — Obsidian Neon
+   True black OLED surface with electric cyan + magenta.
+   Futuristic/cyberpunk grid style, hard edges.
+   ============================================================ */
+.theme-obsidian-neon {
+  --bg-primary: #030304;
+  --bg-secondary: #0a0a0e;
+  --bg-card: rgba(10, 10, 14, 0.85);
+  --bg-card-hover: rgba(18, 18, 25, 0.92);
+  --bg-elevated: rgba(22, 22, 30, 0.95);
+  --border-color: rgba(0, 255, 240, 0.08);
+  --border-color-hover: rgba(255, 0, 200, 0.2);
+  --text-primary: #ffffff;
+  --text-secondary: #7df9ff;
+  --text-muted: #3a6b6e;
+  --color-primary: #ff00c8;
+  --color-secondary: #00fff0;
+  --color-accent: #bdff00;
+  --color-danger: #ff003c;
+  --glow-primary: rgba(255, 0, 200, 0.18);
+  --glow-secondary: rgba(0, 255, 240, 0.18);
+  --glass-bg: rgba(10, 10, 14, 0.8);
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --bg-subtle: rgba(255, 255, 255, 0.03);
+  --bg-hover: rgba(255, 255, 255, 0.07);
+  --bg-input: rgba(0, 0, 0, 0.25);
+  --sidebar-bg: rgba(3, 3, 4, 0.9);
+}
+
+/* Neon scanline overlay for Obsidian Neon */
+.app-container.theme-obsidian-neon::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 255, 240, 0.012) 2px,
+      rgba(0, 255, 240, 0.012) 4px
+    );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+
+/* ============================================================
+   LIGHT THEME 1 — Cloud Canvas
+   Airy white with soft blue-grey tones.
+   Paper-like feel, generous whitespace, gentle drop shadows.
+   ============================================================ */
+.theme-cloud-canvas {
+  --bg-primary: #f8f9fc;
+  --bg-secondary: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.92);
+  --bg-card-hover: rgba(241, 243, 250, 0.98);
+  --bg-elevated: rgba(255, 255, 255, 1);
+  --border-color: rgba(15, 23, 42, 0.06);
+  --border-color-hover: rgba(15, 23, 42, 0.12);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --color-primary: #4f46e5;
+  --color-secondary: #6366f1;
+  --color-accent: #059669;
+  --color-danger: #dc2626;
+  --glow-primary: rgba(79, 70, 229, 0.06);
+  --glow-secondary: rgba(99, 102, 241, 0.06);
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 8px 32px rgba(15, 23, 42, 0.08);
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --bg-subtle: rgba(15, 23, 42, 0.03);
+  --bg-hover: rgba(15, 23, 42, 0.05);
+  --bg-input: rgba(15, 23, 42, 0.05);
+  --sidebar-bg: rgba(240, 242, 248, 0.88);
+}
+
+
+/* ============================================================
+   LIGHT THEME 2 — Sand Dune
+   Warm cream/beige with earthy terra cotta accents.
+   Organic curves, textured feel, editorial typography.
+   ============================================================ */
+.theme-sand-dune {
+  --bg-primary: #f5f0e8;
+  --bg-secondary: #faf7f2;
+  --bg-card: rgba(250, 247, 242, 0.9);
+  --bg-card-hover: rgba(240, 233, 220, 0.95);
+  --bg-elevated: rgba(255, 252, 248, 1);
+  --border-color: rgba(120, 80, 40, 0.08);
+  --border-color-hover: rgba(120, 80, 40, 0.16);
+  --text-primary: #2c1d0e;
+  --text-secondary: #6b5744;
+  --text-muted: #a08c76;
+  --color-primary: #c2410c;
+  --color-secondary: #ea580c;
+  --color-accent: #16a34a;
+  --color-danger: #dc2626;
+  --glow-primary: rgba(194, 65, 12, 0.06);
+  --glow-secondary: rgba(234, 88, 12, 0.06);
+  --glass-bg: rgba(250, 247, 242, 0.8);
+  --shadow-sm: 0 1px 3px rgba(44, 29, 14, 0.04);
+  --shadow-md: 0 4px 16px rgba(44, 29, 14, 0.06);
+  --shadow-lg: 0 8px 32px rgba(44, 29, 14, 0.08);
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --bg-subtle: rgba(120, 80, 40, 0.04);
+  --bg-hover: rgba(120, 80, 40, 0.07);
+  --bg-input: rgba(120, 80, 40, 0.06);
+  --sidebar-bg: rgba(235, 228, 215, 0.9);
+}
+
+
+/* ============================================================
+   LIGHT THEME 3 — Frost Mint
+   Cool mint-tinted white with teal accents.
+   Clean, clinical precision feel, compact spacing.
+   ============================================================ */
+.theme-frost-mint {
+  --bg-primary: #f0faf7;
+  --bg-secondary: #f7fdfa;
+  --bg-card: rgba(247, 253, 250, 0.92);
+  --bg-card-hover: rgba(230, 248, 242, 0.96);
+  --bg-elevated: rgba(255, 255, 255, 1);
+  --border-color: rgba(0, 120, 100, 0.06);
+  --border-color-hover: rgba(0, 120, 100, 0.14);
+  --text-primary: #0c1f1a;
+  --text-secondary: #3d6b5e;
+  --text-muted: #7ea99a;
+  --color-primary: #0d9488;
+  --color-secondary: #14b8a6;
+  --color-accent: #8b5cf6;
+  --color-danger: #e11d48;
+  --glow-primary: rgba(13, 148, 136, 0.06);
+  --glow-secondary: rgba(20, 184, 166, 0.06);
+  --glass-bg: rgba(247, 253, 250, 0.85);
+  --shadow-sm: 0 1px 3px rgba(12, 31, 26, 0.04);
+  --shadow-md: 0 4px 16px rgba(12, 31, 26, 0.06);
+  --shadow-lg: 0 8px 32px rgba(12, 31, 26, 0.08);
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --bg-subtle: rgba(0, 120, 100, 0.04);
+  --bg-hover: rgba(0, 120, 100, 0.07);
+  --bg-input: rgba(0, 120, 100, 0.06);
+  --sidebar-bg: rgba(223, 242, 236, 0.9);
+}
+
+
+/* ============================================================
+   RESET & BASE STYLES
+   ============================================================ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-normal);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+  color: var(--text-primary);
+  line-height: var(--lh-tight);
+}
+
+h1 {
+  font-size: var(--fs-h1);
+  font-weight: var(--fw-black);
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-semibold);
+}
+
+p {
+  line-height: var(--lh-relaxed);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+}
+
+input, textarea, select {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  background: none;
+  border: none;
+  outline: none;
+  color: inherit;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.2);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, 0.35);
+}
+
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  padding: 2.5rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* ============================================================
+   GLASS PANEL — universal card/container
+   ============================================================ */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-panel:hover {
+  border-color: var(--border-color-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.glow-purple:hover {
+  box-shadow: 0 0 30px var(--glow-primary);
+  border-color: var(--color-primary);
+}
+
+.glow-blue:hover {
+  box-shadow: 0 0 30px var(--glow-secondary);
+  border-color: var(--color-secondary);
+}
+
+
+/* ============================================================
+   GRADIENT TEXT
+   ============================================================ */
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+
+/* ============================================================
+   BENTO GRID
+   ============================================================ */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+
+/* ============================================================
+   BADGES & TAGS
+   ============================================================ */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  background: rgba(128, 128, 128, 0.06);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.tag-purple {
+  background: rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.15);
+  color: var(--color-primary);
+}
+
+.tag-blue {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.15);
+  color: var(--color-secondary);
+}
+
+.tag-green {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.15);
+  color: var(--color-accent);
+}
+
+
+/* ============================================================
+   TRANSITION ANIMATIONS
+   ============================================================ */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1024px) {
+  :root {
+    --sidebar-width: 80px;
+  }
+  .bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --sidebar-width: 0px;
+    --fs-display: 2rem;
+    --fs-h1: 1.5rem;
+    --fs-h2: 1.125rem;
+  }
+  .main-content {
+    margin-left: 0;
+    padding: 1.25rem;
+  }
+  .bento-grid {
+    grid-template-columns: 1fr;
+  }
+}
