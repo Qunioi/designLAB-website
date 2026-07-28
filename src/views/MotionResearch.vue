@@ -5,9 +5,12 @@
         <h1 class="page-title">Motion Research</h1>
         <p class="page-subtitle">蒐集微互動、轉場特效與動態設計案例，提升介面的動態反饋體驗</p>
       </div>
-      <button class="add-btn" @click="$emit('trigger-crud', { type: 'MOTION_RESEARCH' })">
-        + 新增動態案例
-      </button>
+      <div class="header-actions">
+        <NotificationBell />
+        <button class="add-btn" @click="$emit('trigger-crud', { type: 'MOTION_RESEARCH' })">
+          + 新增動態案例
+        </button>
+      </div>
     </header>
 
     <div class="filter-toolbar glass-panel">
@@ -37,45 +40,43 @@
       <p>無相符的動態案例。點選右上角新增一筆！</p>
     </div>
 
-    <div class="cards-grid">
+    <div v-else class="cards-grid">
       <div 
         v-for="item in filteredList" 
         :key="item.id" 
         class="motion-card glass-panel"
         :class="{ highlighted: highlightedId === item.id }"
         :id="`item-${item.id}`"
-        @mouseenter="playVideo(item.id)"
-        @mouseleave="pauseVideo(item.id)"
       >
-        <div class="video-media-wrapper">
-          <video 
-            :ref="el => videoRefs[item.id] = el"
-            :src="item.videoUrl"
-            class="card-video"
-            loop
-            muted
-            playsinline
-            preload="metadata"
-            :poster="item.cover"
-          ></video>
-          
-          <div class="play-indicator-overlay" :class="{ playing: playingState[item.id] }">
-            <span class="indicator-icon">
-              <svg v-if="!playingState[item.id]" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
-            </span>
-            <span class="indicator-text">{{ playingState[item.id] ? '預覽中' : '滑鼠移入預覽' }}</span>
+        <!-- 點擊圖片展開彈窗詳情 -->
+        <div class="card-media-wrapper" @click="openLightbox(item)">
+          <img :src="item.cover" class="card-media" :alt="item.title" />
+          <div class="hover-overlay">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <span>點擊看詳情</span>
           </div>
+          <!-- Hover 圖片右上角外連按鈕 -->
+          <a 
+            v-if="item.link" 
+            :href="item.link" 
+            target="_blank" 
+            class="media-ext-link" 
+            @click.stop
+            title="前往參考網址"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          </a>
         </div>
 
-        <div class="card-info">
-          <div class="card-meta-row">
+
+        <div class="card-info" @click="openLightbox(item)">
+          <div class="card-meta-row" @click.stop>
             <span class="type-badge">{{ item.motionType }}</span>
             <div class="card-actions">
               <button class="action-icon-btn edit" @click="$emit('trigger-crud', { type: 'MOTION_RESEARCH', item })" title="編輯">
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
               </button>
-              <button class="action-icon-btn delete" @click="handleDelete(item.id)" title="刪除">
+              <button class="action-icon-btn delete" @click="handleDelete(item)" title="刪除">
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
             </div>
@@ -83,30 +84,70 @@
 
           <h3 class="card-title">{{ item.title }}</h3>
           
-          <div class="card-tools">
+          <div class="card-tools" v-if="item.tools && item.tools.length">
             <span v-for="tool in item.tools" :key="tool" class="tool-tag">{{ tool }}</span>
           </div>
 
-          <div class="card-tags">
+          <div class="card-tags" v-if="item.tags && item.tags.length">
             <span v-for="tag in item.tags" :key="tag" class="tag">{{ tag }}</span>
-          </div>
-
-          <p class="card-takeaways">{{ item.takeaways }}</p>
-
-          <div class="card-footer" v-if="item.source">
-            <a :href="item.source" target="_blank" class="source-link">
-              <span>來源網址 →</span>
-            </a>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Lightbox Detail Modal -->
+    <Transition name="fade">
+      <div v-if="lightbox.isOpen" class="lightbox-backdrop" @click="closeLightbox">
+        <div class="lightbox-container glass-panel" @click.stop>
+          <button class="lightbox-close" @click="closeLightbox">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+          
+          <div class="lightbox-scroll-area">
+            <div class="lightbox-media-box">
+              <img :src="lightbox.item.cover" class="lightbox-img" alt="" />
+            </div>
+
+            <div class="lightbox-detail-content">
+              <div class="lightbox-meta-row">
+                <span class="type-badge">{{ lightbox.item.motionType }}</span>
+                <span class="lightbox-date" v-if="lightbox.item.createdAt">{{ lightbox.item.createdAt }}</span>
+              </div>
+
+              <h2 class="lightbox-title">{{ lightbox.item.title }}</h2>
+
+              <div class="card-tools" v-if="lightbox.item.tools && lightbox.item.tools.length">
+                <span v-for="tool in lightbox.item.tools" :key="tool" class="tool-tag">{{ tool }}</span>
+              </div>
+
+              <div class="card-tags" v-if="lightbox.item.tags && lightbox.item.tags.length">
+                <span v-for="tag in lightbox.item.tags" :key="tag" class="tag">{{ tag }}</span>
+              </div>
+
+              <!-- 描述說明收納在此 -->
+              <div class="lightbox-section" v-if="lightbox.item.takeaways">
+                <h4 class="section-title">動態特色與心得要點</h4>
+                <p class="section-desc">{{ lightbox.item.takeaways }}</p>
+              </div>
+
+              <div class="lightbox-footer" v-if="lightbox.item.source || lightbox.item.videoUrl">
+                <a :href="lightbox.item.source || lightbox.item.videoUrl" target="_blank" class="source-btn">
+                  <span>參考網址 ↗</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { getStorageData, deleteItem } from '../utils/storage';
+import { checkDeletePermission } from '../utils/notifications';
+import NotificationBell from '../components/NotificationBell.vue';
 
 const props = defineProps({
   highlightedId: {
@@ -122,8 +163,22 @@ const searchQuery = ref('');
 const selectedTool = ref('All');
 const selectedType = ref('All');
 
-const videoRefs = ref({});
-const playingState = ref({});
+const lightbox = ref({
+  isOpen: false,
+  item: null
+});
+
+const openLightbox = (item) => {
+  lightbox.value = {
+    isOpen: true,
+    item: item
+  };
+};
+
+const closeLightbox = () => {
+  lightbox.value.isOpen = false;
+  lightbox.value.item = null;
+};
 
 const loadData = () => {
   items.value = getStorageData('MOTION_RESEARCH');
@@ -165,36 +220,23 @@ const filteredList = computed(() => {
     if (!q) return matchesTool && matchesType;
     
     const matchesTitle = item.title.toLowerCase().includes(q);
-    const matchesTakeaways = item.takeaways.toLowerCase().includes(q);
-    const matchesTags = item.tags.some(tag => tag.toLowerCase().includes(q));
+    const matchesTakeaways = item.takeaways && item.takeaways.toLowerCase().includes(q);
+    const matchesTags = item.tags && item.tags.some(tag => tag.toLowerCase().includes(q));
     const matchesTools = item.tools && item.tools.some(tool => tool.toLowerCase().includes(q));
     
     return matchesTool && matchesType && (matchesTitle || matchesTakeaways || matchesTags || matchesTools);
   });
 });
 
-const playVideo = (id) => {
-  const video = videoRefs.value[id];
-  if (video) {
-    video.play().then(() => {
-      playingState.value[id] = true;
-    }).catch(err => {
-      console.warn("Autoplay was blocked: ", err);
-    });
+const handleDelete = (item) => {
+  const perm = checkDeletePermission(item);
+  if (!perm.allowed) {
+    alert(`⚠️ 權限受限：此案例由原建立者「${perm.creatorName}」發表，非原建立者不得刪除！`);
+    return;
   }
-};
 
-const pauseVideo = (id) => {
-  const video = videoRefs.value[id];
-  if (video) {
-    video.pause();
-    playingState.value[id] = false;
-  }
-};
-
-const handleDelete = (id) => {
-  if (confirm('確定要刪除這筆動態研究案嗎？')) {
-    items.value = deleteItem('MOTION_RESEARCH', id);
+  if (confirm(`確定要刪除《${item.title}》這筆動態研究案嗎？`)) {
+    items.value = deleteItem('MOTION_RESEARCH', item.id);
     emit('delete-done');
   }
 };
@@ -213,6 +255,12 @@ const handleDelete = (id) => {
   align-items: center;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
 .page-title {
   font-size: 2rem;
   font-weight: 800;
@@ -225,18 +273,20 @@ const handleDelete = (id) => {
 
 .add-btn {
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: #ffffff !important;
   padding: 0.6rem 1.2rem;
   border-radius: 12px;
   font-weight: 600;
   font-size: 0.9rem;
-  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 15px var(--glow-primary);
   transition: all 0.2s ease;
 }
 
 .add-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 6px 20px var(--glow-primary);
 }
+
 
 .filter-toolbar {
   display: flex;
@@ -270,7 +320,7 @@ const handleDelete = (id) => {
 }
 
 .filter-select {
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-input);
   border: 1px solid var(--border-color);
   padding: 0.5rem 1rem;
   border-radius: 8px;
@@ -281,7 +331,7 @@ const handleDelete = (id) => {
 
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
 }
 
@@ -290,6 +340,17 @@ const handleDelete = (id) => {
   flex-direction: column;
   overflow: hidden;
   height: 100%;
+  border-radius: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.motion-card:hover {
+  border-color: var(--border-color-hover);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
 }
 
 .motion-card.highlighted {
@@ -299,49 +360,88 @@ const handleDelete = (id) => {
 }
 
 @keyframes pulse-border {
-  0% { border-color: rgba(139, 92, 246, 0.3); }
-  50% { border-color: rgba(139, 92, 246, 0.8); }
-  100% { border-color: rgba(139, 92, 246, 0.3); }
+  0% { border-color: var(--border-color); }
+  50% { border-color: var(--color-primary); }
+  100% { border-color: var(--border-color); }
 }
 
-.video-media-wrapper {
+
+.card-media-wrapper {
   position: relative;
   width: 100%;
   padding-top: 56.25%;
   overflow: hidden;
-  background: black;
+  background: var(--bg-hover);
+  cursor: pointer;
 }
 
-.card-video {
+.card-media {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
 }
 
-.play-indicator-overlay {
+.card-media-wrapper:hover .card-media {
+  transform: scale(1.05);
+}
+
+.hover-overlay {
   position: absolute;
-  bottom: 0.75rem;
-  right: 0.75rem;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 0.35rem 0.65rem;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.85rem;
+  gap: 0.5rem;
+  transition: opacity 0.2s ease;
+}
+
+.card-media-wrapper:hover .hover-overlay {
+  opacity: 1;
+}
+
+.media-ext-link {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  width: 30px;
+  height: 30px;
   border-radius: 8px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  color: var(--text-secondary);
-  font-size: 0.7rem;
-  pointer-events: none;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: all 0.2s ease;
+  z-index: 5;
 }
 
-.play-indicator-overlay.playing {
-  background: rgba(139, 92, 246, 0.85);
-  color: white;
+.card-media-wrapper:hover .media-ext-link {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.media-ext-link:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+  transform: scale(1.1) !important;
 }
 
 .card-info {
@@ -359,17 +459,30 @@ const handleDelete = (id) => {
 }
 
 .type-badge {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: var(--color-secondary);
-  background: rgba(59, 130, 246, 0.1);
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
+  color: var(--color-primary);
+  background: var(--glow-primary);
+  border: 1px solid var(--border-color);
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
 }
+
+
 
 .card-actions {
   display: flex;
   gap: 0.25rem;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-2px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.motion-card:hover .card-actions {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
 }
 
 .action-icon-btn {
@@ -386,7 +499,7 @@ const handleDelete = (id) => {
 }
 
 .action-icon-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-subtle);
 }
 
 .action-icon-btn.edit:hover {
@@ -400,9 +513,11 @@ const handleDelete = (id) => {
 }
 
 .card-title {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
+  font-weight: 700;
   margin-bottom: 0.5rem;
-  line-height: 1.3;
+  line-height: 1.35;
+  color: var(--text-primary);
 }
 
 .card-tools {
@@ -414,9 +529,9 @@ const handleDelete = (id) => {
 
 .tool-tag {
   font-size: 0.7rem;
-  color: var(--text-primary);
-  background: var(--bg-hover);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-primary);
+  background: var(--glow-primary);
+  border: 1px solid var(--border-color);
   padding: 0.15rem 0.4rem;
   border-radius: 4px;
 }
@@ -425,27 +540,165 @@ const handleDelete = (id) => {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
-  margin-bottom: 0.75rem;
+  margin-top: 0.25rem;
 }
 
-.card-takeaways {
+/* Lightbox Detail Modal */
+.lightbox-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 2rem;
+}
+
+.lightbox-container {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  max-height: 85vh;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.lightbox-close:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: scale(1.1);
+}
+
+.lightbox-scroll-area {
+  overflow-y: auto;
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.lightbox-media-box {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: black;
+  max-height: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox-img {
+  width: 100%;
+  max-height: 420px;
+  object-fit: contain;
+}
+
+.lightbox-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.lightbox-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lightbox-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.lightbox-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+.lightbox-section {
+  margin-top: 0.5rem;
+  background: var(--bg-subtle);
+  padding: 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+}
+
+.section-title {
   font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.section-desc {
+  font-size: 0.9rem;
   color: var(--text-secondary);
-  line-height: 1.5;
-  margin-bottom: 1rem;
-  flex: 1;
+  line-height: 1.6;
+  white-space: pre-line;
 }
 
-.card-footer {
-  margin-top: auto;
-  border-top: 1px solid var(--border-color);
-  padding-top: 0.75rem;
+.lightbox-footer {
+  margin-top: 0.5rem;
 }
 
-.source-link {
-  font-size: 0.8rem;
+.source-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--glow-primary);
+  border: 1px solid var(--color-primary);
   color: var(--color-primary);
-  font-weight: 500;
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.source-btn:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+@media (min-width: 1440px) {
+  .cards-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 1280px) {
+  .cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 768px) {

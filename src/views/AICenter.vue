@@ -5,9 +5,12 @@
         <h1 class="page-title">AI Center</h1>
         <p class="page-subtitle">整理 AI 設計工具與 Prompts，優化日常設計工作流</p>
       </div>
-      <button class="add-btn" @click="$emit('trigger-crud', { type: 'AI_CENTER' })">
-        + 新增 AI 工具
-      </button>
+      <div class="header-actions">
+        <NotificationBell />
+        <button class="add-btn" @click="$emit('trigger-crud', { type: 'AI_CENTER' })">
+          + 新增 AI 工具
+        </button>
+      </div>
     </header>
 
     <div class="filter-toolbar glass-panel">
@@ -80,6 +83,7 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { getStorageData, deleteItem } from '../utils/storage';
+import NotificationBell from '../components/NotificationBell.vue';
 
 const props = defineProps({
   highlightedId: {
@@ -155,6 +159,12 @@ const handleDelete = (id) => {
   align-items: center;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
 .page-title {
   font-size: 2rem;
   font-weight: 800;
@@ -167,18 +177,20 @@ const handleDelete = (id) => {
 
 .add-btn {
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: #ffffff !important;
   padding: 0.6rem 1.2rem;
   border-radius: 12px;
   font-weight: 600;
   font-size: 0.9rem;
-  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 15px var(--glow-primary);
   transition: all 0.2s ease;
 }
 
 .add-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 6px 20px var(--glow-primary);
 }
+
 
 .filter-toolbar {
   padding: 0.75rem 1.25rem;
@@ -322,17 +334,19 @@ const handleDelete = (id) => {
 
 .prompt-code-box {
   background: var(--bg-input);
-  padding: 0.75rem;
-  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
   border: 1px solid var(--border-color);
-  font-family: monospace;
-  font-size: 0.75rem;
-  color: #c084fc;
-  max-height: 100px;
+  font-family: 'Fira Code', 'Roboto Mono', Monaco, Consolas, monospace;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  max-height: 120px;
   overflow-y: auto;
-  line-height: 1.4;
+  line-height: 1.5;
   white-space: pre-wrap;
 }
+
 
 .workflow-steps {
   display: flex;

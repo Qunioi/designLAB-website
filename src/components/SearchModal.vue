@@ -66,7 +66,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['close', 'navigate']);
+const emit = defineEmits(['close', 'navigate', 'open']);
 
 const query = ref('');
 const searchInput = ref(null);
@@ -90,8 +90,12 @@ const handleGlobalKeyDown = (e) => {
     if (props.isOpen) {
       emit('close');
     } else {
-      // 開啟事件交給父組件處理
+      emit('open');
     }
+  }
+  // ESC 也可以關閉
+  if (e.key === 'Escape' && props.isOpen) {
+    emit('close');
   }
 };
 
@@ -166,7 +170,7 @@ const handleSelect = (item) => {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding-top: 10vh;
+  padding: 10vh 1.25rem 2rem;
   z-index: 1000;
 }
 

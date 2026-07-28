@@ -396,7 +396,7 @@ input, select, textarea {
 
 input:focus, select:focus, textarea:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 10px rgba(139, 92, 246, 0.15);
+  box-shadow: 0 0 10px var(--glow-primary);
 }
 
 textarea {
@@ -443,7 +443,7 @@ textarea {
 
 .btn-save:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 15px var(--glow-primary);
 }
 
 .modal-fade-enter-active,

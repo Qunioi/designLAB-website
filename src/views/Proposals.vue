@@ -5,9 +5,12 @@
         <h1 class="page-title">Proposals & Prototypes</h1>
         <p class="page-subtitle">將研究發現轉化為具體的產品優化提案，並透過 Prototype 進行概念驗證與進度追蹤</p>
       </div>
-      <button class="add-btn" @click="$emit('trigger-crud', { type: 'PROPOSALS' })">
-        + 新增優化提案
-      </button>
+      <div class="header-actions">
+        <NotificationBell />
+        <button class="add-btn" @click="$emit('trigger-crud', { type: 'PROPOSALS' })">
+          + 新增優化提案
+        </button>
+      </div>
     </header>
 
     <div class="kanban-board">
@@ -28,7 +31,7 @@
               <span class="prop-date">{{ item.createdAt }}</span>
               <div class="card-actions">
                 <button class="action-icon-btn edit" @click="$emit('trigger-crud', { type: 'PROPOSALS', item })" title="編輯"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></button>
-                <button class="action-icon-btn delete" @click="handleDelete(item.id)" title="刪除"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                <button class="action-icon-btn delete" @click="handleDelete(item)" title="刪除"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
               </div>
             </div>
 
@@ -76,14 +79,16 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { getStorageData, setStorageData, deleteItem } from '../utils/storage';
+import { getStorageData, addOrUpdateItem, deleteItem } from '../utils/storage';
+import { checkDeletePermission } from '../utils/notifications';
+import NotificationBell from '../components/NotificationBell.vue';
 
 const emit = defineEmits(['trigger-crud', 'delete-done', 'navigate-to-view']);
 
 const items = ref([]);
 
 const columns = [
-  { status: 'Idea', label: '提案想法 (Idea)' },
+  { status: 'Idea', label: '提案想法' },
   { status: 'Evaluating', label: '評估中' },
   { status: 'Prototype', label: '驗證中' },
   { status: 'Approved', label: '已採納' }
@@ -107,14 +112,9 @@ const moveStatus = (item, direction) => {
   const newIndex = currentIndex + direction;
   
   if (newIndex >= 0 && newIndex < statusOrder.length) {
-    item.status = statusOrder[newIndex];
-    const list = getStorageData('PROPOSALS');
-    const idx = list.findIndex(i => i.id === item.id);
-    if (idx !== -1) {
-      list[idx].status = item.status;
-      setStorageData('PROPOSALS', list);
-      loadData();
-    }
+    const updatedItem = { ...item, status: statusOrder[newIndex] };
+    addOrUpdateItem('PROPOSALS', updatedItem);
+    loadData();
   }
 };
 
@@ -146,9 +146,15 @@ const navigateToResearch = (researchName) => {
   emit('navigate-to-view', { view, id: matchedId });
 };
 
-const handleDelete = (id) => {
-  if (confirm('確定要刪除這筆提案嗎？')) {
-    items.value = deleteItem('PROPOSALS', id);
+const handleDelete = (item) => {
+  const perm = checkDeletePermission(item);
+  if (!perm.allowed) {
+    alert(`⚠️ 權限受限：此提案由原建立者「${perm.creatorName}」發表，非原建立者不得刪除！`);
+    return;
+  }
+
+  if (confirm(`確定要刪除《${item.title}》這筆提案嗎？`)) {
+    items.value = deleteItem('PROPOSALS', item.id);
     emit('delete-done');
   }
 };
@@ -168,6 +174,12 @@ const handleDelete = (id) => {
   margin-bottom: 0.5rem;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
 .page-title {
   font-size: 2rem;
   font-weight: 800;
@@ -180,24 +192,41 @@ const handleDelete = (id) => {
 
 .add-btn {
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: #ffffff !important;
   padding: 0.6rem 1.2rem;
   border-radius: 12px;
   font-weight: 600;
   font-size: 0.9rem;
-  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 15px var(--glow-primary);
   transition: all 0.2s ease;
 }
 
 .add-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 6px 20px var(--glow-primary);
 }
+
 
 .kanban-board {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(220px, 1fr));
   gap: 1rem;
   align-items: start;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+  /* Smooth scroll on touch */
+  -webkit-overflow-scrolling: touch;
+  /* Hide scrollbar aesthetically */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+.kanban-board::-webkit-scrollbar {
+  height: 5px;
+}
+.kanban-board::-webkit-scrollbar-thumb {
+  background: var(--border-color-hover);
+  border-radius: 4px;
 }
 
 .kanban-column {
@@ -206,21 +235,28 @@ const handleDelete = (id) => {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  min-height: 70vh;
+  min-height: 60vh;
+  min-width: 220px;
 }
 
 .column-header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 0.75rem;
   position: relative;
+  min-width: 0;
 }
 
 .column-header h3 {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
 }
 
 .column-dot {
@@ -280,6 +316,16 @@ const handleDelete = (id) => {
 .card-actions {
   display: flex;
   gap: 0.25rem;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-2px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.kanban-card:hover .card-actions {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
 }
 
 .action-icon-btn {

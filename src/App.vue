@@ -62,8 +62,10 @@
             :username="username"
             :current-theme="currentTheme"
             @update-nickname="handleNicknameUpdate"
+            @update-user="handleUserUpdate"
             @select-theme="handleThemeSelect"
           />
+
         </div>
       </Transition>
     </main>
@@ -71,7 +73,8 @@
     <!-- Global Search Modal (Cmd+K) -->
     <SearchModal 
       :is-open="searchOpen" 
-      @close="searchOpen = false" 
+      @close="searchOpen = false"
+      @open="searchOpen = true"
       @navigate="handleNavigate"
     />
 
@@ -89,6 +92,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { initializeStorage, addOrUpdateItem } from './utils/storage';
+import { syncAllFromSheets, hasSheetsIntegration } from './utils/sheetsAPI';
 
 // 引入全域與 Modal 元件
 import Navigation from './components/Navigation.vue';
@@ -109,6 +113,8 @@ const currentView = ref('Dashboard');
 const refreshKey = ref(0);
 const searchOpen = ref(false);
 
+import { getCurrentUser } from './utils/userStore';
+
 // 個人資訊狀態
 const nickname = ref('Quni');
 const username = ref('@quni_jhuang');
@@ -116,7 +122,8 @@ const username = ref('@quni_jhuang');
 // 主題切換狀態
 const currentTheme = ref('theme-midnight-slate');
 
-// CRUD 相關狀態
+// 背景同步狀態
+const isSyncing = ref(false);
 const crudModalOpen = ref(false);
 const crudType = ref('UI_RESEARCH');
 const crudItem = ref(null);
@@ -125,7 +132,7 @@ const crudItem = ref(null);
 const highlightedId = ref('');
 
 // 初始化 LocalStorage 與偏好設定
-onMounted(() => {
+onMounted(async () => {
   initializeStorage();
   
   // 載入已儲存的主題風格
@@ -134,10 +141,23 @@ onMounted(() => {
     currentTheme.value = savedTheme;
   }
   
-  // 載入已儲存的暱稱
-  const savedNickname = localStorage.getItem('design_lab_nickname');
-  if (savedNickname) {
-    nickname.value = savedNickname;
+  // 載入當前使用者
+  const u = getCurrentUser();
+  nickname.value = u.nickname;
+  username.value = u.username;
+
+
+  // 從 Google Sheets 同步最新資料（背景執行，完成後刷新畫面）
+  if (hasSheetsIntegration()) {
+    isSyncing.value = true;
+    try {
+      await syncAllFromSheets();
+      triggerRefresh();
+    } catch (e) {
+      console.warn('[App] Sheets sync failed:', e);
+    } finally {
+      isSyncing.value = false;
+    }
   }
 });
 
@@ -197,6 +217,14 @@ const handleNicknameUpdate = (newNickname) => {
   nickname.value = newNickname;
   localStorage.setItem('design_lab_nickname', newNickname);
 };
+
+const handleUserUpdate = (u) => {
+  if (u) {
+    nickname.value = u.nickname;
+    username.value = u.username;
+  }
+};
+
 </script>
 
 <style>

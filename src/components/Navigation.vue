@@ -16,7 +16,10 @@
         @click="$emit('change-view', item.view)"
       >
         <span class="menu-icon" v-html="item.icon"></span>
-        <span class="menu-label">{{ item.label }}</span>
+        <div class="menu-label-group">
+          <span class="menu-title-zh">{{ item.labelZh }}</span>
+          <span class="menu-subtitle-en">{{ item.labelEn }}</span>
+        </div>
       </button>
     </div>
 
@@ -27,7 +30,6 @@
       @click="$emit('change-view', 'Settings')"
       title="進入個人設定"
     >
-      <!-- 左側對話 emoji 改成設定圖示 -->
       <div class="user-avatar-group">
         <div class="user-avatar"><span class="settings-icon-svg"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span></div>
         <div class="user-info">
@@ -60,37 +62,44 @@ defineEmits(['change-view']);
 const menuItems = [
   { 
     view: 'Dashboard', 
-    label: 'Dashboard', 
+    labelZh: '首頁儀表板', 
+    labelEn: 'Dashboard', 
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>`
   },
   { 
     view: 'UIResearch', 
-    label: 'UI Research', 
+    labelZh: 'UI 研究案例', 
+    labelEn: 'UI Research', 
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>`
   },
   { 
     view: 'MotionResearch', 
-    label: 'Motion Research', 
+    labelZh: '動態互動設計', 
+    labelEn: 'Motion Research', 
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>`
   },
   { 
     view: 'Competitor', 
-    label: 'Competitor Research', 
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`
+    labelZh: '競品分析研究', 
+    labelEn: 'Competitor Research', 
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 1 0 7.75"></path></svg>`
   },
   { 
     view: 'AICenter', 
-    label: 'AI Center', 
+    labelZh: 'AI 工具中心', 
+    labelEn: 'AI Center', 
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>`
   },
   { 
     view: 'Resources', 
-    label: 'Resources', 
+    labelZh: '設計資源總覽', 
+    labelEn: 'Resources', 
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`
   },
   { 
     view: 'Proposals', 
-    label: '優化提案看板', 
+    labelZh: '產品優化提案', 
+    labelEn: 'Proposals Board', 
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`
   }
 ];
@@ -105,7 +114,6 @@ const menuItems = [
   width: calc(var(--sidebar-width) - 1.5rem);
   display: flex;
   flex-direction: column;
-  padding: 2rem 1rem;
   border-radius: 20px;
   background: var(--sidebar-bg);
   z-index: 100;
@@ -115,7 +123,7 @@ const menuItems = [
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0 0.75rem 2rem 0.75rem;
+  padding: 1rem 0.75rem;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -124,8 +132,9 @@ const menuItems = [
   height: 28px;
   border-radius: 8px;
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 0 15px var(--glow-primary);
 }
+
 
 .logo-text {
   font-family: var(--font-title);
@@ -137,23 +146,22 @@ const menuItems = [
 .menu-links {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 2rem;
+  gap: 0.1rem;
+  margin-top: 0.1rem;
   flex: 1;
 }
 
 .menu-item {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
+  gap: 0.85rem;
+  padding: 1.25rem 1rem;
   color: var(--text-secondary);
-  font-weight: 500;
-  font-size: 0.9rem;
   transition: all 0.2s ease;
   width: 100%;
   text-align: left;
+  border-radius: 0;
+  border-left: 3px solid transparent;
 }
 
 .menu-item:hover {
@@ -164,8 +172,9 @@ const menuItems = [
 .menu-item.active {
   color: var(--text-primary);
   background: linear-gradient(90deg, var(--glow-primary) 0%, transparent 100%);
-  border-left: 3px solid var(--color-primary);
-  padding-left: calc(1rem - 3px);
+  border-left-color: var(--color-primary);
+  border-radius: 0;
+  padding-left: calc(1rem + 3px);
 }
 
 .menu-item.active .menu-icon {
@@ -178,12 +187,33 @@ const menuItems = [
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.menu-label-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+}
+
+.menu-title-zh {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.menu-subtitle-en {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+  margin-top: 0.1rem;
 }
 
 .sidebar-footer {
   display: flex;
   align-items: center;
-  padding: 0.85rem;
+  padding: 0.75rem 0.85rem;
   border-radius: 12px;
   border: 1px solid transparent;
   cursor: pointer;
@@ -224,6 +254,7 @@ const menuItems = [
   justify-content: center;
   font-size: 1.15rem;
   transition: all 0.25s ease;
+  flex-shrink: 0;
 }
 
 .user-info {
@@ -250,7 +281,7 @@ const menuItems = [
     top: 0.75rem;
     bottom: 0.75rem;
   }
-  .logo-text, .menu-label, .user-info {
+  .logo-text, .menu-label-group, .user-info {
     display: none;
   }
   .logo-area {
@@ -270,6 +301,9 @@ const menuItems = [
   .sidebar-footer {
     justify-content: center;
     padding: 0.5rem;
+  }
+  .menu-links {
+    margin-top: 1rem;
   }
 }
 

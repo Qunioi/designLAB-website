@@ -1,8 +1,11 @@
 <template>
   <div class="dashboard-container">
     <header class="dashboard-header">
-      <h1 class="page-title">Design <span class="text-gradient">LAB</span></h1>
-      <p class="page-subtitle">內部設計知識平台與概念驗證提案系統</p>
+      <div>
+        <h1 class="page-title">Design <span class="text-gradient">LAB</span></h1>
+        <p class="page-subtitle">內部設計知識平台與概念驗證提案系統</p>
+      </div>
+      <NotificationBell />
     </header>
 
     <div class="bento-grid">
@@ -71,16 +74,24 @@
       <div class="bento-card proposal-card glass-panel glow-blue" @click="$emit('change-view', 'Proposals')">
         <div class="card-header">
           <h3>優化提案進度</h3>
-          <span class="status-indicator">互動看板</span>
+          <span class="status-indicator">互動看板 →</span>
         </div>
         <div class="proposal-summary">
+          <div class="prop-stat">
+            <span class="num idea">{{ proposalStats.idea }}</span>
+            <span class="lbl">提案想法</span>
+          </div>
           <div class="prop-stat">
             <span class="num eval">{{ proposalStats.evaluating }}</span>
             <span class="lbl">評估中</span>
           </div>
           <div class="prop-stat">
+            <span class="num proto">{{ proposalStats.prototype }}</span>
+            <span class="lbl">驗證中</span>
+          </div>
+          <div class="prop-stat">
             <span class="num approved">{{ proposalStats.approved }}</span>
-            <span class="lbl">已採納 / 驗證中</span>
+            <span class="lbl">已採納</span>
           </div>
         </div>
       </div>
@@ -124,6 +135,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { getStorageData } from '../utils/storage';
+import NotificationBell from '../components/NotificationBell.vue';
 
 const emit = defineEmits(['change-view', 'open-search', 'trigger-crud', 'navigate-detail']);
 
@@ -139,7 +151,9 @@ const stats = computed(() => {
 const proposalStats = computed(() => {
   const list = getStorageData('PROPOSALS');
   return {
+    idea: list.filter(p => p.status === 'Idea').length,
     evaluating: list.filter(p => p.status === 'Evaluating').length,
+    prototype: list.filter(p => p.status === 'Prototype').length,
     approved: list.filter(p => p.status === 'Approved').length
   };
 });
@@ -178,7 +192,9 @@ const handleRecentClick = (item) => {
 }
 
 .dashboard-header {
-  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .page-title {
@@ -203,13 +219,15 @@ const handleRecentClick = (item) => {
 
 .welcome-card {
   grid-column: span 3;
-  background: linear-gradient(135deg, var(--glow-primary) 0%, var(--glow-secondary) 100%);
-  border-color: var(--color-primary);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color-hover);
+  box-shadow: var(--shadow-sm);
 }
 
 .welcome-content h2 {
   font-size: 1.5rem;
   margin-bottom: 0.75rem;
+  color: var(--text-primary);
 }
 
 .welcome-content p {
@@ -224,28 +242,32 @@ const handleRecentClick = (item) => {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: var(--bg-hover);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
-  padding: 0.6rem 1.25rem;
+  padding: 0.65rem 1.25rem;
   border-radius: 12px;
   color: var(--text-secondary);
   width: 280px;
   justify-content: space-between;
   transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
 }
 
 .search-trigger:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: var(--border-color-hover);
-  color: var(--text-primary);
+  background: var(--bg-card);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  box-shadow: 0 4px 15px var(--glow-primary);
 }
 
 .kbd-badge {
-  font-size: 0.7rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 700;
   padding: 0.15rem 0.4rem;
-  background: var(--bg-hover);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 .stats-card h3 {
@@ -254,36 +276,46 @@ const handleRecentClick = (item) => {
 }
 
 .stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  justify-content: space-between;
 }
 
 .stat-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
   background: var(--bg-subtle);
   border: 1px solid var(--border-color);
-  padding: 0.5rem 0.75rem;
+  padding: 0.45rem 0.75rem;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-width: 0;
 }
 
 .stat-item:hover {
   background: var(--bg-hover);
-  border-color: var(--border-color-hover);
-  transform: translateY(-2px);
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
 }
 
 .stat-val {
-  display: block;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .stat-lbl {
-  font-size: 0.7rem;
-  color: var(--text-muted);
+  font-size: var(--fs-caption);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  text-align: right;
 }
 
 .recent-card {
@@ -399,8 +431,9 @@ const handleRecentClick = (item) => {
 }
 
 .proposal-summary {
-  display: flex;
-  gap: 2rem;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
   margin-top: 0.5rem;
 }
 
@@ -410,12 +443,14 @@ const handleRecentClick = (item) => {
 }
 
 .prop-stat .num {
-  font-size: 1.75rem;
+  font-size: 1.6rem;
   font-weight: 800;
 }
 
+.num.idea { color: var(--text-muted); }
 .num.eval { color: #f59e0b; }
-.num.approved { color: #10b981; }
+.num.proto { color: var(--color-secondary); }
+.num.approved { color: var(--color-accent); }
 
 .prop-stat .lbl {
   font-size: 0.75rem;
@@ -522,8 +557,28 @@ const handleRecentClick = (item) => {
   color: white;
 }
 
+@media (max-width: 1280px) and (min-width: 1025px) {
+  /* At medium desktop widths, rebalance: welcome gets 2 cols, stats gets 2 cols */
+  .welcome-card {
+    grid-column: span 2;
+  }
+  .stats-card {
+    grid-column: span 2;
+  }
+  .welcome-content p {
+    max-width: 100%;
+  }
+  .search-trigger {
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
 @media (max-width: 1024px) {
   .welcome-card {
+    grid-column: span 2;
+  }
+  .stats-card {
     grid-column: span 2;
   }
   .welcome-content p {

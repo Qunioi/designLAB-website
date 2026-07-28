@@ -5,9 +5,12 @@
         <h1 class="page-title">Resources</h1>
         <p class="page-subtitle">整理設計與工程開發常用網站，建立部門公共資源庫</p>
       </div>
-      <button class="add-btn" @click="$emit('trigger-crud', { type: 'RESOURCES' })">
-        + 新增資源網站
-      </button>
+      <div class="header-actions">
+        <NotificationBell />
+        <button class="add-btn" @click="$emit('trigger-crud', { type: 'RESOURCES' })">
+          + 新增資源網站
+        </button>
+      </div>
     </header>
 
     <div class="filter-toolbar glass-panel">
@@ -69,6 +72,7 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { getStorageData, deleteItem } from '../utils/storage';
+import NotificationBell from '../components/NotificationBell.vue';
 
 const props = defineProps({
   highlightedId: {
@@ -139,6 +143,12 @@ const handleDelete = (id) => {
   align-items: center;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
 .page-title {
   font-size: 2rem;
   font-weight: 800;
@@ -151,18 +161,20 @@ const handleDelete = (id) => {
 
 .add-btn {
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: #ffffff !important;
   padding: 0.6rem 1.2rem;
   border-radius: 12px;
   font-weight: 600;
   font-size: 0.9rem;
-  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 15px var(--glow-primary);
   transition: all 0.2s ease;
 }
 
 .add-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 6px 20px var(--glow-primary);
 }
+
 
 .filter-toolbar {
   display: flex;
