@@ -167,45 +167,6 @@ const handleDelete = (item) => {
   gap: 1.5rem;
 }
 
-.view-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-}
-
-.page-title {
-  font-size: 2rem;
-  font-weight: 800;
-}
-
-.page-subtitle {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-}
-
-.add-btn {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  color: #ffffff !important;
-  padding: 0.6rem 1.2rem;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  box-shadow: 0 4px 15px var(--glow-primary);
-  transition: all 0.2s ease;
-}
-
-.add-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px var(--glow-primary);
-}
-
 
 .kanban-board {
   display: grid;

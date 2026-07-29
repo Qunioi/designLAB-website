@@ -137,71 +137,6 @@ const handleDelete = (id) => {
   gap: 1.5rem;
 }
 
-.view-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-}
-
-.page-title {
-  font-size: 2rem;
-  font-weight: 800;
-}
-
-.page-subtitle {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-}
-
-.add-btn {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  color: #ffffff !important;
-  padding: 0.6rem 1.2rem;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  box-shadow: 0 4px 15px var(--glow-primary);
-  transition: all 0.2s ease;
-}
-
-.add-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px var(--glow-primary);
-}
-
-
-.filter-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 1.25rem;
-  background: var(--bg-card);
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.search-box {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  padding: 0.5rem 1rem;
-  border-radius: 10px;
-  width: 260px;
-}
-
-.search-box input {
-  font-size: 0.85rem;
-  width: 100%;
-}
-
 .category-tabs {
   display: flex;
   gap: 0.5rem;
@@ -261,6 +196,8 @@ const handleDelete = (id) => {
   padding: 0.15rem 0.4rem;
   border-radius: 4px;
 }
+
+
 
 .card-actions {
   display: flex;

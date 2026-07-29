@@ -2,8 +2,9 @@
 // userStore.js — 團隊成員權限、管理者密碼驗證與帳號管理 (v4.0)
 // ================================================
 
-import { pushToSheet, deleteFromSheet, hasSheetsIntegration } from './sheetsAPI';
+import { pushToSheet, deleteFromSheet, pushAllUsersToSheet, hasSheetsIntegration } from './sheetsAPI';
 import { addNotification } from './notifications';
+
 
 
 const PROFILES_KEY = 'design_lab_user_profiles';
@@ -163,8 +164,13 @@ export function reorderUserProfiles(fromIndex, toIndex) {
   profiles.splice(toIndex, 0, movedItem);
   localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
 
+  if (hasSheetsIntegration()) {
+    pushAllUsersToSheet(profiles);
+  }
+
   return profiles;
 }
+
 
 
 

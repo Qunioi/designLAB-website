@@ -199,7 +199,7 @@ const menuItems = [
 
 .menu-title-zh {
   font-size: 0.88rem;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--text-primary);
 }
 

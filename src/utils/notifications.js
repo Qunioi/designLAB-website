@@ -39,12 +39,20 @@ export function getNotifications() {
     return (now - readTime) < THREE_DAYS_MS;
   });
 
+  // 由新到舊強效倒序排序 (最新時間在上)
+  validNotifications.sort((a, b) => {
+    const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return timeB - timeA;
+  });
+
   if (validNotifications.length !== list.length) {
     localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(validNotifications));
   }
 
   return validNotifications;
 }
+
 
 /** 初始化範例通知 */
 function getInitialNotifications() {
@@ -58,8 +66,8 @@ function getInitialNotifications() {
       triggeredBy: 'Alex (@alex_designer)',
       targetUser: 'Quni (@quni_jhuang)',
       editor: 'Alex (@alex_designer)',
-      createdAt: new Date(now.getTime() - 10 * 60 * 1000).toISOString(),
-      time: '10 分鐘前',
+      createdAt: new Date(now.getTime() - 60 * 60 * 1000).toISOString(),
+      time: '1 小時前',
       read: false,
       readAt: null
     },
@@ -69,15 +77,16 @@ function getInitialNotifications() {
       title: 'Google Sheets 異動同步',
       message: '成功從 Google Sheets 同步 28 筆最新研究案例！',
       triggeredBy: '系統自動連線',
-      createdAt: new Date(now.getTime() - 60 * 60 * 1000).toISOString(),
-      time: '1 小時前',
+      createdAt: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString(),
+      time: '2 小時前',
       read: true,
-      readAt: new Date(now.getTime() - 60 * 60 * 1000).toISOString()
+      readAt: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString()
     }
   ];
   localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(initial));
   return initial;
 }
+
 
 /** 新增一筆通知並自動同步至 Google Sheets NOTIFICATIONS 表單 */
 export function addNotification({ title, message, triggeredBy, type = 'edit' }) {

@@ -113,6 +113,43 @@ const currentView = ref('Dashboard');
 const refreshKey = ref(0);
 const searchOpen = ref(false);
 
+// 網址 Route 與 View 名稱雙向對照
+const VIEW_ROUTES = {
+  Dashboard: 'dashboard',
+  UIResearch: 'ui-research',
+  MotionResearch: 'motion-research',
+  Competitor: 'competitor',
+  AICenter: 'ai-center',
+  Resources: 'resources',
+  Proposals: 'proposals',
+  Settings: 'settings'
+};
+
+const ROUTE_VIEWS = Object.fromEntries(
+  Object.entries(VIEW_ROUTES).map(([view, slug]) => [slug, view])
+);
+
+/** 更新網址 Hash (例如 #/ui-research) */
+const updateUrl = (view) => {
+  const slug = VIEW_ROUTES[view] || 'dashboard';
+  const newHash = `#/${slug}`;
+  if (window.location.hash !== newHash) {
+    window.history.pushState({ view }, '', newHash);
+  }
+};
+
+/** 從網址列同步讀取 View */
+const syncViewFromUrl = () => {
+  const rawHash = window.location.hash.replace(/^#\/?/, '').split('?')[0].toLowerCase();
+  const matchedView = ROUTE_VIEWS[rawHash];
+  if (matchedView) {
+    currentView.value = matchedView;
+  } else {
+    currentView.value = 'Dashboard';
+    updateUrl('Dashboard');
+  }
+};
+
 import { getCurrentUser } from './utils/userStore';
 
 // 個人資訊狀態
@@ -135,6 +172,11 @@ const highlightedId = ref('');
 onMounted(async () => {
   initializeStorage();
   
+  // 優先根據網址帶入頁面（確保重整留在該頁）
+  syncViewFromUrl();
+  window.addEventListener('popstate', syncViewFromUrl);
+  window.addEventListener('hashchange', syncViewFromUrl);
+
   // 載入已儲存的主題風格
   const savedTheme = localStorage.getItem('design_lab_theme');
   if (savedTheme) {
@@ -145,7 +187,6 @@ onMounted(async () => {
   const u = getCurrentUser();
   nickname.value = u.nickname;
   username.value = u.username;
-
 
   // 從 Google Sheets 同步最新資料（背景執行，完成後刷新畫面）
   if (hasSheetsIntegration()) {
@@ -165,6 +206,7 @@ onMounted(async () => {
 const handleViewChange = (view) => {
   currentView.value = view;
   highlightedId.value = ''; // 清除高亮
+  updateUrl(view);
   triggerRefresh();
 };
 
@@ -199,6 +241,7 @@ const handleSave = ({ type, item }) => {
 const handleNavigate = ({ view, id }) => {
   currentView.value = view;
   highlightedId.value = id;
+  updateUrl(view);
   triggerRefresh();
   
   setTimeout(() => {

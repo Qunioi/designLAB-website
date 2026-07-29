@@ -15,12 +15,15 @@
               <input v-model="form.title" type="text" placeholder="例如：Linear 官方網站的 Bento Grid 排版" required />
             </div>
             <div class="form-group">
-              <label>分類</label>
-              <input v-model="form.category" type="text" placeholder="例如：Layout, Checkout, Navigation" />
+              <label>分類 (可輸入或從建議選取)</label>
+              <input v-model="form.category" type="text" list="category-suggestions" placeholder="例如：Layout, User Flow, Visual Style" />
+              <datalist id="category-suggestions">
+                <option v-for="cat in historyCategories" :key="cat" :value="cat" />
+              </datalist>
             </div>
-            <div class="form-group">
-              <label>標籤 (以英文逗號分隔)</label>
-              <input v-model="form.tagsInput" type="text" placeholder="例如：Bento Grid, Dark Mode, SaaS" />
+            <div class="form-group full-width">
+              <label>標籤 (按 Enter 或逗號新增標籤，可直接點選建議標籤)</label>
+              <TagInput v-model="form.tags" :suggested-tags="historyTags" placeholder="輸入標籤如：Bento Grid, SaaS..." />
             </div>
             <div class="form-group">
               <label>封面圖片網址</label>
@@ -51,16 +54,19 @@
               <input v-model="form.cover" type="url" placeholder="請輸入封面圖片 URL" />
             </div>
             <div class="form-group">
-              <label>動畫類型</label>
-              <input v-model="form.motionType" type="text" placeholder="例如：Micro-interaction, Page Transition" />
+              <label>動畫類型 (可輸入或從建議選取)</label>
+              <input v-model="form.motionType" type="text" list="motiontype-suggestions" placeholder="例如：Micro-interaction, Drag & Drop" />
+              <datalist id="motiontype-suggestions">
+                <option v-for="cat in historyCategories" :key="cat" :value="cat" />
+              </datalist>
+            </div>
+            <div class="form-group full-width">
+              <label>標籤 (按 Enter 或逗號新增標籤，可點選下方歷史建議標籤)</label>
+              <TagInput v-model="form.tags" :suggested-tags="historyTags" placeholder="輸入標籤如：Spring Animation, iOS..." />
             </div>
             <div class="form-group">
               <label>製作工具 (以英文逗號分隔)</label>
               <input v-model="form.toolsInput" type="text" placeholder="例如：AE, Lottie, Rive, Principle" />
-            </div>
-            <div class="form-group">
-              <label>標籤 (以英文逗號分隔)</label>
-              <input v-model="form.tagsInput" type="text" placeholder="例如：Spring, Liquid, iOS" />
             </div>
             <div class="form-group">
               <label>來源網址</label>
@@ -79,11 +85,22 @@
               <input v-model="form.name" type="text" placeholder="例如：Figma" required />
             </div>
             <div class="form-group">
+              <label>競品分類 <span class="required">*</span></label>
+              <select v-model="form.category" class="status-select">
+                <option value="Web">Web 應用</option>
+                <option value="行動裝置">行動裝置</option>
+              </select>
+            </div>
+            <div class="form-group full-width">
+              <label>標籤 (按 Enter 或逗號新增標籤，可點選下方歷史建議標籤)</label>
+              <TagInput v-model="form.tags" :suggested-tags="historyTags" placeholder="輸入標籤如：Mobile UX, Fintech..." />
+            </div>
+            <div class="form-group">
               <label>官方網址</label>
               <input v-model="form.url" type="url" placeholder="例如：https://figma.com" />
             </div>
             <div class="form-group">
-              <label>介面截圖網址</label>
+              <label>介面截圖網址 (封面)</label>
               <input v-model="form.screenshot" type="url" placeholder="請輸入截圖 URL" />
             </div>
             <div class="form-group full-width">
@@ -185,6 +202,8 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import TagInput from './TagInput.vue';
+import { getStorageData } from '../utils/storage';
 
 const props = defineProps({
   isOpen: {
@@ -219,14 +238,57 @@ const typeLabel = computed(() => {
 
 const form = ref({});
 
+// 自動收集歷史曾添加過的所有標籤
+const historyTags = computed(() => {
+  const allKeyData = [
+    ...getStorageData('UI_RESEARCH'),
+    ...getStorageData('MOTION_RESEARCH'),
+    ...getStorageData('COMPETITORS')
+  ];
+  const set = new Set();
+  allKeyData.forEach(item => {
+    let raw = item.tags;
+    if (!raw) return;
+    if (typeof raw === 'string') {
+      raw = raw.split(/[,/，#\n\r]+/).map(s => s.trim()).filter(Boolean);
+    }
+    if (Array.isArray(raw)) {
+      raw.forEach(t => t && set.add(String(t).trim()));
+    }
+  });
+  return [...set].sort();
+});
+
+// 自動收集歷史曾添加過的所有分類
+const historyCategories = computed(() => {
+  const storageKeyMap = {
+    UI_RESEARCH: 'UI_RESEARCH',
+    MOTION_RESEARCH: 'MOTION_RESEARCH',
+    COMPETITORS: 'COMPETITORS'
+  };
+  const key = storageKeyMap[props.type] || 'UI_RESEARCH';
+  const list = getStorageData(key);
+  const set = new Set();
+  list.forEach(item => {
+    const val = item.category || item.motionType;
+    if (val) set.add(String(val).trim());
+  });
+  return [...set].sort();
+});
+
 watch(() => [props.isOpen, props.item, props.type], () => {
   if (props.isOpen) {
     if (props.item) {
       const itemCopy = { ...props.item };
       
-      if (itemCopy.tags) {
-        itemCopy.tagsInput = itemCopy.tags.join(', ');
+      let tagsArr = [];
+      if (Array.isArray(itemCopy.tags)) {
+        tagsArr = [...itemCopy.tags];
+      } else if (typeof itemCopy.tags === 'string') {
+        tagsArr = itemCopy.tags.split(/[,/，#\n\r]+/).map(s => s.trim()).filter(Boolean);
       }
+      itemCopy.tags = tagsArr;
+
       if (itemCopy.tools) {
         itemCopy.toolsInput = itemCopy.tools.join(', ');
       }
@@ -235,8 +297,8 @@ watch(() => [props.isOpen, props.item, props.type], () => {
     } else {
       form.value = {
         title: '',
-        category: '',
-        tagsInput: '',
+        category: props.type === 'COMPETITORS' ? 'Web' : '',
+        tags: [],
         toolsInput: '',
         cover: '',
         source: '',
@@ -269,11 +331,9 @@ const close = () => {
 const handleSubmit = () => {
   const formattedItem = { ...form.value };
   
-  if (formattedItem.tagsInput !== undefined) {
-    formattedItem.tags = formattedItem.tagsInput
-      ? formattedItem.tagsInput.split(',').map(s => s.trim()).filter(Boolean)
-      : [];
-    delete formattedItem.tagsInput;
+  // 確保 tags 為陣列格式
+  if (formattedItem.tags && typeof formattedItem.tags === 'string') {
+    formattedItem.tags = formattedItem.tags.split(/[,/，#\n\r]+/).map(s => s.trim()).filter(Boolean);
   }
   
   if (formattedItem.toolsInput !== undefined) {

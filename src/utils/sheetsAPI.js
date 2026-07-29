@@ -86,6 +86,19 @@ export function deleteFromSheet(key, id) {
   }).catch(e => console.warn('[SheetsAPI] Delete failed:', e));
 }
 
+/** 專門推送整份排序後的 USERS 名單至 Sheets，確保全域順序 100% 一致 */
+export function pushAllUsersToSheet(profiles) {
+  const url = getSheetsUrl();
+  if (!url || !Array.isArray(profiles)) return;
+  fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'overwrite_users', sheet: 'USERS', data: profiles }),
+    mode: 'no-cors'
+  }).catch(e => console.warn('[SheetsAPI] Push all users failed:', e));
+}
+
+
 /** 觸發 Google Sheets 後端全量修復標頭與格式化 */
 export function forceFormatAllSheets() {
   const url = getSheetsUrl();
