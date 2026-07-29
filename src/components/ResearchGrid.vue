@@ -1,17 +1,11 @@
 <template>
   <div class="research-container" @click="closeTagDropdown">
-    <header class="view-header">
-      <div>
-        <h1 class="page-title">{{ pageTitle }}</h1>
-        <p class="page-subtitle">{{ pageSubtitle }}</p>
-      </div>
-      <div class="header-actions">
-        <NotificationBell />
-        <button class="add-btn" @click="$emit('trigger-crud', { type: crudType })">
-          {{ addBtnLabel }}
-        </button>
-      </div>
-    </header>
+    <PageHeader
+      :title="pageTitle"
+      :subtitle="pageSubtitle"
+      :add-btn-label="addBtnLabel"
+      @add-click="$emit('trigger-crud', { type: crudType })"
+    />
 
     <!-- 篩選列 -->
     <div class="filter-toolbar glass-panel">
@@ -20,45 +14,44 @@
         <input v-model="searchQuery" type="text" :placeholder="searchPlaceholder" />
       </div>
 
-      <div class="filter-options">
-        <!-- 單選分類下拉選單 (排除 'tags' 欄位，由多選標籤專門處理) -->
-        <select
-          v-for="f in singleSelectFilters"
+      <div class="filter-options" v-if="filters && filters.length">
+        <!-- 多選下拉選單 (支援動畫類型、製作工具、分類與標籤) -->
+        <div
+          v-for="f in filters"
           :key="f.field"
-          v-model="filterValues[f.field]"
-          class="filter-select"
+          class="custom-tag-dropdown"
+          @click.stop
         >
-          <option value="All">{{ f.allOption }}</option>
-          <option v-for="opt in dynamicOptions[f.field]" :key="opt" :value="opt">{{ opt }}</option>
-        </select>
-
-        <!-- 自訂多選標籤下拉選單 -->
-        <div class="custom-tag-dropdown" v-if="allAvailableTags.length" @click.stop>
-          <button class="tag-dropdown-btn" :class="{ active: selectedTags.length > 0 }" @click="tagDropdownOpen = !tagDropdownOpen">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
-            <span>{{ selectedTags.length ? `標籤篩選 (${selectedTags.length})` : '所有主題標籤' }}</span>
+          <button
+            class="tag-dropdown-btn"
+            :class="{ active: getSelectedCount(f.field) > 0 }"
+            @click="toggleDropdown(f.field)"
+          >
+            <svg v-if="f.field === 'tags'" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+            <span>{{ getFilterButtonLabel(f) }}</span>
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="arrow"><polyline points="6 9 12 15 18 9"></polyline></svg>
           </button>
 
           <Transition name="fade">
-            <div class="tag-dropdown-menu glass-panel" v-if="tagDropdownOpen">
+            <div class="tag-dropdown-menu glass-panel" v-if="activeDropdown === f.field">
               <div class="tag-dropdown-header">
-                <span>選擇標籤 (可多選)</span>
-                <button class="clear-btn" v-if="selectedTags.length" @click="clearSelectedTags">清除全部</button>
+                <span>選擇 {{ f.zhLabel || getFilterZhTitle(f) }} (可多選)</span>
+                <button class="clear-btn" v-if="getSelectedCount(f.field) > 0" @click="clearFilterField(f.field)">清除全部</button>
               </div>
               <div class="tag-options-list">
                 <label
-                  v-for="tag in allAvailableTags"
-                  :key="tag"
+                  v-for="opt in dynamicOptions[f.field]"
+                  :key="opt"
                   class="tag-option-item"
-                  :class="{ selected: isTagSelected(tag) }"
+                  :class="{ selected: isOptionSelected(f.field, opt) }"
                 >
                   <input
                     type="checkbox"
-                    :checked="isTagSelected(tag)"
-                    @change="toggleTag(tag)"
+                    :checked="isOptionSelected(f.field, opt)"
+                    @change="toggleFilterOption(f.field, opt)"
                   />
-                  <span># {{ tag }}</span>
+                  <span>{{ f.field === 'tags' ? '# ' + opt : opt }}</span>
                 </label>
               </div>
             </div>
@@ -66,16 +59,19 @@
         </div>
       </div>
 
-      <!-- 已選標籤 Chip 膠囊條 (快速預覽與單獨刪除) -->
-      <div class="selected-tags-chips" v-if="selectedTags.length">
-        <span class="chips-label">已選標籤：</span>
+      <!-- 已選條件 Chip 膠囊條 -->
+      <div class="selected-tags-chips" v-if="totalSelectedChipsCount > 0">
+        <span class="chips-label">已選條件：</span>
         <div class="chip-list">
-          <span v-for="tag in selectedTags" :key="tag" class="tag-chip">
-            # {{ tag }}
-            <button class="chip-remove-btn" @click="removeTag(tag)" title="移除標籤">✕</button>
-          </span>
+          <template v-for="f in filters" :key="f.field">
+            <span v-for="opt in multiFilterValues[f.field]" :key="opt" class="tag-chip">
+              <small class="chip-category-prefix">{{ getFilterEnglishTitle(f) }}:</small>
+              {{ f.field === 'tags' ? '#' + opt : opt }}
+              <button class="chip-remove-btn" @click="removeFilterOption(f.field, opt)" title="移除條件">✕</button>
+            </span>
+          </template>
         </div>
-        <button class="reset-all-tags-btn" @click="clearSelectedTags">清除篩選</button>
+        <button class="reset-all-tags-btn" @click="resetAllFilters">清除全部篩選</button>
       </div>
     </div>
 
@@ -83,7 +79,7 @@
     <div v-if="filteredList.length === 0" class="empty-state">
       <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
       <p>{{ emptyText }}</p>
-      <button class="reset-filter-btn" v-if="selectedTags.length || searchQuery" @click="resetAllFilters">重置所有搜尋與篩選</button>
+      <button class="reset-filter-btn" v-if="totalSelectedChipsCount > 0 || searchQuery" @click="resetAllFilters">重置所有搜尋與篩選</button>
     </div>
 
     <!-- 卡片列表 -->
@@ -133,8 +129,39 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
           <div class="lightbox-scroll-area">
-            <div class="lightbox-media-box" v-if="getLightboxCover(lightbox.item)">
-              <img :src="getLightboxCover(lightbox.item)" class="lightbox-img" alt="" />
+            <div class="lightbox-media-box" v-if="getLightboxVideo(lightbox.item) || getLightboxCover(lightbox.item)">
+              <div
+                v-if="getLightboxVideo(lightbox.item)"
+                class="clickable-media-box video-media-container"
+              >
+                <video
+                  :src="getLightboxVideo(lightbox.item)"
+                  controls
+                  autoplay
+                  class="lightbox-video"
+                ></video>
+                <button
+                  type="button"
+                  class="media-zoom-overlay video-expand-btn"
+                  @click.stop="openFullscreenMedia(getLightboxVideo(lightbox.item), true)"
+                  title="全螢幕放大播放影片"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                  <span>點擊全螢幕檢視</span>
+                </button>
+              </div>
+              <div
+                v-else
+                class="clickable-media-box"
+                @click="openFullscreenMedia(getLightboxCover(lightbox.item), false)"
+                title="點擊全螢幕放大檢視圖片"
+              >
+                <img :src="getLightboxCover(lightbox.item)" class="lightbox-img" alt="點擊放大" />
+                <div class="media-zoom-overlay">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                  <span>點擊全螢幕檢視</span>
+                </div>
+              </div>
             </div>
             <div class="lightbox-detail-content">
               <div class="lightbox-meta-row">
@@ -159,11 +186,25 @@
         </div>
       </div>
     </Transition>
+
+    <!-- 全螢幕媒體 (圖片/影片) 放大檢視 Overlay -->
+    <Transition name="fade">
+      <div v-if="fullscreenMedia.url" class="fullscreen-image-backdrop" @click="closeFullscreenMedia">
+        <button class="fullscreen-close-btn" @click="closeFullscreenMedia" title="關閉全螢幕 (ESC)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <div class="fullscreen-media-content" @click.stop>
+          <video v-if="fullscreenMedia.isVideo" :src="fullscreenMedia.url" controls autoplay class="fullscreen-video-element"></video>
+          <img v-else :src="fullscreenMedia.url" class="fullscreen-img" alt="全螢幕媒體" />
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, reactive, onMounted, nextTick, watch } from 'vue';
+import { ref, computed, reactive, onMounted, onUnmounted, nextTick, watch } from 'vue';
+import PageHeader from './PageHeader.vue';
 import { getStorageData, deleteItem } from '../utils/storage';
 import { checkDeletePermission } from '../utils/notifications';
 import NotificationBell from '../components/NotificationBell.vue';
@@ -195,91 +236,140 @@ const props = defineProps({
 const emit = defineEmits(['trigger-crud', 'delete-done']);
 const items            = ref([]);
 const searchQuery      = ref('');
-const filterValues     = reactive({});
-const selectedTags     = ref([]);
-const tagDropdownOpen  = ref(false);
+const activeDropdown   = ref('');
+const multiFilterValues = reactive({});
 const lightbox         = ref({ isOpen: false, item: null });
+const fullscreenMedia = ref({ url: '', isVideo: false });
 
-watch(() => props.filters, (filters) => {
-  filters.forEach(f => { if (!(f.field in filterValues)) filterValues[f.field] = 'All'; });
-}, { immediate: true });
-
-// 排除 'tags' 欄位（'tags' 由 selectedTags 專門多選處理）
-const singleSelectFilters = computed(() => {
-  return props.filters.filter(f => f.field !== 'tags');
-});
-
-// 自動收集全庫現有標籤（支援陣列與逗號拆分字串）
-const allAvailableTags = computed(() => {
-  const set = new Set();
-  items.value.forEach(item => {
-    let raw = item.tags;
-    if (!raw) return;
-    if (typeof raw === 'string') {
-      raw = raw.split(/[,/，#\n\r]+/).map(s => s.trim()).filter(Boolean);
-    }
-    if (Array.isArray(raw)) {
-      raw.forEach(t => t && set.add(String(t).trim()));
-    }
-  });
-  return [...set].sort();
-});
-
-const isTagSelected = (tag) => {
-  if (!tag) return false;
-  return selectedTags.value.includes(String(tag).trim());
+const openFullscreenMedia = (url, isVideo = false) => {
+  if (url) fullscreenMedia.value = { url, isVideo };
 };
 
-const toggleTag = (tag) => {
-  if (!tag) return;
-  const clean = String(tag).trim();
-  const idx = selectedTags.value.indexOf(clean);
-  if (idx > -1) {
-    selectedTags.value.splice(idx, 1);
-  } else {
-    selectedTags.value.push(clean);
+const closeFullscreenMedia = () => {
+  fullscreenMedia.value = { url: '', isVideo: false };
+};
+
+const handleKeyDown = (e) => {
+  if (e.key === 'Escape') {
+    if (fullscreenMedia.value.url) {
+      closeFullscreenMedia();
+    } else if (lightbox.value.isOpen) {
+      closeLightbox();
+    }
   }
 };
 
-const removeTag = (tag) => {
-  const clean = String(tag).trim();
-  selectedTags.value = selectedTags.value.filter(t => t !== clean);
+watch(() => props.filters, (filters) => {
+  filters.forEach(f => {
+    if (!multiFilterValues[f.field]) {
+      multiFilterValues[f.field] = [];
+    }
+  });
+}, { immediate: true });
+
+const getFilterZhTitle = (f) => {
+  if (f.zhLabel) return f.zhLabel;
+  switch (f.field) {
+    case 'motionType': return '動畫類型';
+    case 'tools': return '製作工具';
+    case 'category': return '分類';
+    case 'tags': return '主題標籤';
+    default: return f.field;
+  }
 };
 
-const clearSelectedTags = () => {
-  selectedTags.value = [];
+const getFilterEnglishTitle = (f) => {
+  switch (f.field) {
+    case 'motionType': return 'Motion';
+    case 'tools': return 'Tools';
+    case 'category': return 'Category';
+    case 'tags': return 'Tags';
+    default: return f.field;
+  }
+};
+
+const getFilterButtonLabel = (f) => {
+  const count = getSelectedCount(f.field);
+  const zhTitle = getFilterZhTitle(f);
+  if (count > 0) {
+    return `${zhTitle} (${count})`;
+  }
+  return f.allOption || `所有${zhTitle}`;
+};
+
+const toggleDropdown = (field) => {
+  if (activeDropdown.value === field) {
+    activeDropdown.value = '';
+  } else {
+    activeDropdown.value = field;
+  }
 };
 
 const closeTagDropdown = () => {
-  tagDropdownOpen.value = false;
+  activeDropdown.value = '';
 };
 
-const resetAllFilters = () => {
-  searchQuery.value = '';
-  selectedTags.value = [];
-  Object.keys(filterValues).forEach(k => filterValues[k] = 'All');
+const getSelectedCount = (field) => {
+  return multiFilterValues[field]?.length || 0;
 };
 
-const toggleSingleFilter = (field, val) => {
-  if (!field || !val) return;
-  const clean = String(val).trim();
-  if (filterValues[field] === clean) {
-    filterValues[field] = 'All';
+const isOptionSelected = (field, option) => {
+  if (!field || !option) return false;
+  return multiFilterValues[field]?.includes(String(option).trim()) || false;
+};
+
+const toggleFilterOption = (field, option) => {
+  if (!field || !option) return;
+  const clean = String(option).trim();
+  if (!multiFilterValues[field]) multiFilterValues[field] = [];
+  const idx = multiFilterValues[field].indexOf(clean);
+  if (idx > -1) {
+    multiFilterValues[field].splice(idx, 1);
   } else {
-    filterValues[field] = clean;
+    multiFilterValues[field].push(clean);
   }
 };
 
-const isSingleFilterSelected = (field, val) => {
-  if (!field || !val) return false;
-  return filterValues[field] === String(val).trim();
+const removeFilterOption = (field, option) => {
+  if (!field || !option) return;
+  const clean = String(option).trim();
+  if (multiFilterValues[field]) {
+    multiFilterValues[field] = multiFilterValues[field].filter(o => o !== clean);
+  }
 };
+
+const clearFilterField = (field) => {
+  if (multiFilterValues[field]) {
+    multiFilterValues[field] = [];
+  }
+};
+
+const totalSelectedChipsCount = computed(() => {
+  let total = 0;
+  props.filters.forEach(f => {
+    total += multiFilterValues[f.field]?.length || 0;
+  });
+  return total;
+});
+
+const resetAllFilters = () => {
+  searchQuery.value = '';
+  props.filters.forEach(f => {
+    multiFilterValues[f.field] = [];
+  });
+};
+
+// 為了維持對 view 的相容與點擊 quick filter
+const toggleTag = (tag) => toggleFilterOption('tags', tag);
+const isTagSelected = (tag) => isOptionSelected('tags', tag);
+const toggleSingleFilter = (field, val) => toggleFilterOption(field, val);
+const isSingleFilterSelected = (field, val) => isOptionSelected(field, val);
 
 const handleBadgeClick = (item) => {
   const badgeText = getBadgeText(item);
   if (!badgeText) return;
   const targetField = props.badgeField || 'category';
-  toggleSingleFilter(targetField, badgeText);
+  toggleFilterOption(targetField, badgeText);
 };
 
 const getTitle  = (item) => item?.[props.titleField] || item?.title || item?.name || '';
@@ -289,19 +379,34 @@ const getLink   = (item) => {
   return item[props.linkField] || item.link || item.source || item.url || '';
 };
 const getLightboxCover = (item) => { if (!item) return ''; return item[props.lightboxCoverField || props.coverField] || getCover(item); };
+const getLightboxVideo = (item) => { if (!item) return ''; return item.videoUrl || item.video || ''; };
 const getLightboxLink  = (item) => { if (!item) return ''; return item[props.lightboxLinkField  || props.linkField]  || getLink(item); };
 const getBadgeText = (item) => { if (props.badgeLabel) return props.badgeLabel; if (props.badgeField && item) return item[props.badgeField] || ''; return ''; };
+
+const getItemValues = (item, field, optField) => {
+  if (!item) return [];
+  let val = item[optField || field];
+  if ((!val || (Array.isArray(val) && val.length === 0)) && (field === 'tools' || optField === 'tools')) {
+    val = item.toolsInput;
+  }
+  if (!val) return [];
+  if (Array.isArray(val)) {
+    return val.map(s => String(s).trim()).filter(Boolean);
+  }
+  if (typeof val === 'string') {
+    return val.split(/[,/，#\n\r]+/).map(s => s.trim()).filter(Boolean);
+  }
+  return [String(val).trim()];
+};
 
 const dynamicOptions = computed(() => {
   const result = {};
   props.filters.forEach(f => {
-    if (f.field === 'tags') return;
     const optField = f.optionsFrom || f.field;
     const set = new Set();
     items.value.forEach(item => {
-      const val = item[optField];
-      if (Array.isArray(val)) val.forEach(v => v && set.add(v));
-      else if (val) set.add(val);
+      const vals = getItemValues(item, f.field, optField);
+      vals.forEach(v => set.add(v));
     });
     result[f.field] = [...set].sort();
   });
@@ -310,30 +415,17 @@ const dynamicOptions = computed(() => {
 
 const filteredList = computed(() => {
   return items.value.filter(item => {
-    // 1. 單選分類過濾
-    for (const f of singleSelectFilters.value) {
-      const selected = filterValues[f.field];
-      if (selected && selected !== 'All') {
+    // 檢查每一個 Filter 的多選陣列
+    for (const f of props.filters) {
+      const selectedArr = multiFilterValues[f.field];
+      if (selectedArr && selectedArr.length > 0) {
         const optField = f.optionsFrom || f.field;
-        const val = item[optField];
-        if (Array.isArray(val)) { if (!val.includes(selected)) return false; }
-        else { if (val !== selected) return false; }
+        const itemVals = getItemValues(item, f.field, optField);
+        
+        const hasMatch = selectedArr.some(sel => itemVals.includes(sel));
+        if (!hasMatch) return false;
       }
     }
-
-    // 2. 多選標籤過濾 (OR / 只要命中其中任一標籤)
-    if (selectedTags.value.length > 0) {
-      let itemTags = [];
-      if (Array.isArray(item.tags)) {
-        itemTags = item.tags.map(t => String(t).trim());
-      } else if (typeof item.tags === 'string') {
-        itemTags = item.tags.split(/[,/，#\n\r]+/).map(s => s.trim()).filter(Boolean);
-      }
-      const matched = selectedTags.value.some(t => itemTags.includes(t));
-      if (!matched) return false;
-    }
-
-    // 3. 搜尋關鍵字
     const q = searchQuery.value.trim().toLowerCase();
     if (!q) return true;
     return props.searchFields.some(fieldName => {
@@ -351,14 +443,30 @@ const closeLightbox = () => { lightbox.value.isOpen = false; lightbox.value.item
 const loadData = () => { items.value = getStorageData(props.storageKey); };
 defineExpose({ loadData });
 
+const handleDocumentClick = (e) => {
+  if (activeDropdown.value) {
+    const isInsideDropdown = e.target.closest('.custom-tag-dropdown');
+    if (!isInsideDropdown) {
+      activeDropdown.value = '';
+    }
+  }
+};
+
 onMounted(() => {
   loadData();
+  window.addEventListener('keydown', handleKeyDown);
+  window.addEventListener('click', handleDocumentClick);
   if (props.highlightedId) {
     nextTick(() => {
       const el = document.getElementById(`item-${props.highlightedId}`);
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
   }
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown);
+  window.removeEventListener('click', handleDocumentClick);
 });
 
 const handleDelete = (item) => {
@@ -392,6 +500,7 @@ const handleDelete = (item) => {
 .custom-tag-dropdown {
   position: relative;
   display: inline-block;
+  z-index: 120;
 }
 
 .tag-dropdown-btn {
@@ -426,8 +535,8 @@ const handleDelete = (item) => {
   background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  z-index: 100;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+  z-index: 500;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -510,35 +619,49 @@ const handleDelete = (item) => {
   align-items: center;
 }
 
+.chip-category-prefix {
+  font-size: 0.65rem;
+  opacity: 0.75;
+  margin-right: 0.15rem;
+  font-weight: 500;
+}
 .tag-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  background: var(--glow-primary);
-  color: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  font-size: 0.72rem;
+  background: var(--color-primary) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--color-primary) !important;
+  box-shadow: 0 3px 12px var(--glow-primary);
+  font-size: 0.75rem;
   font-weight: 600;
-  padding: 0.18rem 0.55rem;
+  padding: 0.22rem 0.65rem;
   border-radius: 99px;
   line-height: 1.2;
+}
+
+.chip-category-prefix {
+  opacity: 0.9;
+  font-weight: 600;
+  color: #ffffff !important;
 }
 
 .chip-remove-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
   font-size: 0.65rem;
-  color: var(--color-primary);
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.25);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 .chip-remove-btn:hover {
-  background: var(--color-primary);
-  color: #fff;
+  background: rgba(255, 255, 255, 0.45);
+  color: #ffffff !important;
 }
 
 .reset-all-tags-btn,
@@ -567,6 +690,8 @@ const handleDelete = (item) => {
 
 /* ── Cards Grid (恢復原始卡片樣式) ─────── */
 .cards-grid {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
@@ -641,7 +766,7 @@ const handleDelete = (item) => {
   background: var(--bg-input);
   backdrop-filter: blur(6px);
   border: 1px solid var(--border-color);
-  color: var(--text-secondary);
+  color: var(--text-primary);
   display: flex; align-items: center; justify-content: center;
   opacity: 0.85;
   transform: scale(1);
@@ -669,7 +794,6 @@ const handleDelete = (item) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.75rem;
 }
 
 .card-actions {
@@ -749,23 +873,161 @@ const handleDelete = (item) => {
   flex-direction: column;
   gap: 1.25rem;
 }
+
+/* ── 可點擊放大圖片與 Zoom 提示 ──────────── */
 .lightbox-media-box {
+  position: relative;
   width: 100%;
+  aspect-ratio: 16 / 9;
   border-radius: 12px;
   overflow: hidden;
-  background: #000;
-  max-height: 400px;
-  display: flex; align-items: center; justify-content: center;
+  background: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
+.lightbox-video {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  outline: none;
+  object-fit: contain;
+  background: #000000;
+}
+
+.clickable-media-box {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-in;
+}
+
+.media-zoom-overlay {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  opacity: 0;
+  transform: translateY(0);
+  transition: all 0.22s ease;
+  z-index: 10;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.clickable-media-box:hover .media-zoom-overlay,
+.video-media-container:hover .video-expand-btn {
+  opacity: 1;
+  /* background: var(--color-primary);
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 15px var(--glow-primary); */
+}
+
+.video-media-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+
+.fullscreen-media-content {
+  max-width: 90vw;
+  max-height: 85vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3005;
+}
+
+.fullscreen-video-element {
+  max-width: 90vw;
+  max-height: 85vh;
+  border-radius: 12px;
+  outline: none;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+
 .lightbox-img {
   width: 100%;
   max-height: 400px;
   object-fit: contain;
+  transition: transform 0.3s ease;
+}
+.clickable-media-box:hover .lightbox-img {
+  transform: scale(1.02);
+}
+
+/* ── 全螢幕圖片放大檢視 Overlay ───────────── */
+.fullscreen-image-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  padding: 1.5rem;
+  cursor: zoom-out;
+}
+
+.fullscreen-img {
+  max-width: 95vw;
+  max-height: 95vh;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.8);
+  cursor: default;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fullscreen-close-btn {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 3010;
+  transition: all 0.2s ease;
+}
+.fullscreen-close-btn:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(1.1);
 }
 .lightbox-detail-content {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+}
+.lightbox-detail-content .card-tags {
+  margin-top: 0;
+  margin-bottom: 1rem;
 }
 .lightbox-meta-row {
   display: flex;
@@ -781,8 +1043,9 @@ const handleDelete = (item) => {
   font-weight: 800;
   line-height: 1.3;
   color: var(--text-primary);
+  margin: 0.5rem 0 0.5rem 0.2rem;
 }
-.lightbox-footer { margin-top: 0.5rem; }
+.lightbox-footer { margin-top: 1.5rem; }
 .source-btn {
   display: inline-flex;
   align-items: center;
@@ -803,6 +1066,7 @@ const handleDelete = (item) => {
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
 @media (min-width: 1440px) { .cards-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 1920px) { .cards-grid { grid-template-columns: repeat(5, 1fr); } }
 @media (max-width: 1280px) { .cards-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 768px)  { .cards-grid { grid-template-columns: 1fr; } }
 @media (max-width: 640px) {

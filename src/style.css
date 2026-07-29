@@ -117,29 +117,29 @@
    Clean geometric style, sharp borders.
    ============================================================ */
 .theme-midnight-slate {
-  --bg-primary: #0f1117;
-  --bg-secondary: #171b24;
-  --bg-card: rgba(23, 27, 36, 0.7);
-  --bg-card-hover: rgba(30, 35, 48, 0.85);
-  --bg-elevated: rgba(35, 40, 55, 0.9);
-  --border-color: rgba(255, 255, 255, 0.07);
-  --border-color-hover: rgba(255, 255, 255, 0.14);
-  --text-primary: #f1f3f8;
-  --text-secondary: #8b95a8;
-  --text-muted: #555d6e;
+  --bg-primary: #0b0d14;
+  --bg-secondary: #121622;
+  --bg-card: rgba(18, 22, 34, 0.65);
+  --bg-card-hover: rgba(26, 32, 48, 0.85);
+  --bg-elevated: rgba(24, 30, 46, 0.95);
+  --border-color: rgba(99, 102, 241, 0.12);
+  --border-color-hover: rgba(99, 102, 241, 0.28);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
   --color-primary: #6366f1;
   --color-secondary: #818cf8;
   --color-accent: #34d399;
   --color-danger: #f87171;
-  --glow-primary: rgba(99, 102, 241, 0.12);
-  --glow-secondary: rgba(129, 140, 248, 0.12);
-  --glass-bg: rgba(23, 27, 36, 0.6);
+  --glow-primary: rgba(99, 102, 241, 0.15);
+  --glow-secondary: rgba(129, 140, 248, 0.15);
+  --glass-bg: rgba(18, 22, 34, 0.6);
   --radius-md: 12px;
   --radius-lg: 16px;
-  --bg-subtle: rgba(255, 255, 255, 0.03);
-  --bg-hover: rgba(255, 255, 255, 0.07);
-  --bg-input: rgba(0, 0, 0, 0.18);
-  --sidebar-bg: rgba(15, 17, 23, 0.82);
+  --bg-subtle: rgba(255, 255, 255, 0.025);
+  --bg-hover: rgba(99, 102, 241, 0.08);
+  --bg-input: rgba(0, 0, 0, 0.22);
+  --sidebar-bg: rgba(11, 13, 20, 0.82);
 }
 
 
@@ -341,12 +341,12 @@
 .theme-frost-mint,
 .theme-rainglow-light,
 .theme-office-access {
-  --bg-primary: #fdfdfd;
-  --bg-secondary: #f7f7f8;
-  --bg-card: #ffffff;
-  --bg-card-hover: #ffffff;
-  --bg-elevated: #ffffff;
-  --border-color: rgba(0, 0, 0, 0.06);
+  --bg-primary: #f8f9fc;
+  --bg-secondary: #f1f3f9;
+  --bg-card: rgba(255, 255, 255, 0.92);
+  --bg-card-hover: rgba(245, 247, 252, 0.98);
+  --bg-elevated: rgba(255, 255, 255, 0.98);
+  --border-color: rgba(162, 56, 53, 0.12);
   --border-color-hover: rgba(162, 56, 53, 0.35);
   --text-primary: #22201e;
   --text-secondary: #55504c;
@@ -357,16 +357,16 @@
   --color-danger: #c0392b;
   --glow-primary: rgba(162, 56, 53, 0.12);
   --glow-secondary: rgba(192, 57, 43, 0.12);
-  --glass-bg: #ffffff;
+  --glass-bg: rgba(255, 255, 255, 0.9);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.08);
   --radius-md: 10px;
   --radius-lg: 14px;
-  --bg-subtle: rgba(0, 0, 0, 0.03);
-  --bg-hover: rgba(0, 0, 0, 0.05);
-  --bg-input: rgba(0, 0, 0, 0.03);
-  --sidebar-bg: #f7f7f8;
+  --bg-subtle: rgba(162, 56, 53, 0.03);
+  --bg-hover: rgba(162, 56, 53, 0.07);
+  --bg-input: rgba(162, 56, 53, 0.04);
+  --sidebar-bg: rgba(247, 247, 248, 0.92);
 }
 
 
@@ -477,7 +477,8 @@ button {
 }
 
 /* 全域按鈕統一樣式 (固定高對比白色文字 + 各主題動態光暈 shadow) */
-.add-btn {
+.add-btn,
+.btn-save {
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)) !important;
   color: #ffffff !important;
   padding: 0.6rem 1.2rem;
@@ -486,9 +487,12 @@ button {
   font-size: 0.9rem;
   box-shadow: 0 4px 15px var(--glow-primary);
   transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
 }
 
-.add-btn:hover {
+.add-btn:hover,
+.btn-save:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px var(--glow-primary);
 }
@@ -503,6 +507,62 @@ select {
   border: none;
   outline: none;
   color: inherit;
+}
+
+/* ============================================================
+   FORM PLACEHOLDER & LABEL COLOR SPECIFICATION
+   ============================================================ */
+label,
+.form-group label {
+  color: var(--text-primary) !important;
+  font-weight: 600;
+}
+
+input::placeholder,
+textarea::placeholder,
+select::placeholder,
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder,
+input::-moz-placeholder,
+textarea::-moz-placeholder,
+input:-ms-input-placeholder,
+textarea:-ms-input-placeholder {
+  color: var(--text-muted) !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: var(--text-muted) !important;
+}
+
+/* ============================================================
+   SELECT & DATALIST ARROW UNIFICATION (全站下拉選單與建議輸入框箭頭統一)
+   ============================================================ */
+select,
+input[list] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.85rem center !important;
+  background-size: 12px 12px !important;
+  padding-right: 2.2rem !important;
+  cursor: pointer;
+}
+
+select:hover,
+select:focus,
+input[list]:hover,
+input[list]:focus {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+}
+
+/* 隱藏 Chrome / Safari 原生 datalist 輸入框醜陋的倒三角形 */
+input[list]::-webkit-calendar-picker-indicator,
+input[list]::-webkit-list-button {
+  display: none !important;
+  opacity: 0 !important;
+  -webkit-appearance: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 /* Scrollbar */
@@ -625,6 +685,8 @@ select {
 }
 
 .filter-toolbar {
+  position: relative;
+  z-index: 100;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -814,9 +876,10 @@ select {
 }
 
 .section-title {
-  font-size: 0.88rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--text-primary);
+  margin-top: 1rem;
   margin-bottom: 0.5rem;
 }
 

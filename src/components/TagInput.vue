@@ -1,5 +1,5 @@
 <template>
-  <div class="tag-input-container" @click="focusInput">
+  <div class="tag-input-container" ref="containerRef" @click="focusInput">
     <div class="tag-chips-wrapper">
       <span v-for="(tag, index) in tags" :key="index" class="tag-chip">
         # {{ tag }}
@@ -22,7 +22,7 @@
 
     <!-- 歷史標籤建議選單 (Suggested Tags) -->
     <Transition name="fade">
-      <div v-if="isFocused && filteredSuggestions.length > 0" class="suggestions-dropdown glass-panel" @mousedown.prevent>
+      <div v-show="isFocused && filteredSuggestions.length > 0" class="suggestions-dropdown glass-panel" @mousedown.prevent>
         <div class="dropdown-header">
           <span>歷史添加過的標籤 (點擊快速新增)</span>
         </div>
@@ -34,7 +34,6 @@
             class="suggestion-item"
             @click="selectSuggestion(suggest)"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
             <span># {{ suggest }}</span>
           </button>
         </div>
@@ -44,7 +43,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
   modelValue: {
@@ -67,6 +66,7 @@ const tags = ref([...props.modelValue]);
 const inputQuery = ref('');
 const isFocused = ref(false);
 const inputRef = ref(null);
+const containerRef = ref(null);
 
 watch(() => props.modelValue, (newVal) => {
   tags.value = [...(newVal || [])];
@@ -108,13 +108,30 @@ const handleBlur = () => {
   }
   setTimeout(() => {
     isFocused.value = false;
-  }, 150);
+  }, 180);
 };
 
 const selectSuggestion = (suggest) => {
   addTag(suggest);
   focusInput();
 };
+
+const handleClickOutside = (e) => {
+  if (containerRef.value && !containerRef.value.contains(e.target)) {
+    if (inputQuery.value.trim()) {
+      addCurrentInput();
+    }
+    isFocused.value = false;
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('click', handleClickOutside);
+});
 
 const filteredSuggestions = computed(() => {
   const q = inputQuery.value.trim().toLowerCase();
@@ -136,7 +153,7 @@ const filteredSuggestions = computed(() => {
   align-items: center;
   gap: 0.4rem;
   background: var(--bg-input);
-  border: 1px solid var(--border-color);
+  border: 1px solid transparent;
   padding: 0.45rem 0.65rem;
   border-radius: 10px;
   min-height: 42px;
@@ -153,14 +170,20 @@ const filteredSuggestions = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  background: var(--glow-primary);
-  color: var(--color-primary);
-  border: 1px solid var(--color-primary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  
   font-size: 0.78rem;
   font-weight: 600;
   padding: 0.2rem 0.55rem;
-  border-radius: 6px;
+  border-radius: 16px;
   line-height: 1.2;
+}
+
+.tag-chip:hover {
+  background: var(--glow-primary);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
 }
 
 .remove-btn {
@@ -171,7 +194,7 @@ const filteredSuggestions = computed(() => {
   height: 14px;
   border-radius: 50%;
   font-size: 0.65rem;
-  color: var(--color-primary);
+  color: var(--text-muted);
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -189,6 +212,12 @@ const filteredSuggestions = computed(() => {
   font-size: 0.85rem;
   color: var(--text-primary);
   padding: 0.1rem 0.2rem;
+}
+
+.chip-input::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: var(--text-muted) !important;
 }
 
 /* 歷史標籤建議選單 */
@@ -226,13 +255,13 @@ const filteredSuggestions = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  background: var(--bg-hover);
+  background: var(--bg-card);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
   font-size: 0.775rem;
   font-weight: 500;
   padding: 0.25rem 0.6rem;
-  border-radius: 6px;
+  border-radius: 16px;
   cursor: pointer;
   transition: all 0.15s ease;
 }

@@ -107,8 +107,9 @@ const parseList = (val) => {
 };
 
 const filters = computed(() => [
-  { field: 'tools',      allOption: '所有製作工具', optionsFrom: 'tools' },
-  { field: 'motionType', allOption: '所有動畫類型', optionsFrom: 'motionType' }
+  { field: 'motionType', zhLabel: '動畫類型', allOption: '所有動畫類型', optionsFrom: 'motionType' },
+  { field: 'tools',      zhLabel: '製作工具', allOption: '所有製作工具', optionsFrom: 'tools' },
+  { field: 'tags',       zhLabel: '主題標籤', allOption: '所有主題標籤', optionsFrom: 'tags' }
 ]);
 </script>
 

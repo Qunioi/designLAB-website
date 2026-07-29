@@ -82,8 +82,8 @@ const parseList = (val) => {
 };
 
 const filters = computed(() => [
-  { field: 'category', allOption: '所有 UI 分類', optionsFrom: 'category' },
-  { field: 'tags',     allOption: '所有主題標籤', optionsFrom: 'tags' }
+  { field: 'category', zhLabel: 'UI 分類',   allOption: '所有 UI 分類',   optionsFrom: 'category' },
+  { field: 'tags',     zhLabel: '主題標籤', allOption: '所有主題標籤', optionsFrom: 'tags' }
 ]);
 </script>
 

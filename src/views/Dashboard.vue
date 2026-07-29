@@ -1,12 +1,9 @@
 <template>
   <div class="dashboard-container">
-    <header class="dashboard-header">
-      <div>
-        <h1 class="page-title">Design <span class="text-gradient">LAB</span></h1>
-        <p class="page-subtitle">內部設計知識平台與概念驗證提案系統</p>
-      </div>
-      <NotificationBell />
-    </header>
+    <PageHeader
+      title="Design LAB"
+      subtitle="內部設計知識平台與概念驗證提案系統"
+    />
 
     <div class="bento-grid">
       <!-- 1. Welcome Card -->
@@ -114,7 +111,7 @@
       </div>
 
       <!-- 6. Quick Action -->
-      <div class="bento-card quick-action-card glass-panel">
+      <!-- <div class="bento-card quick-action-card glass-panel">
         <h3>快速建立研究</h3>
         <div class="action-buttons">
           <button class="btn btn-primary" @click="$emit('trigger-crud', 'UIResearch')">
@@ -127,13 +124,14 @@
             + 競品分析
           </button>
         </div>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import PageHeader from '../components/PageHeader.vue';
 import { getStorageData } from '../utils/storage';
 import NotificationBell from '../components/NotificationBell.vue';
 
@@ -219,9 +217,15 @@ const handleRecentClick = (item) => {
 
 .welcome-card {
   grid-column: span 3;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color-hover);
+  background: var(--glass-bg);
+  border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.welcome-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 25px var(--glow-primary);
 }
 
 .welcome-content h2 {
@@ -242,7 +246,7 @@ const handleRecentClick = (item) => {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: var(--bg-elevated);
+  background: var(--bg-input);
   border: 1px solid var(--border-color);
   padding: 0.65rem 1.25rem;
   border-radius: 12px;
@@ -254,7 +258,7 @@ const handleRecentClick = (item) => {
 }
 
 .search-trigger:hover {
-  background: var(--bg-card);
+  background: var(--bg-hover);
   border-color: var(--color-primary);
   color: var(--color-primary);
   box-shadow: 0 4px 15px var(--glow-primary);
@@ -351,18 +355,20 @@ const handleRecentClick = (item) => {
 .recent-item-row {
   display: flex;
   gap: 1rem;
-  padding: 0.75rem;
-  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
   background: var(--bg-subtle);
   border: 1px solid var(--border-color);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   align-items: center;
 }
 
 .recent-item-row:hover {
   background: var(--bg-hover);
-  border-color: var(--border-color-hover);
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 20px var(--glow-primary);
+  transform: translateX(4px);
 }
 
 .recent-img {
@@ -378,6 +384,7 @@ const handleRecentClick = (item) => {
   flex-direction: column;
   gap: 0.25rem;
   flex: 1;
+  overflow: hidden;
 }
 
 .recent-row-title {
@@ -387,7 +394,6 @@ const handleRecentClick = (item) => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 260px;
 }
 
 .recent-row-meta {

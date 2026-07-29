@@ -12,7 +12,7 @@
     <Transition name="fade">
       <div class="notif-panel solid-panel" v-if="showNotifPanel" @click.stop>
         <div class="notif-header">
-          <span class="notif-header-title">🔔 團隊異動通知</span>
+          <span class="notif-header-title">團隊異動通知</span>
           <button class="mark-read-btn" @click="handleMarkAllRead">全標為已讀</button>
         </div>
         <div class="notif-list" v-if="notifications.length">

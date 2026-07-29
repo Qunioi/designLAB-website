@@ -1,17 +1,11 @@
 <template>
   <div class="ai-center-container">
-    <header class="view-header">
-      <div>
-        <h1 class="page-title">AI Center</h1>
-        <p class="page-subtitle">整理 AI 設計工具與 Prompts，優化日常設計工作流</p>
-      </div>
-      <div class="header-actions">
-        <NotificationBell />
-        <button class="add-btn" @click="$emit('trigger-crud', { type: 'AI_CENTER' })">
-          + 新增 AI 工具
-        </button>
-      </div>
-    </header>
+    <PageHeader
+      title="AI Center"
+      subtitle="整理 AI 設計工具與 Prompts，優化日常設計工作流"
+      add-btn-label="+ 新增AI工具"
+      @add-click="$emit('trigger-crud', { type: 'AI_CENTER' })"
+    />
 
     <div class="filter-toolbar glass-panel">
       <div class="search-box">
@@ -82,6 +76,7 @@
 
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue';
+import PageHeader from '../components/PageHeader.vue';
 import { getStorageData, deleteItem } from '../utils/storage';
 import NotificationBell from '../components/NotificationBell.vue';
 

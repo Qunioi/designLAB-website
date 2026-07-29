@@ -8,6 +8,7 @@ import {
 } from '../data/mockData';
 
 import { hasSheetsIntegration, pushToSheet, deleteFromSheet } from './sheetsAPI';
+import { notifyItemEdit } from './notifications';
 
 const KEYS = {
   UI_RESEARCH:     'design_lab_ui_research',
@@ -108,32 +109,32 @@ function getFormattedNow() {
   return `${year}-${month}-${day} ${hours}:${mins}:${secs}`;
 }
 
-import { notifyItemEdit } from './notifications';
-
 export function addOrUpdateItem(key, item) {
   const list = getStorageData(key);
   let savedItem;
-  const currentUser = getCurrentUserString();
+  const currentUserObj = getCurrentUser();
+  const currentUserStr = getCurrentUserString();
   const nowStr = getFormattedNow();
 
   if (item.id) {
     // 更新現有項目
     const index = list.findIndex(i => i.id === item.id);
     if (index !== -1) {
-      const originalAuthor = list[index].createdBy || list[index].updatedBy || 'Quni (@quni_jhuang)';
+      const originalAuthor = list[index].createdBy || list[index].updatedBy || currentUserStr;
       list[index] = { 
         ...list[index], 
         ...item,
         updatedAt: nowStr,
-        updatedBy: currentUser
+        updatedBy: currentUserStr,
+        lastEditorName: currentUserObj.nickname
       };
       savedItem = list[index];
 
-      // 觸發小鈴鐺提醒給發文者
+      // 觸發小鈴鐺提醒給原建立者
       notifyItemEdit({
         itemTitle: savedItem.title || savedItem.name || '研究案例',
         originalAuthor: originalAuthor,
-        editorName: currentUser
+        editorName: currentUserStr
       });
     } else {
       // ID 存在但找不到，視為新增
@@ -141,27 +142,33 @@ export function addOrUpdateItem(key, item) {
         ...item,
         createdAt: item.createdAt || nowStr,
         updatedAt: nowStr,
-        updatedBy: currentUser,
-        createdBy: currentUser
+        updatedBy: currentUserStr,
+        createdBy: currentUserStr,
+        creatorName: currentUserObj.nickname,
+        creatorUsername: currentUserObj.username,
+        creatorRole: currentUserObj.role
       };
       list.unshift(savedItem);
     }
   } else {
-    // 新增項目
+    // 新增項目 (完整紀錄是誰發佈的)
     savedItem = {
       ...item,
       id: `${key.toLowerCase().replace(/_/g, '-')}-${Date.now()}`,
       createdAt: nowStr,
       updatedAt: nowStr,
-      updatedBy: currentUser,
-      createdBy: currentUser
+      updatedBy: currentUserStr,
+      createdBy: currentUserStr,
+      creatorName: currentUserObj.nickname,
+      creatorUsername: currentUserObj.username,
+      creatorRole: currentUserObj.role
     };
     list.unshift(savedItem);
   }
 
   setStorageData(key, list);
 
-  // 背景同步到 Google Sheets（非同步，不阻塞 UI）
+  // 背景同步到 Google Sheets（非同步，包含發佈人記錄備查）
   if (hasSheetsIntegration() && savedItem) {
     pushToSheet(key, savedItem);
   }

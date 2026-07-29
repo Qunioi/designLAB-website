@@ -3,74 +3,68 @@
     <div v-if="isOpen" class="modal-backdrop" @click="close">
       <div class="modal-container glass-panel" @click.stop>
         <div class="modal-header">
-          <h2>{{ isEdit ? '編輯資料' : '新增資料' }} - {{ typeLabel }}</h2>
-          <button class="close-btn" @click="close"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+          <h2>{{ isEdit ? '編輯' : '新增' }} - {{ typeLabel }}</h2>
+          <!-- <button class="close-btn" @click="close"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button> -->
         </div>
 
         <form @submit.prevent="handleSubmit" class="modal-body">
           <!-- UI Research Form -->
           <div v-if="type === 'UI_RESEARCH'" class="form-grid">
-            <div class="form-group">
-              <label>標題 <span class="required">*</span></label>
-              <input v-model="form.title" type="text" placeholder="例如：Linear 官方網站的 Bento Grid 排版" required />
-            </div>
-            <div class="form-group">
-              <label>分類 (可輸入或從建議選取)</label>
-              <input v-model="form.category" type="text" list="category-suggestions" placeholder="例如：Layout, User Flow, Visual Style" />
-              <datalist id="category-suggestions">
-                <option v-for="cat in historyCategories" :key="cat" :value="cat" />
-              </datalist>
-            </div>
             <div class="form-group full-width">
-              <label>標籤 (按 Enter 或逗號新增標籤，可直接點選建議標籤)</label>
-              <TagInput v-model="form.tags" :suggested-tags="historyTags" placeholder="輸入標籤如：Bento Grid, SaaS..." />
+              <label>標題 <span class="required">*</span></label>
+              <input v-model="form.title" type="text" placeholder="請輸入標題" required />
             </div>
             <div class="form-group">
-              <label>封面圖片網址</label>
-              <input v-model="form.cover" type="url" placeholder="請輸入圖片 URL" />
+              <label>分類</label>
+              <CategoryInput v-model="form.category" :options="historyCategories" placeholder="例如：Layout, User Flow, Visual Style" />
             </div>
             <div class="form-group">
               <label>來源網址</label>
               <input v-model="form.source" type="url" placeholder="例如：https://linear.app" />
             </div>
             <div class="form-group full-width">
+              <label>標籤 (按 Enter 新增標籤，可點選歷史標籤)</label>
+              <TagInput v-model="form.tags" :suggested-tags="historyTags" placeholder="輸入標籤如：Bento Grid, SaaS..." />
+            </div>
+            <div class="form-group full-width">
+              <label>封面圖片</label>
+              <FileUploader v-model="form.cover" accept="image/*" placeholder="請貼上圖片網或點擊選擇檔案上傳" />
+            </div>
+            <div class="form-group full-width">
               <label>研究心得 / 可借鏡重點</label>
-              <textarea v-model="form.takeaways" rows="4" placeholder="請輸入詳細的研究心得或設計分析..."></textarea>
+              <textarea v-model="form.takeaways" rows="3" placeholder="請輸入詳細的研究心得或設計分析..."></textarea>
             </div>
           </div>
 
           <!-- Motion Research Form -->
           <div v-else-if="type === 'MOTION_RESEARCH'" class="form-grid">
-            <div class="form-group">
+            <div class="form-group full-width">
               <label>標題 <span class="required">*</span></label>
               <input v-model="form.title" type="text" placeholder="例如：Dynamic Island 彈性轉場動畫" required />
             </div>
             <div class="form-group">
-              <label>影片網址 (.mp4 / .webm) <span class="required">*</span></label>
-              <input v-model="form.videoUrl" type="url" placeholder="請輸入影片檔案 URL" required />
-            </div>
-            <div class="form-group">
-              <label>靜態封面圖片網址</label>
-              <input v-model="form.cover" type="url" placeholder="請輸入封面圖片 URL" />
-            </div>
-            <div class="form-group">
               <label>動畫類型 (可輸入或從建議選取)</label>
-              <input v-model="form.motionType" type="text" list="motiontype-suggestions" placeholder="例如：Micro-interaction, Drag & Drop" />
-              <datalist id="motiontype-suggestions">
-                <option v-for="cat in historyCategories" :key="cat" :value="cat" />
-              </datalist>
-            </div>
-            <div class="form-group full-width">
-              <label>標籤 (按 Enter 或逗號新增標籤，可點選下方歷史建議標籤)</label>
-              <TagInput v-model="form.tags" :suggested-tags="historyTags" placeholder="輸入標籤如：Spring Animation, iOS..." />
-            </div>
-            <div class="form-group">
-              <label>製作工具 (以英文逗號分隔)</label>
-              <input v-model="form.toolsInput" type="text" placeholder="例如：AE, Lottie, Rive, Principle" />
+              <CategoryInput v-model="form.motionType" :options="historyCategories" placeholder="例如：Micro-interaction, Drag & Drop" />
             </div>
             <div class="form-group">
               <label>來源網址</label>
-              <input v-model="form.source" type="url" placeholder="請輸入來源網址" />
+              <input v-model="form.source" type="url" placeholder="請貼上來源網址" />
+            </div>
+            <div class="form-group full-width">
+              <label>影片檔案 (.mp4 / .webm) <span class="required">*</span></label>
+              <FileUploader v-model="form.videoUrl" accept="video/*" placeholder="請貼上影片網或點擊選擇檔案上傳" />
+            </div>
+            <div class="form-group full-width">
+              <label>靜態封面圖片 (可選)</label>
+              <FileUploader v-model="form.cover" accept="image/*" placeholder="請貼上封面圖片網或點擊選擇檔案上傳" />
+            </div>
+            <div class="form-group full-width">
+              <label>製作工具 (按 Enter 新增標籤，可點選歷史製作工具)</label>
+              <TagInput v-model="form.tools" :suggested-tags="historyTools" placeholder="輸入製作工具如：SwiftUI, Vue, GSAP..." />
+            </div>
+            <div class="form-group full-width">
+              <label>標籤 (按 Enter 新增標籤，可點選歷史標籤)</label>
+              <TagInput v-model="form.tags" :suggested-tags="historyTags" placeholder="輸入標籤如：Spring Animation, iOS..." />
             </div>
             <div class="form-group full-width">
               <label>動畫特色與借鏡重點</label>
@@ -92,16 +86,16 @@
               </select>
             </div>
             <div class="form-group full-width">
-              <label>標籤 (按 Enter 或逗號新增標籤，可點選下方歷史建議標籤)</label>
+              <label>標籤 (按 Enter 新增標籤，可點選下方歷史建議標籤)</label>
               <TagInput v-model="form.tags" :suggested-tags="historyTags" placeholder="輸入標籤如：Mobile UX, Fintech..." />
             </div>
             <div class="form-group">
               <label>官方網址</label>
               <input v-model="form.url" type="url" placeholder="例如：https://figma.com" />
             </div>
-            <div class="form-group">
+            <div class="form-group full-width">
               <label>介面截圖網址 (封面)</label>
-              <input v-model="form.screenshot" type="url" placeholder="請輸入截圖 URL" />
+              <FileUploader v-model="form.screenshot" accept="image/*" placeholder="請輸入截圖 URL 或點擊上傳..." />
             </div>
             <div class="form-group full-width">
               <label>優點 (Pros)</label>
@@ -145,7 +139,7 @@
           <div v-else-if="type === 'RESOURCES'" class="form-grid">
             <div class="form-group">
               <label>資源分類 <span class="required">*</span></label>
-              <input v-model="form.category" type="text" placeholder="例如：設計靈感, Icon, Font, UI元件" required />
+              <CategoryInput v-model="form.category" :options="historyCategories" placeholder="例如：設計靈感, Icon, Font, UI元件" />
             </div>
             <div class="form-group">
               <label>網站名稱 <span class="required">*</span></label>
@@ -203,6 +197,8 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import TagInput from './TagInput.vue';
+import CategoryInput from './CategoryInput.vue';
+import FileUploader from './FileUploader.vue';
 import { getStorageData } from '../utils/storage';
 
 const props = defineProps({
@@ -261,17 +257,38 @@ const historyTags = computed(() => {
 
 // 自動收集歷史曾添加過的所有分類
 const historyCategories = computed(() => {
-  const storageKeyMap = {
-    UI_RESEARCH: 'UI_RESEARCH',
-    MOTION_RESEARCH: 'MOTION_RESEARCH',
-    COMPETITORS: 'COMPETITORS'
-  };
-  const key = storageKeyMap[props.type] || 'UI_RESEARCH';
-  const list = getStorageData(key);
+  const allStores = [
+    ...getStorageData('UI_RESEARCH'),
+    ...getStorageData('MOTION_RESEARCH'),
+    ...getStorageData('COMPETITORS'),
+    ...getStorageData('RESOURCES'),
+    ...getStorageData('AI_CENTER')
+  ];
   const set = new Set();
-  list.forEach(item => {
+  // 先加入系統常用內建優質分類
+  ['Layout', 'User Flow', 'Visual Style', 'AI', 'Micro-interaction', 'Loading State', 'Drag & Drop', '3D / Dynamic'].forEach(c => set.add(c));
+  
+  allStores.forEach(item => {
     const val = item.category || item.motionType;
     if (val) set.add(String(val).trim());
+  });
+  return [...set].sort();
+});
+
+// 自動收集歷史曾添加過的所有製作工具
+const historyTools = computed(() => {
+  const list = getStorageData('MOTION_RESEARCH');
+  const set = new Set();
+  ['SwiftUI', 'Vue', 'CSS Animation', 'GSAP', 'Lottie', 'AE', 'Principle', 'Three.js', 'Rive', 'Framer Motion'].forEach(t => set.add(t));
+  list.forEach(item => {
+    let raw = item.tools || item.toolsInput;
+    if (!raw) return;
+    if (typeof raw === 'string') {
+      raw = raw.split(/[,/，#\n\r]+/).map(s => s.trim()).filter(Boolean);
+    }
+    if (Array.isArray(raw)) {
+      raw.forEach(t => t && set.add(String(t).trim()));
+    }
   });
   return [...set].sort();
 });
@@ -289,9 +306,13 @@ watch(() => [props.isOpen, props.item, props.type], () => {
       }
       itemCopy.tags = tagsArr;
 
-      if (itemCopy.tools) {
-        itemCopy.toolsInput = itemCopy.tools.join(', ');
+      let toolsArr = [];
+      if (Array.isArray(itemCopy.tools)) {
+        toolsArr = [...itemCopy.tools];
+      } else if (typeof itemCopy.toolsInput === 'string') {
+        toolsArr = itemCopy.toolsInput.split(/[,/，#\n\r]+/).map(s => s.trim()).filter(Boolean);
       }
+      itemCopy.tools = toolsArr;
       
       form.value = itemCopy;
     } else {
@@ -299,6 +320,7 @@ watch(() => [props.isOpen, props.item, props.type], () => {
         title: '',
         category: props.type === 'COMPETITORS' ? 'Web' : '',
         tags: [],
+        tools: [],
         toolsInput: '',
         cover: '',
         source: '',
@@ -336,11 +358,12 @@ const handleSubmit = () => {
     formattedItem.tags = formattedItem.tags.split(/[,/，#\n\r]+/).map(s => s.trim()).filter(Boolean);
   }
   
-  if (formattedItem.toolsInput !== undefined) {
-    formattedItem.tools = formattedItem.toolsInput
-      ? formattedItem.toolsInput.split(',').map(s => s.trim()).filter(Boolean)
-      : [];
-    delete formattedItem.toolsInput;
+  // 確保 tools 為陣列格式與同步 toolsInput
+  if (Array.isArray(formattedItem.tools)) {
+    formattedItem.toolsInput = formattedItem.tools.join(', ');
+  } else if (typeof formattedItem.tools === 'string') {
+    formattedItem.tools = formattedItem.tools.split(/[,/，#\n\r]+/).map(s => s.trim()).filter(Boolean);
+    formattedItem.toolsInput = formattedItem.tools.join(', ');
   }
   
   if (!formattedItem.cover && (props.type === 'UI_RESEARCH' || props.type === 'MOTION_RESEARCH')) {
@@ -438,7 +461,7 @@ const handleSubmit = () => {
 label {
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 .required {
@@ -447,11 +470,22 @@ label {
 
 input, select, textarea {
   background: var(--bg-input);
-  border: 1px solid var(--border-color);
+  border: 1px solid transparent;
   padding: 0.6rem 0.85rem;
   border-radius: 8px;
   font-size: 0.85rem;
+  color: var(--text-primary);
   transition: all 0.2s ease;
+}
+
+input::placeholder,
+textarea::placeholder,
+select::placeholder,
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+  color: var(--text-muted) !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: var(--text-muted) !important;
 }
 
 input:focus, select:focus, textarea:focus {
@@ -480,30 +514,18 @@ textarea {
 
 .btn-cancel {
   padding: 0.6rem 1.2rem;
-  border-radius: 8px;
+  border-radius: 12px;
   background: var(--bg-hover);
   border: 1px solid var(--border-color);
+  color: var(--text-primary);
   font-size: 0.85rem;
   font-weight: 600;
   transition: all 0.2s ease;
 }
 
 .btn-cancel:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.btn-save {
-  padding: 0.6rem 1.2rem;
-  border-radius: 8px;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  font-size: 0.85rem;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.btn-save:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 15px var(--glow-primary);
+  background: var(--bg-subtle);
+  border-color: var(--border-color-hover);
 }
 
 .modal-fade-enter-active,

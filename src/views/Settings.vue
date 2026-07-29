@@ -1,13 +1,9 @@
 <template>
   <div class="settings-view">
-    <!-- Header -->
-    <header class="settings-header">
-      <div>
-        <h1 class="settings-page-title">Personal Settings</h1>
-        <p class="settings-page-sub">Manage your profile and customize the visual appearance of Design LAB.</p>
-      </div>
-      <NotificationBell />
-    </header>
+    <PageHeader
+      title="Personal Settings"
+      subtitle="Manage your profile and customize the visual appearance of Design LAB."
+    />
 
     <div class="settings-layout">
       <!-- LEFT COLUMN: Profile -->
@@ -364,11 +360,12 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
+import PageHeader from '../components/PageHeader.vue';
+import NotificationBell from '../components/NotificationBell.vue';
 import {
   getSheetsUrl, setSheetsUrl,
   testSheetsConnection, syncAllFromSheets, pushAllToSheets
 } from '../utils/sheetsAPI';
-import NotificationBell from '../components/NotificationBell.vue';
 
 import { 
   getUserProfiles, 

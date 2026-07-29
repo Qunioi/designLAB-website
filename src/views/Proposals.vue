@@ -1,17 +1,11 @@
 <template>
   <div class="proposals-container">
-    <header class="view-header">
-      <div>
-        <h1 class="page-title">Proposals & Prototypes</h1>
-        <p class="page-subtitle">將研究發現轉化為具體的產品優化提案，並透過 Prototype 進行概念驗證與進度追蹤</p>
-      </div>
-      <div class="header-actions">
-        <NotificationBell />
-        <button class="add-btn" @click="$emit('trigger-crud', { type: 'PROPOSALS' })">
-          + 新增優化提案
-        </button>
-      </div>
-    </header>
+    <PageHeader
+      title="Proposals & Prototypes"
+      subtitle="將研究發現轉化為具體的產品優化提案，並透過 Prototype 進行概念驗證與進度追蹤"
+      add-btn-label="+ 新增優化提案"
+      @add-click="$emit('trigger-crud', { type: 'PROPOSALS' })"
+    />
 
     <div class="kanban-board">
       <div v-for="column in columns" :key="column.status" class="kanban-column glass-panel">
@@ -78,7 +72,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import PageHeader from '../components/PageHeader.vue';
 import { getStorageData, addOrUpdateItem, deleteItem } from '../utils/storage';
 import { checkDeletePermission } from '../utils/notifications';
 import NotificationBell from '../components/NotificationBell.vue';
