@@ -35,6 +35,7 @@
           type="text"
           :value="modelValue"
           @input="handleUrlInput"
+          @blur="handleUrlBlur"
           :placeholder="placeholder || '請貼上檔案網址'"
           class="solid-url-input"
         />
@@ -92,6 +93,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { uploadFile } from '../utils/upload';
+import { ensureProtocol } from '../utils/formatters';
 
 const props = defineProps({
   modelValue: {
@@ -123,6 +125,14 @@ const isVideo = computed(() => {
 
 const handleUrlInput = (e) => {
   emit('update:modelValue', e.target.value);
+};
+
+const handleUrlBlur = (e) => {
+  const val = e.target.value;
+  if (val && val.trim()) {
+    const formatted = ensureProtocol(val);
+    emit('update:modelValue', formatted);
+  }
 };
 
 const triggerFileInput = () => {

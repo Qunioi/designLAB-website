@@ -20,6 +20,8 @@
     :highlightedId="highlightedId"
     @trigger-crud="$emit('trigger-crud', $event)"
     @delete-done="$emit('delete-done')"
+    @open-lightbox="$emit('open-lightbox', $event)"
+    @close-lightbox="$emit('close-lightbox')"
     ref="gridRef"
   >
     <!-- Extra card content: description -->
@@ -44,7 +46,7 @@ import ResearchGrid from '../components/ResearchGrid.vue';
 const props = defineProps({
   highlightedId: { type: String, default: '' }
 });
-defineEmits(['trigger-crud', 'delete-done']);
+defineEmits(['trigger-crud', 'delete-done', 'open-lightbox', 'close-lightbox']);
 
 const gridRef = ref(null);
 const loadData = () => gridRef.value?.loadData();

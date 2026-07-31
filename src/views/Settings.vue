@@ -21,7 +21,7 @@
           <div class="avatar-meta">
             <div class="nickname-row">
               <span class="avatar-nickname">{{ nickname || 'Quni' }}</span>
-              <span v-if="isAdmin" class="admin-crown-wrap" title="已解鎖最高管理者權限">
+              <span v-if="isAdmin" class="admin-crown-wrap" title="已解鎖最高管理員權限">
                 <svg class="crown-icon-svg" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M2 4l3 12h14l3-12-6 7-4-5-4 5-6-7z"/>
                   <circle cx="12" cy="3.5" r="1.5"/>
@@ -39,14 +39,14 @@
         <form @submit.prevent="saveProfile" class="profile-form">
           <div class="field-group">
             <label class="field-label">ACCOUNT ID (帳號 ID)</label>
-            <p class="field-hint">由管理者於 Google Sheets 建立。點擊右側鎖頭解鎖管理者權限。</p>
+            <p class="field-hint">由管理員於 Google Sheets 建立。點擊右側鎖頭解鎖管理員權限。</p>
             <div class="field-input-wrap locked-wrap">
               <input :value="username" type="text" class="field-input" readonly />
               <button 
                 type="button" 
                 class="lock-toggle-btn" 
                 @click="handleLockClick" 
-                :title="isAdmin ? '已解鎖管理者權限 (點擊登出)' : '點擊輸入密碼解鎖管理者身分 (@quni_jhuang)'"
+                :title="isAdmin ? '已解鎖管理員權限 (點擊登出)' : '點擊輸入密碼解鎖管理員身分 (@quni_jhuang)'"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
               </button>
@@ -79,6 +79,49 @@
           </button>
         </div>
 
+        <!-- Quni 帳號專屬：開發者模擬模式控制區 -->
+        <div v-if="isDeveloperAccount" class="dev-mode-block">
+          <div class="profile-separator"></div>
+          <div class="dev-mode-box">
+            <div class="dev-mode-header">
+              <span class="dev-badge">開發者模擬模式</span>
+            </div>
+            <p class="field-hint">僅限 @quni_jhuang 開發測試使用。可即時模擬切換為任意成員帳號視角：</p>
+            
+            <div v-if="isImpersonating" class="impersonating-active-banner">
+              <div class="banner-text">
+                <span class="pulse-dot"></span>
+                <span>正在模擬切換為：<strong>{{ nickname }} ({{ username }})</strong></span>
+              </div>
+              <button type="button" class="stop-impersonate-btn" @click="handleStopImpersonate">
+                退出模擬 (返回 Quni)
+              </button>
+            </div>
+
+            <div v-else class="dev-select-row">
+              <select v-model="targetImpersonateUser" class="field-input dev-select">
+                <option value="" disabled>-- 請選擇要模擬切換的帳號 --</option>
+                <option 
+                  v-for="p in userProfiles" 
+                  :key="p.username" 
+                  :value="p.username"
+                  :disabled="p.username === '@quni_jhuang'"
+                >
+                  {{ p.nickname }} ({{ p.username }}) {{ p.role === 'ADMIN' ? '(管理員)' : '' }}
+                </option>
+              </select>
+              <button 
+                type="button" 
+                class="impersonate-trigger-btn" 
+                :disabled="!targetImpersonateUser"
+                @click="handleStartImpersonate"
+              >
+                模擬切換
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- 獨立彈窗 1：團隊成員管理 Modal 視窗 (帶 :class="currentTheme") -->
         <Teleport to="body">
           <div v-if="showUserMgmtModal" class="modal-backdrop" :class="currentTheme" @click.self="showUserMgmtModal = false">
@@ -103,7 +146,7 @@
                     <input v-model="newUsername" type="text" placeholder="帳號 ID (如: @alex)" class="field-input" required />
                     <select v-model="newUserRole" class="field-input role-select">
                       <option value="USER">一般使用者</option>
-                      <option value="ADMIN">管理者</option>
+                      <option value="ADMIN">管理員</option>
                     </select>
                     <button type="submit" class="add-member-btn">
                       <span>+ 新增成員</span>
@@ -147,7 +190,7 @@
                         </div>
 
                         <span class="user-role-tag" :class="p.role === 'ADMIN' ? 'admin' : 'user'">
-                          <span>{{ p.role === 'ADMIN' ? '管理者' : '一般使用者' }}</span>
+                          <span>{{ p.role === 'ADMIN' ? '管理員' : '一般使用者' }}</span>
                         </span>
                         <button 
                           v-if="p.username !== '@quni_jhuang'" 
@@ -171,16 +214,16 @@
           </div>
         </Teleport>
 
-        <!-- 管理者密碼驗證 Modal 視窗 (帶 :class="currentTheme") -->
+        <!-- 管理員密碼驗證 Modal 視窗 (帶 :class="currentTheme") -->
         <Teleport to="body">
           <div v-if="showAuthModal" class="modal-backdrop" :class="currentTheme" @click.self="showAuthModal = false">
             <div class="modal-card auth-modal glass-panel">
               <div class="modal-header">
-                <h3>👑 管理者身份解鎖驗證</h3>
+                <h3>管理員身份解鎖驗證</h3>
                 <button class="close-btn" @click="showAuthModal = false">✕</button>
               </div>
               <div class="modal-body">
-                <p class="auth-desc">請輸入管理者 <code>@quni_jhuang</code> 專屬驗證密碼（設定於 USERS 表單）：</p>
+                <p class="auth-desc">請輸入管理員 <code>@quni_jhuang</code> 專屬驗證密碼（設定於 USERS 表單）：</p>
                 <div class="field-group">
                   <input 
                     v-model="inputPasscode" 
@@ -296,11 +339,11 @@
       </div>
 
       <div class="sheets-body">
-        <!-- URL 輸入 (僅管理者可修改，一般使用者唯讀) -->
+        <!-- URL 輸入 (僅管理員可修改，一般使用者唯讀) -->
         <div class="field-group">
           <label class="field-label">Apps Script 網址</label>
           <p class="field-hint" v-if="isAdmin">Apps Script 部署為 Web App 後產生的網址。</p>
-          <p class="field-hint" v-else>由管理者設定之 Web App 網址（唯讀狀態，一般使用者不可修改）。</p>
+          <p class="field-hint" v-else>由管理員設定之 Web App 網址（唯讀狀態，一般使用者不可修改）。</p>
           <div class="sheets-url-row">
             <div class="field-input-wrap sheets-url-wrap" :class="{ locked: !isAdmin }">
               <input
@@ -314,7 +357,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
               </span>
             </div>
-            <button class="test-btn" @click="testConnection" :disabled="!isAdmin || isTesting" :title="isAdmin ? '測試連線' : '僅管理者可進行測試連線'">
+            <button class="test-btn" @click="testConnection" :disabled="!isAdmin || isTesting" :title="isAdmin ? '測試連線' : '僅管理員可進行測試連線'">
               {{ isTesting ? '連線中...' : '測試連線' }}
             </button>
           </div>
@@ -377,8 +420,38 @@ import {
   lockAdmin,
   addUserProfile,
   removeUserProfile,
-  reorderUserProfiles
+  reorderUserProfiles,
+  getImpersonatorStatus,
+  impersonateUser,
+  stopImpersonating
 } from '../utils/userStore';
+
+const targetImpersonateUser = ref('');
+const impersonatorInfo = ref(getImpersonatorStatus());
+const isImpersonating = computed(() => impersonatorInfo.value.isImpersonating);
+
+// 是否為開發者帳號 Quni (或是正處於模擬狀態中的開發者)
+const isDeveloperAccount = computed(() => {
+  return isImpersonating.value || props.username.toLowerCase() === '@quni_jhuang' || props.username.toLowerCase() === 'quni_jhuang';
+});
+
+const handleStartImpersonate = () => {
+  if (!targetImpersonateUser.value) return;
+  try {
+    const targetUserObj = impersonateUser(targetImpersonateUser.value);
+    impersonatorInfo.value = getImpersonatorStatus();
+    emit('update-user', { nickname: targetUserObj.nickname, username: targetUserObj.username });
+  } catch (e) {
+    alert(e.message);
+  }
+};
+
+const handleStopImpersonate = () => {
+  const result = stopImpersonating();
+  impersonatorInfo.value = getImpersonatorStatus();
+  targetImpersonateUser.value = '';
+  emit('update-user', { nickname: result.nickname, username: result.username });
+};
 
 const handleMoveUser = (index, delta) => {
   const targetIndex = index + delta;
@@ -769,6 +842,134 @@ const lightThemes = [
 
 .panel-label svg {
   opacity: 0.6;
+}
+
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+/* ── Quni 專屬開發者模擬模式區塊 ────────────── */
+.dev-mode-block {
+  margin-top: 1rem;
+}
+
+.dev-mode-box {
+  background: var(--glow-primary);
+  border: 1px dashed var(--color-primary);
+  border-radius: 12px;
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.dev-mode-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dev-badge {
+  background: var(--color-primary);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 99px;
+  box-shadow: 0 2px 8px var(--glow-primary);
+}
+
+.dev-select-row {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.dev-select {
+  flex: 1;
+  font-size: 0.85rem;
+  padding: 0.55rem 0.85rem;
+}
+
+.impersonate-trigger-btn {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: #ffffff !important;
+  border: none;
+  padding: 0.55rem 1.1rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 3px 12px var(--glow-primary);
+  transition: all 0.2s ease;
+}
+
+.impersonate-trigger-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 16px var(--glow-primary);
+}
+
+.impersonate-trigger-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.impersonating-active-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid var(--color-danger);
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+}
+
+.banner-text {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-danger);
+  box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+  animation: pulse-red 1.6s infinite;
+}
+
+@keyframes pulse-red {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+  }
+}
+
+.stop-impersonate-btn {
+  background: var(--color-danger);
+  color: #ffffff !important;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.825rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stop-impersonate-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 /* ========= PROFILE PANEL ========= */

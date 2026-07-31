@@ -12,7 +12,7 @@
     <Transition name="fade">
       <div class="notif-panel solid-panel" v-if="showNotifPanel" @click.stop>
         <div class="notif-header">
-          <span class="notif-header-title">團隊異動通知</span>
+          <span class="notif-header-title">通知</span>
           <button class="mark-read-btn" @click="handleMarkAllRead">全標為已讀</button>
         </div>
         <div class="notif-list" v-if="notifications.length">
@@ -26,8 +26,8 @@
               <span class="notif-title">{{ n.title }}</span>
               <span class="notif-time">{{ n.time }}</span>
             </div>
-            <!-- 高清晰高對比描述文字 -->
-            <p class="notif-msg">{{ n.message }}</p>
+            <!-- 高清晰高對比描述文字 (支援管理員 ID 小型化 span) -->
+            <p class="notif-msg" v-html="getMsgContent(n)"></p>
           </div>
         </div>
         <div class="notif-empty" v-else>
@@ -40,13 +40,18 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { getNotifications, getUnreadNotificationCount, markAllNotificationsAsRead } from '../utils/notifications';
+import { getNotifications, getUnreadNotificationCount, markAllNotificationsAsRead, formatNotificationMessage, getCurrentUser } from '../utils/notifications';
 
 const bellRef = ref(null);
 const showNotifPanel = ref(false);
 const notifications = ref([]);
 const unreadCount = ref(0);
 let timer = null;
+
+const getMsgContent = (n) => {
+  const user = getCurrentUser();
+  return formatNotificationMessage(n, user);
+};
 
 const refreshNotifications = () => {
   notifications.value = getNotifications();
@@ -181,7 +186,7 @@ const handleMarkAllRead = () => {
 }
 
 .notif-item {
-  padding: 1rem 1.2rem;
+  padding: 0.5rem 1.2rem 1.2rem;
   border-bottom: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
@@ -224,6 +229,13 @@ const handleMarkAllRead = () => {
   color: var(--text-primary); /* 在深色主題自動為白色，淺色主題自動為黑色 */
   line-height: 1.5;
   word-break: break-word;
+}
+
+:deep(.notif-handle) {
+  font-size: 0.78em;
+  opacity: 0.65;
+  font-weight: normal;
+  margin: 0 1px;
 }
 
 .notif-empty {

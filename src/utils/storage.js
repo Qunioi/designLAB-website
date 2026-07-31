@@ -8,7 +8,7 @@ import {
 } from '../data/mockData';
 
 import { hasSheetsIntegration, pushToSheet, deleteFromSheet } from './sheetsAPI';
-import { notifyItemEdit } from './notifications';
+import { notifyItemEdit, notifyItemAdd } from './notifications';
 
 const KEYS = {
   UI_RESEARCH:     'design_lab_ui_research',
@@ -79,9 +79,9 @@ import { getCurrentUserString, getCurrentUser, isAdminUser } from './userStore';
 export function checkDeletePermission(item) {
   const currentUser = getCurrentUser();
   
-  // 管理者 (@quni_jhuang) 擁有全站最高刪除權限
+  // 管理員 (@quni_jhuang) 擁有全站最高刪除權限
   if (isAdminUser() || currentUser.role === 'ADMIN') {
-    return { allowed: true, creatorName: '管理者 (@quni_jhuang)' };
+    return { allowed: true, creatorName: '管理員 (@quni_jhuang)' };
   }
 
   const creator = item.createdBy || item.updatedBy || '';
@@ -112,6 +112,7 @@ function getFormattedNow() {
 export function addOrUpdateItem(key, item) {
   const list = getStorageData(key);
   let savedItem;
+  let isNewItem = false;
   const currentUserObj = getCurrentUser();
   const currentUserStr = getCurrentUserString();
   const nowStr = getFormattedNow();
@@ -138,6 +139,7 @@ export function addOrUpdateItem(key, item) {
       });
     } else {
       // ID 存在但找不到，視為新增
+      isNewItem = true;
       savedItem = { 
         ...item,
         createdAt: item.createdAt || nowStr,
@@ -152,6 +154,7 @@ export function addOrUpdateItem(key, item) {
     }
   } else {
     // 新增項目 (完整紀錄是誰發佈的)
+    isNewItem = true;
     savedItem = {
       ...item,
       id: `${key.toLowerCase().replace(/_/g, '-')}-${Date.now()}`,
@@ -168,12 +171,21 @@ export function addOrUpdateItem(key, item) {
 
   setStorageData(key, list);
 
-  // 背景同步到 Google Sheets（非同步，包含發佈人記錄備查）
-  if (hasSheetsIntegration() && savedItem) {
+  // 觸發新增通知提醒
+  if (isNewItem) {
+    notifyItemAdd({
+      itemTitle: savedItem.title || savedItem.name || '案例',
+      creatorName: currentUserStr,
+      creatorUsername: currentUserObj.username
+    });
+  }
+
+  // 背景非同步推送至 Google Sheets 資料庫
+  if (hasSheetsIntegration()) {
     pushToSheet(key, savedItem);
   }
 
-  return list;
+  return savedItem;
 }
 
 export function deleteItem(key, id) {

@@ -7,73 +7,26 @@
       @add-click="$emit('trigger-crud', { type: crudType })"
     />
 
-    <!-- 篩選列 -->
-    <div class="filter-toolbar glass-panel">
-      <div class="search-box">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        <input v-model="searchQuery" type="text" :placeholder="searchPlaceholder" />
-      </div>
-
-      <div class="filter-options" v-if="filters && filters.length">
-        <!-- 多選下拉選單 (支援動畫類型、製作工具、分類與標籤) -->
-        <div
-          v-for="f in filters"
-          :key="f.field"
-          class="custom-tag-dropdown"
-          @click.stop
-        >
-          <button
-            class="tag-dropdown-btn"
-            :class="{ active: getSelectedCount(f.field) > 0 }"
-            @click="toggleDropdown(f.field)"
-          >
-            <svg v-if="f.field === 'tags'" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
-            <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-            <span>{{ getFilterButtonLabel(f) }}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="arrow"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </button>
-
-          <Transition name="fade">
-            <div class="tag-dropdown-menu glass-panel" v-if="activeDropdown === f.field">
-              <div class="tag-dropdown-header">
-                <span>選擇 {{ f.zhLabel || getFilterZhTitle(f) }} (可多選)</span>
-                <button class="clear-btn" v-if="getSelectedCount(f.field) > 0" @click="clearFilterField(f.field)">清除全部</button>
-              </div>
-              <div class="tag-options-list">
-                <label
-                  v-for="opt in dynamicOptions[f.field]"
-                  :key="opt"
-                  class="tag-option-item"
-                  :class="{ selected: isOptionSelected(f.field, opt) }"
-                >
-                  <input
-                    type="checkbox"
-                    :checked="isOptionSelected(f.field, opt)"
-                    @change="toggleFilterOption(f.field, opt)"
-                  />
-                  <span>{{ f.field === 'tags' ? '# ' + opt : opt }}</span>
-                </label>
-              </div>
-            </div>
-          </Transition>
-        </div>
-      </div>
-
-      <!-- 已選條件 Chip 膠囊條 -->
-      <div class="selected-tags-chips" v-if="totalSelectedChipsCount > 0">
-        <span class="chips-label">已選條件：</span>
-        <div class="chip-list">
-          <template v-for="f in filters" :key="f.field">
-            <span v-for="opt in multiFilterValues[f.field]" :key="opt" class="tag-chip">
-              <small class="chip-category-prefix">{{ getFilterEnglishTitle(f) }}:</small>
-              {{ f.field === 'tags' ? '#' + opt : opt }}
-              <button class="chip-remove-btn" @click="removeFilterOption(f.field, opt)" title="移除條件">✕</button>
-            </span>
-          </template>
-        </div>
-        <button class="reset-all-tags-btn" @click="resetAllFilters">清除全部篩選</button>
-      </div>
-    </div>
+    <!-- 抽離之高階 FilterToolbar 子元件 -->
+    <FilterToolbar
+      v-model:searchQuery="searchQuery"
+      :searchPlaceholder="searchPlaceholder"
+      :filters="filters"
+      :activeDropdown="activeDropdown"
+      :multiFilterValues="multiFilterValues"
+      :dynamicOptions="dynamicOptions"
+      :creatorOptions="creatorOptions"
+      :selectedCreators="selectedCreators"
+      v-model:sortOption="sortOption"
+      :totalSelectedChipsCount="totalSelectedChipsCount"
+      @toggle-dropdown="toggleDropdown"
+      @clear-filter-field="clearFilterField"
+      @toggle-option="({ field, opt }) => toggleFilterOption(field, opt)"
+      @remove-option="({ field, opt }) => removeFilterOption(field, opt)"
+      @toggle-creator="toggleCreator"
+      @clear-creators="clearCreators"
+      @reset-all="resetAllFilters"
+    />
 
     <!-- 列表為空提示 -->
     <div v-if="filteredList.length === 0" class="empty-state">
@@ -187,24 +140,19 @@
       </div>
     </Transition>
 
-    <!-- 全螢幕媒體 (圖片/影片) 放大檢視 Overlay -->
-    <Transition name="fade">
-      <div v-if="fullscreenMedia.url" class="fullscreen-image-backdrop" @click="closeFullscreenMedia">
-        <button class="fullscreen-close-btn" @click="closeFullscreenMedia" title="關閉全螢幕 (ESC)">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-        <div class="fullscreen-media-content" @click.stop>
-          <video v-if="fullscreenMedia.isVideo" :src="fullscreenMedia.url" controls autoplay class="fullscreen-video-element"></video>
-          <img v-else :src="fullscreenMedia.url" class="fullscreen-img" alt="全螢幕媒體" />
-        </div>
-      </div>
-    </Transition>
+    <!-- 抽離之全螢幕媒體放大燈箱子元件 -->
+    <FullscreenMediaOverlay
+      :media="fullscreenMedia"
+      @close="closeFullscreenMedia"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, reactive, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import PageHeader from './PageHeader.vue';
+import FilterToolbar from './FilterToolbar.vue';
+import FullscreenMediaOverlay from './FullscreenMediaOverlay.vue';
 import { getStorageData, deleteItem } from '../utils/storage';
 import { checkDeletePermission } from '../utils/notifications';
 import NotificationBell from '../components/NotificationBell.vue';
@@ -226,7 +174,7 @@ const props = defineProps({
   linkField:    { type: String, default: 'link' },
   lightboxCoverField: { type: String, default: '' },
   lightboxLinkField:  { type: String, default: '' },
-  linkBtnLabel: { type: String, default: '參考網址 ↗' },
+  linkBtnLabel: { type: String, default: '參考網址' },
   emptyText:    { type: String, default: '無相符資料。點選右上角新增一筆！' },
   deleteConfirmPrefix: { type: String, default: '確定要刪除《' },
   deleteConfirmSuffix: { type: String, default: '》嗎？' },
@@ -238,8 +186,33 @@ const items            = ref([]);
 const searchQuery      = ref('');
 const activeDropdown   = ref('');
 const multiFilterValues = reactive({});
+const selectedCreators = ref([]);
+const sortOption       = ref('newest');
 const lightbox         = ref({ isOpen: false, item: null });
 const fullscreenMedia = ref({ url: '', isVideo: false });
+
+const creatorOptions = computed(() => {
+  const set = new Set();
+  items.value.forEach(item => {
+    const creator = item.createdBy || item.creatorName || item.updatedBy;
+    if (creator) set.add(String(creator).trim());
+  });
+  return [...set].sort();
+});
+
+const toggleCreator = (creator) => {
+  const clean = String(creator).trim();
+  const idx = selectedCreators.value.indexOf(clean);
+  if (idx > -1) {
+    selectedCreators.value.splice(idx, 1);
+  } else {
+    selectedCreators.value.push(clean);
+  }
+};
+
+const clearCreators = () => {
+  selectedCreators.value = [];
+};
 
 const openFullscreenMedia = (url, isVideo = false) => {
   if (url) fullscreenMedia.value = { url, isVideo };
@@ -349,6 +322,7 @@ const totalSelectedChipsCount = computed(() => {
   props.filters.forEach(f => {
     total += multiFilterValues[f.field]?.length || 0;
   });
+  total += selectedCreators.value.length;
   return total;
 });
 
@@ -357,6 +331,8 @@ const resetAllFilters = () => {
   props.filters.forEach(f => {
     multiFilterValues[f.field] = [];
   });
+  selectedCreators.value = [];
+  sortOption.value = 'newest';
 };
 
 // 為了維持對 view 的相容與點擊 quick filter
@@ -414,8 +390,8 @@ const dynamicOptions = computed(() => {
 });
 
 const filteredList = computed(() => {
-  return items.value.filter(item => {
-    // 檢查每一個 Filter 的多選陣列
+  let list = items.value.filter(item => {
+    // 1. 分類與標籤多選過濾
     for (const f of props.filters) {
       const selectedArr = multiFilterValues[f.field];
       if (selectedArr && selectedArr.length > 0) {
@@ -426,6 +402,15 @@ const filteredList = computed(() => {
         if (!hasMatch) return false;
       }
     }
+
+    // 2. 建立者過濾
+    if (selectedCreators.value.length > 0) {
+      const creator = item.createdBy || item.creatorName || item.updatedBy || '';
+      const matchedCreator = selectedCreators.value.some(sc => creator.includes(sc));
+      if (!matchedCreator) return false;
+    }
+
+    // 3. 關鍵字搜尋
     const q = searchQuery.value.trim().toLowerCase();
     if (!q) return true;
     return props.searchFields.some(fieldName => {
@@ -435,12 +420,67 @@ const filteredList = computed(() => {
       return String(val).toLowerCase().includes(q);
     });
   });
+
+  // 4. 多維度動態排序
+  return list.sort((a, b) => {
+    if (sortOption.value === 'oldest') {
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return timeA - timeB;
+    }
+    if (sortOption.value === 'updated') {
+      const timeA = a.updatedAt ? new Date(a.updatedAt).getTime() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+      const timeB = b.updatedAt ? new Date(b.updatedAt).getTime() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+      return timeB - timeA;
+    }
+    if (sortOption.value === 'title') {
+      const titleA = getTitle(a).toLowerCase();
+      const titleB = getTitle(b).toLowerCase();
+      return titleA.localeCompare(titleB, 'zh-Hant');
+    }
+    // 預設 'newest': 由新到舊
+    const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return timeB - timeA;
+  });
 });
 
-const openLightbox  = (item) => { lightbox.value = { isOpen: true, item }; };
-const closeLightbox = () => { lightbox.value.isOpen = false; lightbox.value.item = null; };
+const openLightbox = (item, emitEvent = true) => {
+  lightbox.value = { isOpen: true, item };
+  if (emitEvent && item?.id) {
+    emit('open-lightbox', item.id);
+  }
+};
 
-const loadData = () => { items.value = getStorageData(props.storageKey); };
+const closeLightbox = () => {
+  lightbox.value.isOpen = false;
+  lightbox.value.item = null;
+  emit('close-lightbox');
+};
+
+const checkAndAutoOpenModal = () => {
+  if (!props.highlightedId || !items.value.length) return;
+  const targetId = String(props.highlightedId).toLowerCase();
+  const found = items.value.find(i => {
+    if (!i.id) return false;
+    const itemStr = String(i.id).toLowerCase();
+    return itemStr === targetId || itemStr.endsWith(`-${targetId}`) || itemStr.endsWith(targetId);
+  });
+
+  if (found) {
+    // 自動開啟 Lightbox 彈窗
+    openLightbox(found, false);
+    nextTick(() => {
+      const el = document.getElementById(`item-${found.id}`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+};
+
+const loadData = () => {
+  items.value = getStorageData(props.storageKey);
+  checkAndAutoOpenModal();
+};
 defineExpose({ loadData });
 
 const handleDocumentClick = (e) => {
@@ -452,16 +492,14 @@ const handleDocumentClick = (e) => {
   }
 };
 
+watch(() => props.highlightedId, () => {
+  checkAndAutoOpenModal();
+});
+
 onMounted(() => {
   loadData();
   window.addEventListener('keydown', handleKeyDown);
   window.addEventListener('click', handleDocumentClick);
-  if (props.highlightedId) {
-    nextTick(() => {
-      const el = document.getElementById(`item-${props.highlightedId}`);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
-  }
 });
 
 onUnmounted(() => {

@@ -18,6 +18,8 @@
     :highlightedId="highlightedId"
     @trigger-crud="$emit('trigger-crud', $event)"
     @delete-done="$emit('delete-done')"
+    @open-lightbox="$emit('open-lightbox', $event)"
+    @close-lightbox="$emit('close-lightbox')"
     ref="gridRef"
   >
     <!-- Extra card content: tools + tags -->
@@ -85,26 +87,16 @@
 <script setup>
 import { ref, computed } from 'vue';
 import ResearchGrid from '../components/ResearchGrid.vue';
+import { parseList } from '../utils/formatters';
 
 const props = defineProps({
   highlightedId: { type: String, default: '' }
 });
-defineEmits(['trigger-crud', 'delete-done']);
+defineEmits(['trigger-crud', 'delete-done', 'open-lightbox', 'close-lightbox']);
 
 const gridRef = ref(null);
 const loadData = () => gridRef.value?.loadData();
 defineExpose({ loadData });
-
-/** 彈性解析字串或陣列為乾淨獨立項目 */
-const parseList = (val) => {
-  if (!val) return [];
-  if (Array.isArray(val)) return val.map(s => String(s).trim()).filter(Boolean);
-  if (typeof val === 'string') {
-    // 支援逗號, 井號 #, 井號前的空格分割
-    return val.split(/[,/，#\n\r]+/).map(s => s.trim()).filter(Boolean);
-  }
-  return [];
-};
 
 const filters = computed(() => [
   { field: 'motionType', zhLabel: '動畫類型', allOption: '所有動畫類型', optionsFrom: 'motionType' },

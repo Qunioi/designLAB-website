@@ -12,61 +12,24 @@
     <!-- Main Content Area -->
     <main class="main-content">
       <Transition name="fade" mode="out-in">
-        <div :key="currentView + refreshKey">
-          <Dashboard 
-            v-if="currentView === 'Dashboard'"
-            @change-view="handleViewChange"
-            @open-search="searchOpen = true"
-            @trigger-crud="openCrudForCreate"
-            @navigate-detail="handleNavigate"
-          />
-          <UIResearch 
-            v-else-if="currentView === 'UIResearch'"
+          <component
+            :is="currentViewComponent"
             :highlighted-id="highlightedId"
-            @trigger-crud="handleTriggerCrud"
-            @delete-done="triggerRefresh"
-          />
-          <MotionResearch 
-            v-else-if="currentView === 'MotionResearch'"
-            :highlighted-id="highlightedId"
-            @trigger-crud="handleTriggerCrud"
-            @delete-done="triggerRefresh"
-          />
-          <Competitor 
-            v-else-if="currentView === 'Competitor'"
-            :highlighted-id="highlightedId"
-            @trigger-crud="handleTriggerCrud"
-            @delete-done="triggerRefresh"
-          />
-          <AICenter 
-            v-else-if="currentView === 'AICenter'"
-            :highlighted-id="highlightedId"
-            @trigger-crud="handleTriggerCrud"
-            @delete-done="triggerRefresh"
-          />
-          <Resources 
-            v-else-if="currentView === 'Resources'"
-            :highlighted-id="highlightedId"
-            @trigger-crud="handleTriggerCrud"
-            @delete-done="triggerRefresh"
-          />
-          <Proposals 
-            v-else-if="currentView === 'Proposals'"
-            @trigger-crud="handleTriggerCrud"
-            @delete-done="triggerRefresh"
-            @navigate-to-view="handleNavigate"
-          />
-          <Settings 
-            v-else-if="currentView === 'Settings'"
             :nickname="nickname"
             :username="username"
             :current-theme="currentTheme"
+            @change-view="handleViewChange"
+            @open-search="searchOpen = true"
+            @trigger-crud="handleTriggerCrud"
+            @delete-done="triggerRefresh"
+            @navigate-detail="handleNavigate"
+            @navigate-to-view="handleNavigate"
+            @open-lightbox="(id) => updateUrl(currentView, id)"
+            @close-lightbox="handleCloseModalUrl"
             @update-nickname="handleNicknameUpdate"
             @update-user="handleUserUpdate"
             @select-theme="handleThemeSelect"
           />
-
-        </div>
       </Transition>
     </main>
 
@@ -90,7 +53,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { initializeStorage, addOrUpdateItem } from './utils/storage';
 import { syncAllFromSheets, hasSheetsIntegration } from './utils/sheetsAPI';
 
@@ -113,6 +76,18 @@ const currentView = ref('Dashboard');
 const refreshKey = ref(0);
 const searchOpen = ref(false);
 
+const viewComponentMap = {
+  Dashboard,
+  UIResearch,
+  MotionResearch,
+  Competitor,
+  AICenter,
+  Resources,
+  Proposals,
+  Settings
+};
+const currentViewComponent = computed(() => viewComponentMap[currentView.value] || Dashboard);
+
 // 網址 Route 與 View 名稱雙向對照
 const VIEW_ROUTES = {
   Dashboard: 'dashboard',
@@ -129,28 +104,38 @@ const ROUTE_VIEWS = Object.fromEntries(
   Object.entries(VIEW_ROUTES).map(([view, slug]) => [slug, view])
 );
 
-/** 更新網址 Hash (例如 #/ui-research) */
-const updateUrl = (view) => {
+/** 更新網址 Hash (例如 #/ui-research 或 #/ui-research/2) */
+const updateUrl = (view, itemId = '') => {
   const slug = VIEW_ROUTES[view] || 'dashboard';
-  const newHash = `#/${slug}`;
+  let newHash = `#/${slug}`;
+  if (itemId) {
+    newHash += `/${itemId}`;
+  }
   if (window.location.hash !== newHash) {
-    window.history.pushState({ view }, '', newHash);
+    window.history.pushState({ view, itemId }, '', newHash);
   }
 };
 
-/** 從網址列同步讀取 View */
+/** 從網址列同步讀取 View 與 Item ID */
 const syncViewFromUrl = () => {
-  const rawHash = window.location.hash.replace(/^#\/?/, '').split('?')[0].toLowerCase();
-  const matchedView = ROUTE_VIEWS[rawHash];
+  const hashStr = window.location.hash.replace(/^#\/?/, '').split('?')[0];
+  const parts = hashStr.split('/');
+  const rawSlug = (parts[0] || '').toLowerCase();
+  const rawId = parts[1] || '';
+
+  const matchedView = ROUTE_VIEWS[rawSlug];
   if (matchedView) {
     currentView.value = matchedView;
+    if (rawId) {
+      highlightedId.value = rawId;
+    }
   } else {
     currentView.value = 'Dashboard';
     updateUrl('Dashboard');
   }
 };
 
-import { getCurrentUser } from './utils/userStore';
+import { getCurrentUser, saveUserTheme, getUserTheme } from './utils/userStore';
 
 // 個人資訊狀態
 const nickname = ref('Quni');
@@ -177,22 +162,18 @@ onMounted(async () => {
   window.addEventListener('popstate', syncViewFromUrl);
   window.addEventListener('hashchange', syncViewFromUrl);
 
-  // 載入已儲存的主題風格
-  const savedTheme = localStorage.getItem('design_lab_theme');
-  if (savedTheme) {
-    currentTheme.value = savedTheme;
-  }
-  
-  // 載入當前使用者
+  // 載入當前使用者與其偏好設定的雲端 Theme 佈景主題
   const u = getCurrentUser();
   nickname.value = u.nickname;
   username.value = u.username;
+  currentTheme.value = getUserTheme();
 
-  // 從 Google Sheets 同步最新資料（背景執行，完成後刷新畫面）
+  // 從 Google Sheets 同步最新資料（背景執行，完成後還原該使用者選定之雲端 Theme）
   if (hasSheetsIntegration()) {
     isSyncing.value = true;
     try {
       await syncAllFromSheets();
+      currentTheme.value = getUserTheme();
       triggerRefresh();
     } catch (e) {
       console.warn('[App] Sheets sync failed:', e);
@@ -231,28 +212,35 @@ const openCrudForCreate = (viewName) => {
   handleTriggerCrud({ type: storageKey, item: null });
 };
 
-// 處理表單儲存
+// 處理表單儲存並全自動刷新頁面
 const handleSave = ({ type, item }) => {
-  addOrUpdateItem(type, item);
-  triggerRefresh();
+  const savedItem = addOrUpdateItem(type, item);
+  crudModalOpen.value = false;
+  if (savedItem && savedItem.id) {
+    updateUrl(currentView.value, savedItem.id);
+  }
+  setTimeout(() => {
+    window.location.reload();
+  }, 150);
 };
 
-// 處理跳轉高亮
+// 處理跳轉高亮與開啟彈窗
 const handleNavigate = ({ view, id }) => {
   currentView.value = view;
-  highlightedId.value = id;
-  updateUrl(view);
+  highlightedId.value = id || '';
+  updateUrl(view, id);
   triggerRefresh();
-  
-  setTimeout(() => {
-    highlightedId.value = '';
-  }, 3000);
 };
 
-// 處理主題切換選擇
+// 處理關閉 Lightbox 彈窗時還原網址
+const handleCloseModalUrl = () => {
+  updateUrl(currentView.value, '');
+};
+
+// 處理主題切換選擇與雲端備份儲存
 const handleThemeSelect = (themeClass) => {
   currentTheme.value = themeClass;
-  localStorage.setItem('design_lab_theme', themeClass);
+  saveUserTheme(themeClass);
 };
 
 // 處理個人暱稱變更

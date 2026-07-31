@@ -20,7 +20,7 @@
             </div>
             <div class="form-group">
               <label>來源網址</label>
-              <input v-model="form.source" type="url" placeholder="例如：https://linear.app" />
+              <input v-model="form.source" type="text" @blur="form.source = ensureProtocol(form.source)" placeholder="例如：https://linear.app" />
             </div>
             <div class="form-group full-width">
               <label>標籤 (按 Enter 新增標籤，可點選歷史標籤)</label>
@@ -48,7 +48,7 @@
             </div>
             <div class="form-group">
               <label>來源網址</label>
-              <input v-model="form.source" type="url" placeholder="請貼上來源網址" />
+              <input v-model="form.source" type="text" @blur="form.source = ensureProtocol(form.source)" placeholder="請貼上來源網址" />
             </div>
             <div class="form-group full-width">
               <label>影片檔案 (.mp4 / .webm) <span class="required">*</span></label>
@@ -91,7 +91,7 @@
             </div>
             <div class="form-group">
               <label>官方網址</label>
-              <input v-model="form.url" type="url" placeholder="例如：https://figma.com" />
+              <input v-model="form.url" type="text" @blur="form.url = ensureProtocol(form.url)" placeholder="例如：https://figma.com" />
             </div>
             <div class="form-group full-width">
               <label>介面截圖網址 (封面)</label>
@@ -119,7 +119,7 @@
             </div>
             <div class="form-group">
               <label>工具網站連結</label>
-              <input v-model="form.link" type="url" placeholder="例如：https://midjourney.com" />
+              <input v-model="form.link" type="text" @blur="form.link = ensureProtocol(form.link)" placeholder="例如：https://midjourney.com" />
             </div>
             <div class="form-group full-width">
               <label>主要使用情境</label>
@@ -147,7 +147,7 @@
             </div>
             <div class="form-group full-width">
               <label>網站 URL <span class="required">*</span></label>
-              <input v-model="form.url" type="url" placeholder="例如：https://awwwards.com" required />
+              <input v-model="form.url" type="text" @blur="form.url = ensureProtocol(form.url)" placeholder="例如：https://awwwards.com" required />
             </div>
             <div class="form-group full-width">
               <label>網站簡短說明</label>
@@ -176,7 +176,7 @@
             </div>
             <div class="form-group">
               <label>Figma Prototype 連結</label>
-              <input v-model="form.figmaLink" type="url" placeholder="請輸入 Figma 連結" />
+              <input v-model="form.figmaLink" type="text" @blur="form.figmaLink = ensureProtocol(form.figmaLink)" placeholder="請輸入 Figma 連結" />
             </div>
             <div class="form-group full-width">
               <label>預期效益與評估說明</label>
@@ -200,6 +200,7 @@ import TagInput from './TagInput.vue';
 import CategoryInput from './CategoryInput.vue';
 import FileUploader from './FileUploader.vue';
 import { getStorageData } from '../utils/storage';
+import { ensureProtocol } from '../utils/formatters';
 
 const props = defineProps({
   isOpen: {
@@ -353,6 +354,15 @@ const close = () => {
 const handleSubmit = () => {
   const formattedItem = { ...form.value };
   
+  // 自動補齊所有網址欄位的 https:// 協定
+  if (formattedItem.source) formattedItem.source = ensureProtocol(formattedItem.source);
+  if (formattedItem.url) formattedItem.url = ensureProtocol(formattedItem.url);
+  if (formattedItem.link) formattedItem.link = ensureProtocol(formattedItem.link);
+  if (formattedItem.website) formattedItem.website = ensureProtocol(formattedItem.website);
+  if (formattedItem.figmaLink) formattedItem.figmaLink = ensureProtocol(formattedItem.figmaLink);
+  if (formattedItem.videoUrl) formattedItem.videoUrl = ensureProtocol(formattedItem.videoUrl);
+  if (formattedItem.cover) formattedItem.cover = ensureProtocol(formattedItem.cover);
+
   // 確保 tags 為陣列格式
   if (formattedItem.tags && typeof formattedItem.tags === 'string') {
     formattedItem.tags = formattedItem.tags.split(/[,/，#\n\r]+/).map(s => s.trim()).filter(Boolean);

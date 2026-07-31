@@ -21,6 +21,8 @@
     :highlightedId="highlightedId"
     @trigger-crud="$emit('trigger-crud', $event)"
     @delete-done="$emit('delete-done')"
+    @open-lightbox="$emit('open-lightbox', $event)"
+    @close-lightbox="$emit('close-lightbox')"
     ref="gridRef"
   >
     <!-- Extra card content: tags -->
@@ -78,25 +80,19 @@
 <script setup>
 import { ref, computed } from 'vue';
 import ResearchGrid from '../components/ResearchGrid.vue';
+import { parseList } from '../utils/formatters';
 
 const props = defineProps({
   highlightedId: { type: String, default: '' }
 });
-defineEmits(['trigger-crud', 'delete-done']);
+defineEmits(['trigger-crud', 'delete-done', 'open-lightbox', 'close-lightbox']);
 
 const gridRef = ref(null);
 const loadData = () => gridRef.value?.loadData();
 defineExpose({ loadData });
 
 /** 彈性解析字串或陣列為乾淨獨立標籤項目 */
-const parseList = (val) => {
-  if (!val) return [];
-  if (Array.isArray(val)) return val.map(s => String(s).trim()).filter(Boolean);
-  if (typeof val === 'string') {
-    return val.split(/[,/，#\n\r]+/).map(s => s.trim()).filter(Boolean);
-  }
-  return [];
-};
+// parseList imported from formatters.js
 
 const filters = computed(() => [
   { field: 'category', zhLabel: '競品類別', allOption: '所有競品類別', optionsFrom: 'category' },

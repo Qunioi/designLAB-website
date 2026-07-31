@@ -12,6 +12,7 @@ const NICKNAME_KEY = 'design_lab_nickname';
 const USERNAME_KEY = 'design_lab_username';
 const ADMIN_PASSCODE_KEY = 'design_lab_admin_passcode';
 const ADMIN_UNLOCKED_KEY = 'design_lab_admin_unlocked';
+const IMPERSONATOR_KEY = 'design_lab_impersonator_original';
 
 /** 預設管理者密碼 */
 const DEFAULT_ADMIN_PASSCODE = 'admin123';
@@ -56,7 +57,21 @@ export function lockAdmin() {
   localStorage.setItem(ADMIN_UNLOCKED_KEY, 'false');
 }
 
-/** 取得所有團隊成員 Profile 清單 */
+/** 強效消除重複帳號 (以 username 忽略大小寫為唯一的 Unique ID) */
+export function deduplicateProfiles(list) {
+  if (!Array.isArray(list)) return [];
+  const map = new Map();
+  list.forEach(item => {
+    if (!item || !item.username) return;
+    const key = String(item.username).trim().toLowerCase();
+    if (key && !map.has(key)) {
+      map.set(key, item);
+    }
+  });
+  return Array.from(map.values());
+}
+
+/** 取得所有團隊成員 Profile 清單 (自動進行 Unique ID 唯一性去重) */
 export function getUserProfiles() {
   const raw = localStorage.getItem(PROFILES_KEY);
   if (!raw) {
@@ -69,7 +84,11 @@ export function getUserProfiles() {
       localStorage.setItem(PROFILES_KEY, JSON.stringify(DEFAULT_PROFILES));
       return DEFAULT_PROFILES;
     }
-    return list;
+    const cleanList = deduplicateProfiles(list);
+    if (cleanList.length !== list.length) {
+      localStorage.setItem(PROFILES_KEY, JSON.stringify(cleanList));
+    }
+    return cleanList;
   } catch (e) {
     return DEFAULT_PROFILES;
   }
@@ -103,10 +122,13 @@ export function addUserProfile({ nickname, username, role = 'USER' }) {
 
   // 發送系統 Notification 通知並自動寫入 Google Sheets 的 NOTIFICATIONS 分頁
   try {
+    const adminUser = getCurrentUser();
+    const adminStr = `${adminUser.nickname} (${adminUser.username})`;
     addNotification({
       title: '新增成員帳號',
-      message: `管理者已成功建立新成員帳號 ${cleanNick} (${cleanUser})，身分權限：${role === 'ADMIN' ? '👑 管理者' : '👤 一般使用者'}。`,
-      triggeredBy: 'Quni (@quni_jhuang)',
+      message: `管理員 ${adminStr} 已成功建立新成員帳號 ${cleanNick} (${cleanUser})，身分權限：${role === 'ADMIN' ? '管理員' : '一般使用者'}。`,
+      triggeredBy: adminStr,
+      originalAuthor: adminUser.username,
       type: 'system'
     });
   } catch (e) {
@@ -124,7 +146,7 @@ export function addUserProfile({ nickname, username, role = 'USER' }) {
 /** 管理者刪除成員 */
 export function removeUserProfile(targetUsername) {
   if (targetUsername.toLowerCase() === '@quni_jhuang' || targetUsername.toLowerCase() === 'quni_jhuang') {
-    throw new Error('無法刪除管理者帳號 quni_jhuang！');
+    throw new Error('無法刪除管理員帳號 quni_jhuang！');
   }
 
   let profiles = getUserProfiles();
@@ -138,7 +160,7 @@ export function removeUserProfile(targetUsername) {
   try {
     addNotification({
       title: '刪除團隊成員',
-      message: `管理者 @quni_jhuang 已成功刪除團隊成員：${displayName}。`,
+      message: `管理員 @quni_jhuang 已成功刪除團隊成員：${displayName}。`,
       triggeredBy: 'Quni (@quni_jhuang)',
       type: 'system'
     });
@@ -182,11 +204,16 @@ export function getCurrentUser() {
   
   const isQuni = (username.toLowerCase() === '@quni_jhuang' || username.toLowerCase() === 'quni_jhuang');
   
+  let role = matched ? (matched.role || 'USER') : 'USER';
+  if (isQuni) {
+    role = isAdminUnlocked() ? 'ADMIN' : 'USER';
+  }
+
   if (matched) {
     return { 
       nickname: localStorage.getItem(NICKNAME_KEY) || matched.nickname, 
       username: matched.username,
-      role: (isQuni && isAdminUnlocked()) ? 'ADMIN' : 'USER'
+      role: role
     };
   }
 
@@ -194,7 +221,7 @@ export function getCurrentUser() {
   return { 
     nickname, 
     username, 
-    role: (isQuni && isAdminUnlocked()) ? 'ADMIN' : 'USER'
+    role: role
   };
 }
 
@@ -232,10 +259,9 @@ export function loginByAccountID(inputID) {
   const matched = profiles.find(p => p.username.toLowerCase() === cleanUser.toLowerCase());
 
   let nickname = '';
-  let role = 'USER';
+  let role = matched ? (matched.role || 'USER') : 'USER';
   if (matched) {
     nickname = matched.nickname;
-    role = (cleanUser.toLowerCase() === '@quni_jhuang' && isAdminUnlocked()) ? 'ADMIN' : 'USER';
   } else {
     const rawName = cleanUser.replace('@', '');
     nickname = rawName.charAt(0).toUpperCase() + rawName.slice(1);
@@ -254,12 +280,17 @@ export function setCurrentUser(nickname, username, role = 'USER') {
   }
 
   const isQuni = (cleanUser.toLowerCase() === '@quni_jhuang');
-  const finalRole = (isQuni && isAdminUnlocked()) ? 'ADMIN' : 'USER';
+  const profiles = getUserProfiles();
+  const matched = profiles.find(p => p.username.toLowerCase() === cleanUser.toLowerCase());
+
+  let finalRole = matched ? (matched.role || role) : role;
+  if (isQuni) {
+    finalRole = isAdminUnlocked() ? 'ADMIN' : 'USER';
+  }
 
   localStorage.setItem(NICKNAME_KEY, cleanNick);
   localStorage.setItem(USERNAME_KEY, cleanUser);
 
-  const profiles = getUserProfiles();
   const existsIndex = profiles.findIndex(p => p.username.toLowerCase() === cleanUser.toLowerCase());
   
   let targetProfile;
@@ -285,4 +316,68 @@ export function setCurrentUser(nickname, username, role = 'USER') {
   }
 
   return { nickname: cleanNick, username: cleanUser, role: finalRole };
+}
+
+/** 儲存使用者的佈景主題偏好 (同時備份至 LocalStorage 與 Google Sheets 資料庫) */
+export function saveUserTheme(themeClass) {
+  if (!themeClass) return;
+  localStorage.setItem('design_lab_theme', themeClass);
+
+  const currentUser = getCurrentUser();
+  const profiles = getUserProfiles();
+  const matchedIndex = profiles.findIndex(p => p.username.toLowerCase() === currentUser.username.toLowerCase());
+
+  if (matchedIndex !== -1) {
+    profiles[matchedIndex].themeClass = themeClass;
+    profiles[matchedIndex].updatedAt = new Date().toISOString();
+    localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
+
+    if (hasSheetsIntegration()) {
+      pushToSheet('USERS', profiles[matchedIndex]);
+    }
+  }
+}
+
+/** 取得當前使用者的主題設定 */
+export function getUserTheme() {
+  const savedTheme = localStorage.getItem('design_lab_theme');
+  if (savedTheme) return savedTheme;
+
+  const currentUser = getCurrentUser();
+  const profiles = getUserProfiles();
+  const matched = profiles.find(p => p.username.toLowerCase() === currentUser.username.toLowerCase());
+  return matched?.themeClass || 'theme-midnight-slate';
+}
+
+/** 檢查當前是否處於開發者模擬帳號狀態 */
+export function getImpersonatorStatus() {
+  const original = localStorage.getItem(IMPERSONATOR_KEY);
+  if (!original) return { isImpersonating: false, originalUsername: '' };
+  return { isImpersonating: true, originalUsername: original };
+}
+
+/** 開發者 Quni 模擬切換為其他帳號 */
+export function impersonateUser(targetUsername) {
+  let cleanUser = targetUsername.trim();
+  if (!cleanUser.startsWith('@')) cleanUser = '@' + cleanUser;
+
+  const profiles = getUserProfiles();
+  const matched = profiles.find(p => p.username.toLowerCase() === cleanUser.toLowerCase());
+  if (!matched) {
+    throw new Error(`找不到帳號 ${cleanUser}`);
+  }
+
+  // 紀錄原始開發者帳號為 Quni (@quni_jhuang)
+  localStorage.setItem(IMPERSONATOR_KEY, '@quni_jhuang');
+  localStorage.setItem(NICKNAME_KEY, matched.nickname);
+  localStorage.setItem(USERNAME_KEY, matched.username);
+
+  return matched;
+}
+
+/** 一鍵停止模擬，恢復為原始 Quni 開發者身分 */
+export function stopImpersonating() {
+  localStorage.removeItem(IMPERSONATOR_KEY);
+  localStorage.setItem(ADMIN_UNLOCKED_KEY, 'true');
+  return setCurrentUser('Quni', '@quni_jhuang', 'ADMIN');
 }
