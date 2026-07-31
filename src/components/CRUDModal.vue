@@ -4,7 +4,7 @@
       <div class="modal-container glass-panel" @click.stop>
         <div class="modal-header">
           <h2>{{ isEdit ? '編輯' : '新增' }} - {{ typeLabel }}</h2>
-          <!-- <button class="close-btn" @click="close"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button> -->
+          <button type="button" class="close-btn" aria-label="關閉表單" @click="close"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
         </div>
 
         <form @submit.prevent="handleSubmit" class="modal-body">
@@ -437,13 +437,23 @@ const handleSubmit = () => {
 }
 
 .close-btn {
-  font-size: 1.25rem;
-  color: var(--text-muted);
-  transition: color 0.2s ease;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .close-btn:hover {
+  background: var(--bg-subtle);
   color: var(--text-primary);
+  border-color: var(--border-color-hover);
 }
 
 .modal-body {

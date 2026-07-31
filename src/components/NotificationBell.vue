@@ -1,11 +1,18 @@
 <template>
   <div class="bell-wrapper" ref="bellRef">
-    <button class="bell-btn" @click="toggleNotifPanel" title="通知中心">
+    <button
+      class="bell-btn"
+      :aria-label="bellAriaLabel"
+      :aria-expanded="showNotifPanel ? 'true' : 'false'"
+      aria-haspopup="dialog"
+      @click="toggleNotifPanel"
+      title="通知中心"
+    >
       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
         <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
       </svg>
-      <span class="unread-badge" v-if="unreadCount > 0">{{ unreadCount }}</span>
+      <span class="unread-badge" v-if="unreadCount > 0" aria-hidden="true">{{ unreadCount }}</span>
     </button>
 
     <!-- 小鈴鐺通知下拉彈窗（不透明實色背景，高對比大字） -->
@@ -39,7 +46,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { getNotifications, getUnreadNotificationCount, markAllNotificationsAsRead, formatNotificationMessage, getCurrentUser } from '../utils/notifications';
 
 const bellRef = ref(null);
@@ -47,6 +54,14 @@ const showNotifPanel = ref(false);
 const notifications = ref([]);
 const unreadCount = ref(0);
 let timer = null;
+
+const bellAriaLabel = computed(() => {
+  if (unreadCount.value > 0) {
+    return `通知中心，目前有 ${unreadCount.value} 則未讀通知`;
+  }
+
+  return '通知中心，目前沒有未讀通知';
+});
 
 const getMsgContent = (n) => {
   const user = getCurrentUser();

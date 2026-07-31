@@ -14,42 +14,53 @@ const ADMIN_PASSCODE_KEY = 'design_lab_admin_passcode';
 const ADMIN_UNLOCKED_KEY = 'design_lab_admin_unlocked';
 const IMPERSONATOR_KEY = 'design_lab_impersonator_original';
 
-/** 預設管理者密碼 */
-const DEFAULT_ADMIN_PASSCODE = 'admin123';
-
-/** 系統預設成員名單（僅留管理者基礎 fallback，其餘全由 Excel / Google Sheets 同步載入） */
-export const DEFAULT_PROFILES = [
-  { id: 'u-1', username: '@quni_jhuang', nickname: 'Quni', role: 'ADMIN' }
+const DEFAULT_PROFILES = [
+  { id: 'u-1', username: '@quni_jhuang', nickname: 'Quni', role: 'Super Admin', password: '123456' },
+  { id: 'u-2', username: '@ray_zhao', nickname: 'Ray', role: 'Admin', password: '123456' },
+  { id: 'u-3', username: '@rita_chen', nickname: 'Rita', role: 'User', password: '123456' },
+  { id: 'u-4', username: '@adosa_chang', nickname: 'Adosa', role: 'User', password: '123456' },
+  { id: 'u-5', username: '@clare_chen', nickname: 'Clare', role: 'User', password: '123456' },
+  { id: 'u-6', username: '@yu-na', nickname: 'Yu-na', role: 'User', password: '123456' },
+  { id: 'u-7', username: '@jason_hong', nickname: 'Jason', role: 'User', password: '123456' }
 ];
 
-/** 取得目前設定的管理者密碼 */
-export function getAdminPasscode() {
-  return localStorage.getItem(ADMIN_PASSCODE_KEY) || DEFAULT_ADMIN_PASSCODE;
-}
-
-/** 修改管理者密碼 */
-export function setAdminPasscode(newCode) {
-  if (newCode && newCode.trim()) {
-    localStorage.setItem(ADMIN_PASSCODE_KEY, newCode.trim());
-    return true;
+/** 修改指定使用者的密碼 */
+export function updateUserPassword(targetUsername, oldPassword, newPassword) {
+  const cleanNew = (newPassword || '').trim();
+  if (!cleanNew) {
+    return { success: false, error: '新密碼不能為空！' };
   }
-  return false;
-}
 
-/** 檢查是否已成功解鎖管理者身份 */
-export function isAdminUnlocked() {
-  return localStorage.getItem(ADMIN_UNLOCKED_KEY) === 'true';
-}
-
-/** 驗證管理者密碼 */
-export function verifyAdminPasscode(inputCode) {
-  const correct = getAdminPasscode();
-  if (inputCode && inputCode.trim() === correct) {
-    localStorage.setItem(ADMIN_UNLOCKED_KEY, 'true');
-    setCurrentUser('Quni', '@quni_jhuang', 'ADMIN');
-    return true;
+  if (cleanNew.length < 4) {
+    return { success: false, error: '新密碼長度不得低於 4 個字元！' };
   }
-  return false;
+
+  const profiles = getUserProfiles();
+  const matchedIndex = profiles.findIndex(p => p.username.toLowerCase() === targetUsername.toLowerCase());
+
+  if (matchedIndex === -1) {
+    return { success: false, error: '找不到該使用者！' };
+  }
+
+  const currentPass = profiles[matchedIndex].password || '123456';
+  if (oldPassword !== currentPass) {
+    return { success: false, error: '舊密碼不正確！請重新輸入。' };
+  }
+
+  if (cleanNew === currentPass) {
+    return { success: false, error: '新密碼不可與舊密碼相同！' };
+  }
+
+  profiles[matchedIndex].password = cleanNew;
+  profiles[matchedIndex].updatedAt = new Date().toISOString();
+  localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
+
+  if (hasSheetsIntegration()) {
+    const cleanProfiles = deduplicateProfiles(profiles);
+    pushToSheet('USERS', cleanProfiles[matchedIndex] || profiles[matchedIndex]);
+  }
+
+  return { success: true, message: '密碼修改成功！' };
 }
 
 /** 退出管理者解鎖狀態 */
@@ -71,7 +82,7 @@ export function deduplicateProfiles(list) {
   return Array.from(map.values());
 }
 
-/** 取得所有團隊成員 Profile 清單 (自動進行 Unique ID 唯一性去重) */
+/** 取得所有團隊成員 Profile 清單 (自動進行 Unique ID 唯一性去重與密碼補齊) */
 export function getUserProfiles() {
   const raw = localStorage.getItem(PROFILES_KEY);
   if (!raw) {
@@ -84,10 +95,11 @@ export function getUserProfiles() {
       localStorage.setItem(PROFILES_KEY, JSON.stringify(DEFAULT_PROFILES));
       return DEFAULT_PROFILES;
     }
-    const cleanList = deduplicateProfiles(list);
-    if (cleanList.length !== list.length) {
-      localStorage.setItem(PROFILES_KEY, JSON.stringify(cleanList));
-    }
+    const cleanList = deduplicateProfiles(list).map(p => ({
+      ...p,
+      password: p.password || '123456'
+    }));
+    localStorage.setItem(PROFILES_KEY, JSON.stringify(cleanList));
     return cleanList;
   } catch (e) {
     return DEFAULT_PROFILES;
@@ -114,7 +126,9 @@ export function addUserProfile({ nickname, username, role = 'USER' }) {
     username: cleanUser,
     nickname: cleanNick,
     role: role,
-    createdAt: new Date().toISOString()
+    password: '123456',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   };
 
   profiles.push(newMember);
@@ -137,20 +151,26 @@ export function addUserProfile({ nickname, username, role = 'USER' }) {
 
   if (hasSheetsIntegration()) {
     pushToSheet('USERS', newMember);
+    pushAllUsersToSheet(profiles);
   }
 
   return profiles;
 }
 
 
-/** 管理者刪除成員 */
+/** 管理員刪除成員 (保護所有 Super Admin & Admin 不得刪除) */
 export function removeUserProfile(targetUsername) {
-  if (targetUsername.toLowerCase() === '@quni_jhuang' || targetUsername.toLowerCase() === 'quni_jhuang') {
-    throw new Error('無法刪除管理員帳號 quni_jhuang！');
+  let profiles = getUserProfiles();
+  const cleanTarget = (targetUsername || '').trim().toLowerCase();
+  const targetUserObj = profiles.find(p => p.username.toLowerCase() === cleanTarget);
+
+  if (targetUserObj) {
+    const roleLower = (targetUserObj.role || '').toLowerCase();
+    if (roleLower.includes('admin') || cleanTarget === '@quni_jhuang' || cleanTarget === 'quni_jhuang' || cleanTarget === '@ray_zhao' || cleanTarget === 'ray_zhao') {
+      throw new Error(`無法刪除管理員帳號 ${targetUserObj.username}！`);
+    }
   }
 
-  let profiles = getUserProfiles();
-  const targetUserObj = profiles.find(p => p.username.toLowerCase() === targetUsername.toLowerCase());
   const displayName = targetUserObj ? `${targetUserObj.nickname} (${targetUserObj.username})` : targetUsername;
 
   profiles = profiles.filter(p => p.username.toLowerCase() !== targetUsername.toLowerCase());
@@ -198,38 +218,42 @@ export function reorderUserProfiles(fromIndex, toIndex) {
 
 /** 取得目前活躍的使用者 */
 export function getCurrentUser() {
-  const username = localStorage.getItem(USERNAME_KEY) || '@quni_jhuang';
+  const username = localStorage.getItem(USERNAME_KEY) || '@guest';
   const profiles = getUserProfiles();
   const matched = profiles.find(p => p.username.toLowerCase() === username.toLowerCase());
   
   const isQuni = (username.toLowerCase() === '@quni_jhuang' || username.toLowerCase() === 'quni_jhuang');
   
-  let role = matched ? (matched.role || 'USER') : 'USER';
+  let role = matched ? (matched.role || 'User') : 'User';
   if (isQuni) {
-    role = isAdminUnlocked() ? 'ADMIN' : 'USER';
+    role = matched ? (matched.role || 'Super Admin') : 'Super Admin';
   }
 
   if (matched) {
+    const savedNick = localStorage.getItem(NICKNAME_KEY);
+    const effectiveNick = (savedNick && savedNick !== '訪客') ? savedNick : matched.nickname;
     return { 
-      nickname: localStorage.getItem(NICKNAME_KEY) || matched.nickname, 
+      nickname: effectiveNick || matched.nickname, 
       username: matched.username,
-      role: role
+      role: matched.role || (isQuni ? 'Super Admin' : 'User')
     };
   }
 
-  const nickname = localStorage.getItem(NICKNAME_KEY) || 'Quni';
+  const savedNick = localStorage.getItem(NICKNAME_KEY);
+  const nickname = (savedNick && savedNick !== '訪客') ? savedNick : (isQuni ? 'Quni' : '訪客');
   return { 
     nickname, 
     username, 
-    role: role
+    role: isQuni ? 'Super Admin' : role
   };
 }
 
-/** 判斷當前登入者是否為已解鎖之管理者 (quni_jhuang) */
+/** 判斷當前登入者是否為管理者 (Super Admin 或 Admin) */
 export function isAdminUser() {
   const u = getCurrentUser();
   const isQuni = (u.username.toLowerCase() === '@quni_jhuang' || u.username.toLowerCase() === 'quni_jhuang');
-  return isQuni && isAdminUnlocked();
+  const roleLower = (u.role || '').toLowerCase();
+  return isQuni || roleLower === 'super admin' || roleLower === 'admin' || roleLower === 'super_admin';
 }
 
 /** 格式化當前使用者字串（例如 "Quni (@quni_jhuang)"） */
@@ -238,81 +262,76 @@ export function getCurrentUserString() {
   return `${nickname} (${username})`;
 }
 
-/** 依據輸入的 ID 切換身分 */
+/** 依據輸入的 ID 切換身分 (嚴格比對：僅允許管理員建立之帳號登入) */
 export function loginByAccountID(inputID) {
   let cleanUser = inputID.trim();
-  if (!cleanUser) return getCurrentUser();
+  if (!cleanUser) return { requiresPassword: false, user: getCurrentUser() };
 
   if (!cleanUser.startsWith('@')) {
     cleanUser = '@' + cleanUser;
   }
 
-  if (cleanUser.toLowerCase() === '@quni_jhuang') {
-    if (!isAdminUnlocked()) {
-      return { requiresPassword: true, username: '@quni_jhuang' };
-    }
-  } else {
-    lockAdmin();
-  }
-
+  const isQuni = (cleanUser.toLowerCase() === '@quni_jhuang' || cleanUser.toLowerCase() === 'quni_jhuang');
   const profiles = getUserProfiles();
   const matched = profiles.find(p => p.username.toLowerCase() === cleanUser.toLowerCase());
 
-  let nickname = '';
-  let role = matched ? (matched.role || 'USER') : 'USER';
-  if (matched) {
-    nickname = matched.nickname;
-  } else {
-    const rawName = cleanUser.replace('@', '');
-    nickname = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+  // ⚠️ 關鍵防護：非名單中的帳號且非 quni，嚴禁登入並拒絕自動創建用戶！
+  if (!matched && !isQuni) {
+    return { 
+      requiresPassword: false, 
+      user: null, 
+      error: `帳號 ID "${cleanUser}" 不存在！請聯繫管理員建立帳號。` 
+    };
   }
+
+  let nickname = matched ? matched.nickname : 'Quni';
+  let role = matched ? (matched.role || 'USER') : (isQuni ? 'ADMIN' : 'USER');
 
   const user = setCurrentUser(nickname, cleanUser, role);
   return { requiresPassword: false, user };
 }
 
-/** 切換或保存當前使用者 */
+/** 切換或保存當前使用者 (絕不自動為未授權帳號創建與寫入 Google Sheets) */
 export function setCurrentUser(nickname, username, role = 'USER') {
-  const cleanNick = nickname.trim() || 'Quni';
-  let cleanUser = username.trim() || '@quni_jhuang';
+  let cleanUser = (username || '').trim() || '@guest';
   if (!cleanUser.startsWith('@')) {
     cleanUser = '@' + cleanUser;
   }
 
   const isQuni = (cleanUser.toLowerCase() === '@quni_jhuang');
+  const isGuest = (cleanUser.toLowerCase() === '@guest');
   const profiles = getUserProfiles();
-  const matched = profiles.find(p => p.username.toLowerCase() === cleanUser.toLowerCase());
+  const matchedIndex = profiles.findIndex(p => p.username.toLowerCase() === cleanUser.toLowerCase());
 
-  let finalRole = matched ? (matched.role || role) : role;
+  let cleanNick = nickname ? nickname.trim() : '';
+  if (!cleanNick || cleanNick === '訪客') {
+    if (matchedIndex !== -1 && profiles[matchedIndex].nickname) {
+      cleanNick = profiles[matchedIndex].nickname;
+    } else if (isQuni) {
+      cleanNick = 'Quni';
+    } else if (isGuest) {
+      cleanNick = '訪客';
+    }
+  }
+
+  let finalRole = matchedIndex !== -1 ? (profiles[matchedIndex].role || role) : role;
   if (isQuni) {
-    finalRole = isAdminUnlocked() ? 'ADMIN' : 'USER';
+    finalRole = 'ADMIN';
   }
 
   localStorage.setItem(NICKNAME_KEY, cleanNick);
   localStorage.setItem(USERNAME_KEY, cleanUser);
 
-  const existsIndex = profiles.findIndex(p => p.username.toLowerCase() === cleanUser.toLowerCase());
-  
-  let targetProfile;
-  if (existsIndex === -1) {
-    targetProfile = {
-      id: `u-${Date.now()}`,
-      username: cleanUser,
-      nickname: cleanNick,
-      role: finalRole,
-      createdAt: new Date().toISOString()
-    };
-    profiles.push(targetProfile);
-  } else {
-    profiles[existsIndex].nickname = cleanNick;
-    profiles[existsIndex].role = finalRole;
-    targetProfile = profiles[existsIndex];
-  }
-  
-  localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
+  // 只有既有合法成員修改暱稱時，才更新 local profiles 與同步 Google Sheets
+  if (matchedIndex !== -1 && !isGuest) {
+    profiles[matchedIndex].nickname = cleanNick;
+    profiles[matchedIndex].role = finalRole;
+    profiles[matchedIndex].updatedAt = new Date().toISOString();
+    localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
 
-  if (hasSheetsIntegration()) {
-    pushToSheet('USERS', targetProfile);
+    if (hasSheetsIntegration()) {
+      pushToSheet('USERS', profiles[matchedIndex]);
+    }
   }
 
   return { nickname: cleanNick, username: cleanUser, role: finalRole };
@@ -356,10 +375,17 @@ export function getImpersonatorStatus() {
   return { isImpersonating: true, originalUsername: original };
 }
 
-/** 開發者 Quni 模擬切換為其他帳號 */
+/** 開發者 Quni 模擬切換為其他帳號 (支援模擬訪客 @guest) */
 export function impersonateUser(targetUsername) {
-  let cleanUser = targetUsername.trim();
+  let cleanUser = (targetUsername || '').trim();
   if (!cleanUser.startsWith('@')) cleanUser = '@' + cleanUser;
+
+  if (cleanUser.toLowerCase() === '@guest' || cleanUser.toLowerCase() === '@account') {
+    localStorage.setItem(IMPERSONATOR_KEY, '@quni_jhuang');
+    localStorage.setItem(NICKNAME_KEY, '訪客');
+    localStorage.setItem(USERNAME_KEY, '@guest');
+    return { nickname: '訪客', username: '@guest', role: 'USER' };
+  }
 
   const profiles = getUserProfiles();
   const matched = profiles.find(p => p.username.toLowerCase() === cleanUser.toLowerCase());

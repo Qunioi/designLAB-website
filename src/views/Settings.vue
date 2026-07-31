@@ -1,8 +1,8 @@
 <template>
   <div class="settings-view">
     <PageHeader
-      title="Personal Settings"
-      subtitle="Manage your profile and customize the visual appearance of Design LAB."
+      title="系統與個人設定"
+      subtitle="管理您的顯示暱稱、團隊成員權限、雲端資料庫同步與 8 套視覺主題"
     />
 
     <div class="settings-layout">
@@ -15,39 +15,74 @@
 
         <!-- 當前帳號與頭像狀態 -->
         <div class="profile-avatar-area">
-          <div class="avatar-circle" :class="{ 'admin-circle': isAdmin }">
-            <span class="avatar-letter">{{ (nickname || 'Q').charAt(0).toUpperCase() }}</span>
-          </div>
-          <div class="avatar-meta">
-            <div class="nickname-row">
-              <span class="avatar-nickname">{{ nickname || 'Quni' }}</span>
-              <span v-if="isAdmin" class="admin-crown-wrap" title="已解鎖最高管理員權限">
-                <svg class="crown-icon-svg" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M2 4l3 12h14l3-12-6 7-4-5-4 5-6-7z"/>
-                  <circle cx="12" cy="3.5" r="1.5"/>
-                </svg>
-              </span>
+          <div class="avatar-user-info">
+            <div class="avatar-circle" :class="{ 'admin-circle': isAdmin }">
+              <span class="avatar-letter">{{ (nickname || '訪').charAt(0).toUpperCase() }}</span>
             </div>
-            <span class="avatar-handle">{{ username || '@quni_jhuang' }}</span>
+            <div class="avatar-meta">
+              <div class="nickname-row">
+                <span class="avatar-nickname">{{ nickname || '訪客' }}</span>
+                <span v-if="isAdmin" class="admin-crown-wrap" title="已解鎖最高管理員權限">
+                  <svg class="crown-icon-svg" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 4l3 12h14l3-12-6 7-4-5-4 5-6-7z"/>
+                    <circle cx="12" cy="3.5" r="1.5"/>
+                  </svg>
+                </span>
+              </div>
+              <span class="avatar-handle">{{ username || '@account' }}</span>
+            </div>
           </div>
-        </div>
 
+          <!-- 已登入狀態：右上角「登出」按鈕 -->
+          <button 
+            v-if="isLoggedIn" 
+            type="button" 
+            class="logout-btn" 
+            @click="handleLogout" 
+            title="登出目前帳號"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            <!-- <span>登出</span> -->
+          </button>
+        </div>
 
         <div class="profile-separator"></div>
 
-        <!-- 暱稱修改表單與 Account ID 鎖頭解鎖入口 -->
-        <form @submit.prevent="saveProfile" class="profile-form">
+        <!-- 未登入狀態：顯示 ACCOUNT ID 登入輸入框與登入按鈕 -->
+        <form v-if="!isLoggedIn" @submit.prevent="handleQuickIDLogin" class="profile-form">
+          <div class="field-group">
+            <label class="field-label">ACCOUNT ID (帳號 ID 登入)</label>
+            <p class="field-hint">輸入您的 Account ID 進行登入。</p>
+            <div class="field-input-wrap">
+              <input 
+                v-model="quickInputID" 
+                type="text" 
+                placeholder="@account" 
+                class="field-input" 
+              />
+            </div>
+          </div>
+
+          <button type="submit" class="save-btn" :disabled="!quickInputID.trim()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+            登入帳號
+          </button>
+        </form>
+
+        <!-- 已登入狀態：顯示 ACCOUNT ID (唯讀) 與 NICKNAME 修改表單 -->
+        <form v-else @submit.prevent="saveProfile" class="profile-form">
           <div class="field-group">
             <label class="field-label">ACCOUNT ID (帳號 ID)</label>
-            <p class="field-hint">由管理員於 Google Sheets 建立。點擊右側鎖頭解鎖管理員權限。</p>
+            <p class="field-hint">由管理員於 Google Sheets 建立。點擊右側鑰匙圖示修改密碼。</p>
             <div class="field-input-wrap locked-wrap">
               <input :value="username" type="text" class="field-input" readonly />
               <button 
                 type="button" 
                 class="lock-toggle-btn" 
-                @click="handleLockClick" 
-                :title="isAdmin ? '已解鎖管理員權限 (點擊登出)' : '點擊輸入密碼解鎖管理員身分 (@quni_jhuang)'"
+                @click="openChangePasswordModal" 
+                title="點擊修改個人登入密碼"
               >
+                <!-- 🔒 密碼鎖頭圖示 (標準 Lock SVG) -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
               </button>
             </div>
@@ -74,12 +109,12 @@
             @click="showUserMgmtModal = true"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-            <span>團隊成員管理 (User Management)</span>
+            <span>團隊成員管理</span>
             <span class="user-count-badge">{{ (userProfiles && userProfiles.length) ? userProfiles.length : 0 }}</span>
           </button>
         </div>
 
-        <!-- Quni 帳號專屬：開發者模擬模式控制區 -->
+        <!-- Quni 帳號專屬：超級管理員開發者模擬模式控制區 -->
         <div v-if="isDeveloperAccount" class="dev-mode-block">
           <div class="profile-separator"></div>
           <div class="dev-mode-box">
@@ -101,6 +136,7 @@
             <div v-else class="dev-select-row">
               <select v-model="targetImpersonateUser" class="field-input dev-select">
                 <option value="" disabled>-- 請選擇要模擬切換的帳號 --</option>
+                <option value="@guest">訪客 (@guest)</option>
                 <option 
                   v-for="p in userProfiles" 
                   :key="p.username" 
@@ -122,7 +158,7 @@
           </div>
         </div>
 
-        <!-- 獨立彈窗 1：團隊成員管理 Modal 視窗 (帶 :class="currentTheme") -->
+        <!-- 獨立彈窗 1：團隊成員管理 Modal 視窗 -->
         <Teleport to="body">
           <div v-if="showUserMgmtModal" class="modal-backdrop" :class="currentTheme" @click.self="showUserMgmtModal = false">
             <div class="modal-card user-mgmt-modal glass-panel">
@@ -132,7 +168,7 @@
                     <path d="M2 4l3 12h14l3-12-6 7-4-5-4 5-6-7z"/>
                     <circle cx="12" cy="3.5" r="1.5"/>
                   </svg>
-                  <span>團隊成員管理 (User Management)</span>
+                  <span>團隊成員管理</span>
                 </h3>
                 <button class="close-btn" @click="showUserMgmtModal = false">✕</button>
               </div>
@@ -145,8 +181,9 @@
                     <input v-model="newUserNickname" type="text" placeholder="顯示暱稱 (如: Alex)" class="field-input" required />
                     <input v-model="newUsername" type="text" placeholder="帳號 ID (如: @alex)" class="field-input" required />
                     <select v-model="newUserRole" class="field-input role-select">
-                      <option value="USER">一般使用者</option>
-                      <option value="ADMIN">管理員</option>
+                      <option value="User">一般使用者 (User)</option>
+                      <option value="Admin">管理員 (Admin)</option>
+                      <option value="Super Admin">最高管理員 (Super Admin)</option>
                     </select>
                     <button type="submit" class="add-member-btn">
                       <span>+ 新增成員</span>
@@ -189,11 +226,11 @@
                           </button>
                         </div>
 
-                        <span class="user-role-tag" :class="p.role === 'ADMIN' ? 'admin' : 'user'">
-                          <span>{{ p.role === 'ADMIN' ? '管理員' : '一般使用者' }}</span>
+                        <span class="user-role-tag" :class="(p.role || '').toLowerCase().includes('admin') ? 'admin' : 'user'">
+                          <span>{{ p.role || 'User' }}</span>
                         </span>
                         <button 
-                          v-if="p.username !== '@quni_jhuang'" 
+                          v-if="!(p.role || '').toLowerCase().includes('admin') && p.username !== '@quni_jhuang' && p.username !== '@ray_zhao'" 
                           class="del-user-btn" 
                           @click="handleDeleteUser(p.username)" 
                           title="刪除此成員"
@@ -214,6 +251,60 @@
           </div>
         </Teleport>
 
+        <!-- 獨立彈窗 2：修改個人密碼 Modal 視窗 -->
+        <Teleport to="body">
+          <div v-if="showChangePassModal" class="modal-backdrop" :class="currentTheme" @click.self="showChangePassModal = false">
+            <div class="modal-card auth-modal glass-panel">
+              <div class="modal-header">
+                <h3>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                  <span>修改個人密碼 (Change Password)</span>
+                </h3>
+                <button class="close-btn" @click="showChangePassModal = false">✕</button>
+              </div>
+              <div class="modal-body">
+                <p class="auth-desc">修改帳號 <code>{{ username }}</code> 的個人登入密碼：</p>
+
+                <div class="field-group" style="margin-bottom: 0.85rem;">
+                  <label class="field-label">原密碼 (Current Password)</label>
+                  <input 
+                    v-model="oldPasswordInput" 
+                    type="password" 
+                    placeholder="請輸入原密碼 (預設: 123456)" 
+                    class="field-input" 
+                  />
+                </div>
+
+                <div class="field-group" style="margin-bottom: 0.85rem;">
+                  <label class="field-label">新密碼 (New Password)</label>
+                  <input 
+                    v-model="newPasswordInput" 
+                    type="password" 
+                    placeholder="請輸入新密碼" 
+                    class="field-input" 
+                  />
+                </div>
+
+                <div class="field-group">
+                  <label class="field-label">確認新密碼 (Confirm New Password)</label>
+                  <input 
+                    v-model="confirmPasswordInput" 
+                    type="password" 
+                    placeholder="請再次輸入新密碼" 
+                    class="field-input" 
+                  />
+                </div>
+
+                <p v-if="passErrorMsg" class="auth-error-msg">⚠️ {{ passErrorMsg }}</p>
+              </div>
+              <div class="modal-footer">
+                <button class="cancel-btn" @click="showChangePassModal = false">取消</button>
+                <button class="submit-btn" @click="handleChangePasswordSubmit">確認修改密碼</button>
+              </div>
+            </div>
+          </div>
+        </Teleport>
+
         <!-- 管理員密碼驗證 Modal 視窗 (帶 :class="currentTheme") -->
         <Teleport to="body">
           <div v-if="showAuthModal" class="modal-backdrop" :class="currentTheme" @click.self="showAuthModal = false">
@@ -228,7 +319,7 @@
                   <input 
                     v-model="inputPasscode" 
                     type="password" 
-                    placeholder="請輸入解鎖密碼 (預設: admin123)" 
+                    placeholder="請輸入管理員解鎖密碼" 
                     class="field-input auth-input" 
                     @keyup.enter="handleVerifyPasscode"
                     ref="passcodeInputRef"
@@ -405,6 +496,8 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import PageHeader from '../components/PageHeader.vue';
 import NotificationBell from '../components/NotificationBell.vue';
+
+
 import {
   getSheetsUrl, setSheetsUrl,
   testSheetsConnection, syncAllFromSheets, pushAllToSheets
@@ -412,18 +505,18 @@ import {
 
 import { 
   getUserProfiles, 
+  getCurrentUser,
   setCurrentUser, 
   loginByAccountID,
   isAdminUser,
-  isAdminUnlocked,
-  verifyAdminPasscode,
   lockAdmin,
   addUserProfile,
   removeUserProfile,
   reorderUserProfiles,
   getImpersonatorStatus,
   impersonateUser,
-  stopImpersonating
+  stopImpersonating,
+  updateUserPassword
 } from '../utils/userStore';
 
 const targetImpersonateUser = ref('');
@@ -474,6 +567,27 @@ const userProfiles = ref([]);
 const localNickname = ref(props.nickname);
 const localUsername = ref(props.username);
 
+const isLoggedIn = computed(() => {
+  return props.username && props.username !== '@guest' && props.username !== 'guest' && props.username !== '@account';
+});
+
+watch(() => props.nickname, (v) => { 
+  if (v && v !== '訪客') localNickname.value = v; 
+}, { immediate: true });
+
+watch(() => props.username, (v) => { 
+  localUsername.value = v;
+  if (v) {
+    const profiles = getUserProfiles();
+    const matched = profiles.find(p => p.username.toLowerCase() === v.toLowerCase());
+    if (matched && matched.nickname) {
+      localNickname.value = matched.nickname;
+    } else if (v.toLowerCase() === '@quni_jhuang' || v.toLowerCase() === 'quni_jhuang') {
+      localNickname.value = 'Quni';
+    }
+  }
+}, { immediate: true });
+
 const showUserMgmtModal = ref(false);
 const newUserNickname = ref('');
 const newUsername = ref('');
@@ -516,31 +630,62 @@ const handleDeleteUser = (targetUsername) => {
 };
 
 
-const adminUnlockedState = ref(isAdminUnlocked());
-
 const isAdmin = computed(() => {
-  if (!props.username) return false;
-  const u = props.username.toLowerCase();
-  const isQuni = (u === '@quni_jhuang' || u === 'quni_jhuang');
-  return isQuni && adminUnlockedState.value;
+  const currentUser = getCurrentUser();
+  const r = (currentUser.role || '').toLowerCase();
+  const u = (props.username || currentUser.username || '').toLowerCase();
+  return u === '@quni_jhuang' || u === 'quni_jhuang' || r === 'super admin' || r === 'admin' || r === 'super_admin';
 });
 
+// 修改個人密碼狀態與處理方法
+const showChangePassModal = ref(false);
+const oldPasswordInput = ref('');
+const newPasswordInput = ref('');
+const confirmPasswordInput = ref('');
+const passErrorMsg = ref('');
 
-const handleLockClick = () => {
-  if (isAdmin.value) {
-    if (confirm('確定要退出管理者狀態嗎？')) {
-      handleLockAdmin();
-    }
+const openChangePasswordModal = () => {
+  oldPasswordInput.value = '';
+  newPasswordInput.value = '';
+  confirmPasswordInput.value = '';
+  passErrorMsg.value = '';
+  showChangePassModal.value = true;
+};
+
+const handleChangePasswordSubmit = () => {
+  passErrorMsg.value = '';
+  if (!oldPasswordInput.value) {
+    passErrorMsg.value = '請輸入原密碼！';
+    return;
+  }
+  if (!newPasswordInput.value || !newPasswordInput.value.trim()) {
+    passErrorMsg.value = '新密碼不能為空！';
+    return;
+  }
+  if (newPasswordInput.value.trim().length < 4) {
+    passErrorMsg.value = '新密碼長度不得低於 4 個字元！';
+    return;
+  }
+  if (newPasswordInput.value.trim() === oldPasswordInput.value.trim()) {
+    passErrorMsg.value = '新密碼不可與舊密碼相同！';
+    return;
+  }
+  if (newPasswordInput.value !== confirmPasswordInput.value) {
+    passErrorMsg.value = '兩次輸入的新密碼不一致！';
+    return;
+  }
+
+  const result = updateUserPassword(props.username, oldPasswordInput.value, newPasswordInput.value);
+  if (result.success) {
+    alert('密碼修改成功！新密碼已儲存。');
+    showChangePassModal.value = false;
   } else {
-    authError.value = false;
-    inputPasscode.value = '';
-    showAuthModal.value = true;
+    passErrorMsg.value = result.error || '密碼修改失敗！';
   }
 };
 
 const handleVerifyPasscode = () => {
   if (verifyAdminPasscode(inputPasscode.value)) {
-    adminUnlockedState.value = true;
     showAuthModal.value = false;
     authError.value = false;
     inputPasscode.value = '';
@@ -555,9 +700,23 @@ const handleVerifyPasscode = () => {
 
 const handleLockAdmin = () => {
   lockAdmin();
-  adminUnlockedState.value = false;
   showUserMgmtModal.value = false;
-  const u = setCurrentUser(localNickname.value || 'Quni', '@quni_jhuang', 'USER');
+  const u = setCurrentUser('訪客', '@account', 'USER');
+  refreshProfiles();
+  emit('update-user', u);
+  emit('update-nickname', u.nickname);
+};
+
+const handleLogout = () => {
+  try {
+    stopImpersonating();
+  } catch(e){}
+  lockAdmin();
+  showUserMgmtModal.value = false;
+  const u = setCurrentUser('訪客', '@guest', 'USER');
+  localNickname.value = u.nickname;
+  localUsername.value = u.username;
+  quickInputID.value = '';
   refreshProfiles();
   emit('update-user', u);
   emit('update-nickname', u.nickname);
@@ -573,15 +732,30 @@ watch(() => props.nickname, (v) => { localNickname.value = v; });
 watch(() => props.username, (v) => { localUsername.value = v; });
 
 
+const quickInputID = ref('');
+
 const handleQuickIDLogin = () => {
-  if (quickInputID.value.trim() !== '') {
-    const user = loginByAccountID(quickInputID.value.trim());
-    localNickname.value = user.nickname;
-    localUsername.value = user.username;
-    refreshProfiles();
-    emit('update-user', user);
-    emit('update-nickname', user.nickname);
-    quickInputID.value = '';
+  const input = quickInputID.value.trim();
+  if (input !== '') {
+    const res = loginByAccountID(input);
+    if (res.requiresPassword) {
+      showAuthModal.value = true;
+      authError.value = false;
+      inputPasscode.value = '';
+      return;
+    }
+    if (res.error) {
+      alert(res.error);
+      return;
+    }
+    if (res.user) {
+      localNickname.value = res.user.nickname;
+      localUsername.value = res.user.username;
+      refreshProfiles();
+      emit('update-user', res.user);
+      emit('update-nickname', res.user.nickname);
+      quickInputID.value = '';
+    }
   }
 };
 
@@ -593,14 +767,39 @@ const isNicknameChanged = computed(() => {
 
 const handleUserSwitch = (e) => {
   const selectedUser = e.target.value;
-  const target = (userProfiles.value || []).find(p => p.username === selectedUser);
-  if (target) {
-    localNickname.value = target.nickname;
-    localUsername.value = target.username;
-    const user = setCurrentUser(target.nickname, target.username);
+  if (!selectedUser) return;
+
+  if (selectedUser.toLowerCase() === '@quni_jhuang') {
+    if (!isAdmin.value) {
+      showAuthModal.value = true;
+      authError.value = false;
+      inputPasscode.value = '';
+      return;
+    }
+  }
+
+  if (selectedUser.toLowerCase() === '@account') {
+    lockAdmin();
+    const user = setCurrentUser('訪客', '@account', 'USER');
+    localNickname.value = user.nickname;
+    localUsername.value = user.username;
     refreshProfiles();
     emit('update-user', user);
     emit('update-nickname', user.nickname);
+    return;
+  }
+
+  const res = loginByAccountID(selectedUser);
+  if (res.requiresPassword) {
+    showAuthModal.value = true;
+    authError.value = false;
+    inputPasscode.value = '';
+  } else if (res.user) {
+    localNickname.value = res.user.nickname;
+    localUsername.value = res.user.username;
+    refreshProfiles();
+    emit('update-user', res.user);
+    emit('update-nickname', res.user.nickname);
   }
 };
 
@@ -976,7 +1175,35 @@ const lightThemes = [
 .profile-avatar-area {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 1rem;
+}
+
+.avatar-user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  /* border: 1px solid rgba(239, 68, 68, 0.25); */
+  color: var(--color-danger);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: var(--color-danger);
+  color: #ffffff;
+  border-color: var(--color-danger);
 }
 
 .avatar-circle {
@@ -1023,7 +1250,7 @@ const lightThemes = [
 .profile-form {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.5rem;
 }
 
 .field-group {
@@ -1056,12 +1283,19 @@ const lightThemes = [
   width: 100%;
   padding: 0.55rem 0.75rem;
   padding-right: 2.5rem;
-  background: rgba(128, 128, 128, 0.04);
+  background: var(--bg-hover);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   font-size: var(--fs-body);
+  color: var(--text-primary);
+  cursor: text;
+}
+
+.field-input-wrap.locked-wrap input,
+.field-input-wrap input[readonly] {
   color: var(--text-muted);
   cursor: not-allowed;
+  background: rgba(128, 128, 128, 0.06);
 }
 
 .lock-indicator {
@@ -1438,27 +1672,41 @@ const lightThemes = [
   font-size: 0.85rem;
   line-height: 1.5;
 }
-.id-login-wrap {
+.id-login-form {
   display: flex;
   gap: 0.5rem;
   align-items: center;
 }
 
+.id-login-form .locked-wrap {
+  flex: 1;
+}
+
+.account-select {
+  cursor: pointer;
+}
+
 .id-login-btn {
-  padding: 0.65rem 1rem;
-  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-sm);
   background: var(--color-primary);
-  color: white;
+  color: white !important;
   font-size: 0.82rem;
   font-weight: 600;
   white-space: nowrap;
   transition: all 0.2s ease;
   border: none;
+  cursor: pointer;
 }
 
-.id-login-btn:hover {
+.id-login-btn:hover:not(:disabled) {
   opacity: 0.9;
   transform: translateY(-1px);
+}
+
+.id-login-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .sync-message.success {
@@ -1491,8 +1739,14 @@ const lightThemes = [
   z-index: 2;
 }
 
-.lock-toggle-btn:hover {
+.lock-toggle-btn:hover:not(:disabled) {
   color: var(--text-primary);
+}
+
+.lock-toggle-btn:disabled,
+.lock-toggle-btn.disabled {
+  opacity: 0.25;
+  pointer-events: none !important;
 }
 
 /* 管理成員觸發按鈕 (Personal Settings Panel) */
@@ -2246,3 +2500,4 @@ const lightThemes = [
   color: var(--text-secondary);
 }
 </style>
+

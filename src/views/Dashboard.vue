@@ -130,14 +130,33 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import PageHeader from '../components/PageHeader.vue';
 import { getStorageData } from '../utils/storage';
 import NotificationBell from '../components/NotificationBell.vue';
 
 const emit = defineEmits(['change-view', 'open-search', 'trigger-crud', 'navigate-detail']);
 
+const refreshTrigger = ref(0);
+const handleStorageUpdated = () => {
+  refreshTrigger.value++;
+};
+
+onMounted(() => {
+  if (typeof window !== 'undefined') {
+    window.addEventListener('design-lab-storage-updated', handleStorageUpdated);
+  }
+});
+
+onUnmounted(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('design-lab-storage-updated', handleStorageUpdated);
+  }
+});
+
 const stats = computed(() => {
+  // 依賴 refreshTrigger 達到實時即時刷新
+  const _ = refreshTrigger.value;
   return {
     ui: getStorageData('UI_RESEARCH').length,
     motion: getStorageData('MOTION_RESEARCH').length,
@@ -147,6 +166,7 @@ const stats = computed(() => {
 });
 
 const proposalStats = computed(() => {
+  const _ = refreshTrigger.value;
   const list = getStorageData('PROPOSALS');
   return {
     idea: list.filter(p => p.status === 'Idea').length,
@@ -157,6 +177,7 @@ const proposalStats = computed(() => {
 });
 
 const recentItems = computed(() => {
+  const _ = refreshTrigger.value;
   const ui = getStorageData('UI_RESEARCH').map(i => ({ ...i, type: 'ui', typeLabel: 'UI 研究' }));
   const motion = getStorageData('MOTION_RESEARCH').map(i => ({ ...i, type: 'motion', typeLabel: '動態設計' }));
   
@@ -164,6 +185,7 @@ const recentItems = computed(() => {
 });
 
 const randomPrompt = computed(() => {
+  const _ = refreshTrigger.value;
   const list = getStorageData('AI_CENTER');
   if (list.length === 0) return { name: 'N/A', prompt: 'No Prompts available' };
   return list[0];

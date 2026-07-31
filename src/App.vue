@@ -14,6 +14,8 @@
       <Transition name="fade" mode="out-in">
           <component
             :is="currentViewComponent"
+            :key="currentView"
+            ref="viewRef"
             :highlighted-id="highlightedId"
             :nickname="nickname"
             :username="username"
@@ -138,8 +140,8 @@ const syncViewFromUrl = () => {
 import { getCurrentUser, saveUserTheme, getUserTheme } from './utils/userStore';
 
 // 個人資訊狀態
-const nickname = ref('Quni');
-const username = ref('@quni_jhuang');
+const nickname = ref('訪客');
+const username = ref('@account');
 
 // 主題切換狀態
 const currentTheme = ref('theme-midnight-slate');
@@ -191,9 +193,14 @@ const handleViewChange = (view) => {
   triggerRefresh();
 };
 
-// 刷新目前頁面資料
+const viewRef = ref(null);
+
+// 刷新目前頁面資料 (不強行銷毀 Remount View，保證 0 閃爍)
 const triggerRefresh = () => {
   refreshKey.value++;
+  if (viewRef.value && typeof viewRef.value.loadData === 'function') {
+    viewRef.value.loadData();
+  }
 };
 
 // 處理來自各頁面的新增/編輯請求
@@ -212,16 +219,13 @@ const openCrudForCreate = (viewName) => {
   handleTriggerCrud({ type: storageKey, item: null });
 };
 
-// 處理表單儲存並全自動刷新頁面
+// 處理表單儲存並全自動刷新頁面回到列表
 const handleSave = ({ type, item }) => {
-  const savedItem = addOrUpdateItem(type, item);
+  addOrUpdateItem(type, item);
   crudModalOpen.value = false;
-  if (savedItem && savedItem.id) {
-    updateUrl(currentView.value, savedItem.id);
-  }
-  setTimeout(() => {
-    window.location.reload();
-  }, 150);
+  highlightedId.value = '';
+  updateUrl(currentView.value, '');
+  triggerRefresh();
 };
 
 // 處理跳轉高亮與開啟彈窗
@@ -232,9 +236,13 @@ const handleNavigate = ({ view, id }) => {
   triggerRefresh();
 };
 
-// 處理關閉 Lightbox 彈窗時還原網址
+// 處理關閉 Lightbox 彈窗時還原網址與清除 Focus 高亮效果
 const handleCloseModalUrl = () => {
+  highlightedId.value = '';
   updateUrl(currentView.value, '');
+  if (document.activeElement && typeof document.activeElement.blur === 'function') {
+    document.activeElement.blur();
+  }
 };
 
 // 處理主題切換選擇與雲端備份儲存

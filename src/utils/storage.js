@@ -72,6 +72,9 @@ export function getStorageData(key) {
 
 export function setStorageData(key, data) {
   localStorage.setItem(KEYS[key], JSON.stringify(data));
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('design-lab-storage-updated', { detail: { key, data } }));
+  }
 }
 
 import { getCurrentUserString, getCurrentUser, isAdminUser } from './userStore';
@@ -97,6 +100,17 @@ export function checkDeletePermission(item) {
   };
 }
 
+export function isMyCreatedItem(item) {
+  if (!item) return false;
+  const currentUser = getCurrentUser();
+  const creator = item.createdBy || item.updatedBy || item.creatorUsername || item.creatorName || '';
+  if (!creator) return false;
+  return (
+    creator.toLowerCase().includes(currentUser.username.toLowerCase()) || 
+    creator.toLowerCase().includes(currentUser.nickname.toLowerCase())
+  );
+}
+
 
 function getFormattedNow() {
   const now = new Date();
@@ -109,13 +123,16 @@ function getFormattedNow() {
   return `${year}-${month}-${day} ${hours}:${mins}:${secs}`;
 }
 
+import { formatStandardDateTime } from './formatters';
+
 export function addOrUpdateItem(key, item) {
   const list = getStorageData(key);
-  let savedItem;
+  let savedItem = null;
   let isNewItem = false;
+  
   const currentUserObj = getCurrentUser();
   const currentUserStr = getCurrentUserString();
-  const nowStr = getFormattedNow();
+  const nowStr = formatStandardDateTime(new Date());
 
   if (item.id) {
     // 更新現有項目
@@ -125,6 +142,7 @@ export function addOrUpdateItem(key, item) {
       list[index] = { 
         ...list[index], 
         ...item,
+        createdAt: formatStandardDateTime(list[index].createdAt || nowStr),
         updatedAt: nowStr,
         updatedBy: currentUserStr,
         lastEditorName: currentUserObj.nickname
@@ -142,7 +160,7 @@ export function addOrUpdateItem(key, item) {
       isNewItem = true;
       savedItem = { 
         ...item,
-        createdAt: item.createdAt || nowStr,
+        createdAt: formatStandardDateTime(item.createdAt || nowStr),
         updatedAt: nowStr,
         updatedBy: currentUserStr,
         createdBy: currentUserStr,

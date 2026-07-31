@@ -37,25 +37,42 @@
 
     <!-- 卡片列表 -->
     <div v-else class="cards-grid">
-      <div v-for="item in filteredList" :key="item.id" class="research-card glass-panel" :class="{ highlighted: highlightedId === item.id }" :id="`item-${item.id}`">
-        <div class="card-media-wrapper" @click="openLightbox(item)">
+      <div v-for="item in filteredList" :key="item.id" class="research-card glass-panel" :class="{ highlighted: highlightedId === item.id, 'is-mine': isMyCreatedItem(item) }" :id="`item-${item.id}`">
+        <div
+          class="card-media-wrapper"
+          role="button"
+          tabindex="0"
+          :aria-label="`查看《${getTitle(item)}》詳情`"
+          @click="openLightbox(item)"
+          @keydown.enter.prevent="openLightbox(item)"
+          @keydown.space.prevent="openLightbox(item)"
+        >
           <img :src="getCover(item)" class="card-media" :alt="getTitle(item)" loading="lazy" />
           <div class="hover-overlay">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
             <span>點擊看詳情</span>
           </div>
-          <a v-if="getLink(item)" :href="getLink(item)" target="_blank" class="media-ext-link" @click.stop title="前往參考網址">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-          </a>
+          <!-- 我發佈的：精緻 Avatar Dot 置於圖片左上角 -->
+          <div v-if="isMyCreatedItem(item)" class="mine-avatar-dot" title="我發佈的">
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+          </div>
+          <!-- 外連笭頭：wrapper 承接主題光暈，內層 <a> 保持清晰 -->
+          <div v-if="getLink(item)" class="ext-link-wrapper">
+            <a :href="getLink(item)" target="_blank" rel="noopener noreferrer" class="media-ext-link" @click.stop :aria-label="`前往《${getTitle(item)}》參考網址`" title="前往參考網址">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            </a>
+          </div>
         </div>
-        <div class="card-info" @click="openLightbox(item)">
+        <div class="card-info">
           <div class="card-meta-row" @click.stop>
-            <span :class="badgeClass" class="clickable-badge" @click="handleBadgeClick(item)" title="點擊切換分類篩選">{{ getBadgeText(item) }}</span>
-            <div class="card-actions">
-              <button class="action-icon-btn edit" @click="$emit('trigger-crud', { type: crudType, item })" title="編輯">
+            <div class="card-meta-left">
+              <span :class="badgeClass" class="clickable-badge" @click="handleBadgeClick(item)" title="點擊切換分類篩選">{{ getBadgeText(item) }}</span>
+            </div>
+            <div class="card-actions" v-if="!isGuest">
+              <button type="button" class="action-icon-btn edit" :aria-label="`編輯《${getTitle(item)}》`" @click="$emit('trigger-crud', { type: crudType, item })" title="編輯">
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
               </button>
-              <button class="action-icon-btn delete" @click="handleDelete(item)" title="刪除">
+              <button v-if="canDeleteCardItem(item)" type="button" class="action-icon-btn delete" :aria-label="`刪除《${getTitle(item)}》`" @click="handleDelete(item)" title="刪除">
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
             </div>
@@ -119,7 +136,7 @@
             <div class="lightbox-detail-content">
               <div class="lightbox-meta-row">
                 <span :class="badgeClass" class="clickable-badge" @click="handleBadgeClick(lightbox.item); closeLightbox();" title="點擊切換分類篩選">{{ getBadgeText(lightbox.item) }}</span>
-                <span class="lightbox-date" v-if="lightbox.item.createdAt || lightbox.item.updatedAt">{{ lightbox.item.createdAt || lightbox.item.updatedAt }}</span>
+                <span class="lightbox-date" v-if="lightbox.item.createdAt || lightbox.item.updatedAt">{{ formatDateTime(lightbox.item.createdAt || lightbox.item.updatedAt) }}</span>
               </div>
               <h2 class="lightbox-title">{{ getTitle(lightbox.item) }}</h2>
               <slot
@@ -131,8 +148,25 @@
                 :toggle-single-filter="toggleSingleFilter"
                 :is-single-filter-selected="isSingleFilterSelected"
               />
-              <div class="lightbox-footer" v-if="getLightboxLink(lightbox.item)">
-                <a :href="getLightboxLink(lightbox.item)" target="_blank" class="source-btn"><span>{{ linkBtnLabel }}</span></a>
+              <div class="lightbox-footer">
+                <div class="lightbox-actions-group" v-if="!isGuest">
+                  <button type="button" class="lightbox-icon-btn edit" @click="$emit('trigger-crud', { type: crudType, item: lightbox.item }); closeLightbox();" :aria-label="`編輯`" title="編輯">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                  </button>
+                  <!-- 刪除：管理員或我發佈的才顯示 -->
+                  <button v-if="canDeleteCardItem(lightbox.item)" type="button" class="lightbox-icon-btn delete" @click="handleDelete(lightbox.item); closeLightbox();" :aria-label="`刪除`" title="刪除">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>
+                  </button>
+                  <!-- 我發佈的：Lightbox 中以細線 + 帳號名稱呈現 -->
+                  <span v-if="isMyCreatedItem(lightbox.item)" class="mine-lightbox-indicator">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                    我發佈
+                  </span>
+                </div>
+                <a v-if="getLightboxLink(lightbox.item)" :href="getLightboxLink(lightbox.item)" target="_blank" rel="noopener noreferrer" class="source-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                  <span>參考示意圖</span>
+                </a>
               </div>
             </div>
           </div>
@@ -153,8 +187,9 @@ import { ref, computed, reactive, onMounted, onUnmounted, nextTick, watch } from
 import PageHeader from './PageHeader.vue';
 import FilterToolbar from './FilterToolbar.vue';
 import FullscreenMediaOverlay from './FullscreenMediaOverlay.vue';
-import { getStorageData, deleteItem } from '../utils/storage';
-import { checkDeletePermission } from '../utils/notifications';
+import { getStorageData, deleteItem, isMyCreatedItem } from '../utils/storage';
+import { getCurrentUser, isAdminUser } from '../utils/userStore';
+import { formatDateTime } from '../utils/formatters';
 import NotificationBell from '../components/NotificationBell.vue';
 
 const props = defineProps({
@@ -181,15 +216,29 @@ const props = defineProps({
   highlightedId: { type: String, default: '' },
 });
 
-const emit = defineEmits(['trigger-crud', 'delete-done']);
+const emit = defineEmits(['trigger-crud', 'delete-done', 'open-lightbox', 'close-lightbox']);
 const items            = ref([]);
 const searchQuery      = ref('');
 const activeDropdown   = ref('');
 const multiFilterValues = reactive({});
+const selectedTags     = computed(() => multiFilterValues.tags || []);
 const selectedCreators = ref([]);
 const sortOption       = ref('newest');
 const lightbox         = ref({ isOpen: false, item: null });
 const fullscreenMedia = ref({ url: '', isVideo: false });
+
+const isGuest = computed(() => {
+  const u = getCurrentUser();
+  const uname = (u.username || '').toLowerCase();
+  return !uname || uname === '@guest' || uname === '@account' || u.nickname === '訪客';
+});
+
+/** 判斷目前登入者是否具備刪除該項目的權限 (管理員可刪除任何項目，一般使用者僅可刪除自己發佈的項目) */
+const canDeleteCardItem = (item) => {
+  if (!item || isGuest.value) return false;
+  if (isAdminUser()) return true;
+  return isMyCreatedItem(item);
+};
 
 const creatorOptions = computed(() => {
   const set = new Set();
@@ -455,6 +504,9 @@ const openLightbox = (item, emitEvent = true) => {
 const closeLightbox = () => {
   lightbox.value.isOpen = false;
   lightbox.value.item = null;
+  if (document.activeElement && typeof document.activeElement.blur === 'function') {
+    document.activeElement.blur();
+  }
   emit('close-lightbox');
 };
 
@@ -496,15 +548,25 @@ watch(() => props.highlightedId, () => {
   checkAndAutoOpenModal();
 });
 
+const handleStorageUpdated = () => {
+  loadData();
+};
+
 onMounted(() => {
   loadData();
   window.addEventListener('keydown', handleKeyDown);
   window.addEventListener('click', handleDocumentClick);
+  if (typeof window !== 'undefined') {
+    window.addEventListener('design-lab-storage-updated', handleStorageUpdated);
+  }
 });
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown);
   window.removeEventListener('click', handleDocumentClick);
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('design-lab-storage-updated', handleStorageUpdated);
+  }
 });
 
 const handleDelete = (item) => {
@@ -743,7 +805,6 @@ const handleDelete = (item) => {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   transition: all 0.25s ease;
-  cursor: pointer;
 }
 .research-card:hover {
   border-color: var(--border-color-hover);
@@ -755,9 +816,44 @@ const handleDelete = (item) => {
   box-shadow: 0 0 20px var(--glow-primary);
   animation: pulse-border 2s infinite;
 }
+
 @keyframes pulse-border {
   0%, 100% { border-color: var(--border-color); }
   50% { border-color: var(--color-primary); }
+}
+
+/* ── 我發佈的 Avatar Dot（圖片左上角） ─ */
+.mine-avatar-dot {
+  position: absolute;
+  top: 0.65rem;
+  left: 0.65rem;
+  z-index: 6;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.research-card:hover .mine-avatar-dot {
+  transform: scale(1.12);
+  box-shadow: 0 4px 16px var(--color-primary);
+}
+
+/* ── Lightbox 中「我發佈」指示器 ─── */
+.mine-lightbox-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  opacity: 0.85;
+  margin-left: 0.5rem;
 }
 
 /* ── Card Media (恢復原始媒體區) ────────── */
@@ -768,6 +864,10 @@ const handleDelete = (item) => {
   overflow: hidden;
   background: var(--bg-hover);
   cursor: pointer;
+  outline: none;
+}
+.card-media-wrapper:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--color-primary);
 }
 .card-media {
   position: absolute;
@@ -779,6 +879,39 @@ const handleDelete = (item) => {
 .card-media-wrapper:hover .card-media {
   transform: scale(1.05);
 }
+
+
+.ext-link-wrapper {
+  position: absolute;
+  top: 0.65rem; right: 0.65rem;
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  z-index: 5;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.ext-link-wrapper:hover {
+  box-shadow: 0 0 0 2px var(--color-primary), 0 0 22px var(--color-primary), 0 0 8px var(--color-primary) !important;
+}
+
+.media-ext-link {
+  /* 位置已移到 wrapper，本身只負責 icon 顯示 + mix-blend-mode */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%; height: 100%;
+  border-radius: 8px;
+  mix-blend-mode: difference;
+  background: #ffffff;
+  border: none;
+  color: #000000;
+  opacity: 0.82;
+  transition: opacity 0.2s ease;
+}
+.media-ext-link svg {
+  stroke: #000000;
+}
+.card-media-wrapper:hover .ext-link-wrapper .media-ext-link { opacity: 1; }
 
 .hover-overlay {
   position: absolute;
@@ -796,29 +929,7 @@ const handleDelete = (item) => {
 }
 .card-media-wrapper:hover .hover-overlay { opacity: 1; }
 
-.media-ext-link {
-  position: absolute;
-  top: 0.65rem; right: 0.65rem;
-  width: 32px; height: 32px;
-  border-radius: 8px;
-  background: var(--bg-input);
-  backdrop-filter: blur(6px);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0.85;
-  transform: scale(1);
-  transition: all 0.2s ease;
-  z-index: 5;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-}
-.card-media-wrapper:hover .media-ext-link { opacity: 1; transform: scale(1.05); }
-.media-ext-link:hover {
-  background: var(--color-primary) !important;
-  border-color: var(--color-primary) !important;
-  transform: scale(1.12) !important;
-  box-shadow: 0 4px 12px var(--glow-primary);
-}
+
 
 /* ── Card Body & Info (恢復原始內邊距與純粹底色) ── */
 .card-info {
@@ -826,6 +937,7 @@ const handleDelete = (item) => {
   display: flex;
   flex-direction: column;
   flex: 1;
+  gap: 0.2rem;
 }
 
 .card-meta-row {
@@ -834,7 +946,21 @@ const handleDelete = (item) => {
   align-items: center;
 }
 
-.card-actions {
+.card-meta-left {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.card-time-text {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.card-actions,
+.ext-link-wrapper {
   display: flex;
   gap: 0.25rem;
   opacity: 0;
@@ -842,7 +968,13 @@ const handleDelete = (item) => {
   transform: translateY(-2px);
   transition: opacity 0.22s ease, transform 0.22s ease;
 }
-.research-card:hover .card-actions {
+.research-card:hover .card-actions,
+.research-card:hover .ext-link-wrapper {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+.research-card:focus-within .card-actions {
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0);
@@ -856,16 +988,45 @@ const handleDelete = (item) => {
   border: 1px solid var(--border-color);
   transition: all 0.2s ease;
 }
-.action-icon-btn:hover { background: var(--bg-subtle); }
-.action-icon-btn.edit:hover { color: #fbbf24; border-color: rgba(245, 158, 11, 0.4); }
-.action-icon-btn.delete:hover { color: #ef4444; border-color: rgba(239, 68, 68, 0.4); }
+.action-icon-btn:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
 
 .card-title {
   font-size: 1.05rem;
   font-weight: 700;
-  margin-bottom: 0.5rem;
   line-height: 1.35;
   color: var(--text-primary);
+}
+
+.card-footer {
+  margin-top: auto;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.detail-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.detail-btn:hover,
+.detail-btn:focus-visible {
+  background: var(--glow-primary);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 /* ── Lightbox Modal ─────────────────────── */
@@ -1083,22 +1244,69 @@ const handleDelete = (item) => {
   color: var(--text-primary);
   margin: 0.5rem 0 0.5rem 0.2rem;
 }
-.lightbox-footer { margin-top: 1.5rem; }
+.lightbox-footer { 
+  margin-top: 1.5rem; 
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.lightbox-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+/* Lightbox 編輯 / 刪除 — 純 icon 圓形按鈕 */
+.lightbox-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  cursor: pointer;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  transition: all 0.18s ease;
+  flex-shrink: 0;
+}
+.lightbox-icon-btn:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+  box-shadow: 0 0 12px var(--glow-primary);
+}
+.lightbox-icon-btn.delete:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+/* 參考示意圖按鈕：主題實色背景 */
 .source-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  background: var(--glow-primary);
+  gap: 0.45rem;
+  background: var(--color-primary);
   border: 1px solid var(--color-primary);
-  color: var(--color-primary);
-  padding: 0.6rem 1.2rem;
+  color: #fff;
+  padding: 0.55rem 1.1rem;
   border-radius: 10px;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   transition: all 0.2s ease;
   text-decoration: none;
+  flex-shrink: 0;
 }
-.source-btn:hover { background: var(--color-primary); color: #fff; }
+.source-btn:hover {
+  background: var(--color-secondary);
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 16px var(--glow-primary);
+}
 
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
@@ -1112,5 +1320,13 @@ const handleDelete = (item) => {
   .filter-toolbar { flex-direction: column; align-items: flex-start; }
   .filter-options { width: 100%; }
   .filter-select { flex: 1; }
+  .card-actions {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+  .media-ext-link {
+    opacity: 1;
+  }
 }
 </style>

@@ -10,12 +10,12 @@
       <!-- 允許自訂操作按鈕區域 -->
       <slot name="actions" />
 
-      <!-- 通知鈴鐺組件 (預設顯示) -->
-      <NotificationBell v-if="showNotification" />
+      <!-- 通知鈴鐺組件 (訪客登入不顯示) -->
+      <NotificationBell v-if="showNotification && !isGuest" />
 
-      <!-- 新增按鈕 (若指定 addBtnLabel 則顯示) -->
+      <!-- 新增按鈕 (訪客登入不顯示) -->
       <button
-        v-if="addBtnLabel"
+        v-if="addBtnLabel && !isGuest"
         type="button"
         class="add-btn"
         @click="$emit('add-click')"
@@ -27,7 +27,9 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import NotificationBell from './NotificationBell.vue';
+import { getCurrentUser } from '../utils/userStore';
 
 defineProps({
   title: {
@@ -49,6 +51,12 @@ defineProps({
 });
 
 defineEmits(['add-click']);
+
+const isGuest = computed(() => {
+  const u = getCurrentUser();
+  const uname = (u.username || '').toLowerCase();
+  return !uname || uname === '@guest' || uname === '@account' || u.nickname === '訪客';
+});
 </script>
 
 <style scoped>

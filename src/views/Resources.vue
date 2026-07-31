@@ -111,20 +111,6 @@ const filters = computed(() => [
   transition: all 0.2s ease;
 }
 
-.action-icon-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.action-icon-btn.edit:hover {
-  color: #fbbf24;
-  border-color: rgba(245, 158, 11, 0.4);
-}
-
-.action-icon-btn.delete:hover {
-  color: #ef4444;
-  border-color: rgba(239, 68, 68, 0.4);
-}
-
 @media (max-width: 1024px) {
   .resources-grid {
     grid-template-columns: repeat(2, 1fr);
