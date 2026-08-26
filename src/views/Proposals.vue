@@ -165,7 +165,7 @@ const handleDelete = (item) => {
 
 .kanban-board {
   display: grid;
-  grid-template-columns: repeat(4, minmax(220px, 1fr));
+  grid-template-columns: repeat(4, minmax(360px, 1fr));
   gap: 1rem;
   align-items: start;
   overflow-x: auto;

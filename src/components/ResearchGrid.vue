@@ -187,7 +187,7 @@ import { ref, computed, reactive, onMounted, onUnmounted, nextTick, watch } from
 import PageHeader from './PageHeader.vue';
 import FilterToolbar from './FilterToolbar.vue';
 import FullscreenMediaOverlay from './FullscreenMediaOverlay.vue';
-import { getStorageData, deleteItem, isMyCreatedItem } from '../utils/storage';
+import { getStorageData, deleteItem, isMyCreatedItem, checkDeletePermission } from '../utils/storage';
 import { getCurrentUser, isAdminUser } from '../utils/userStore';
 import { formatDateTime } from '../utils/formatters';
 import NotificationBell from '../components/NotificationBell.vue';
@@ -235,9 +235,8 @@ const isGuest = computed(() => {
 
 /** 判斷目前登入者是否具備刪除該項目的權限 (管理員可刪除任何項目，一般使用者僅可刪除自己發佈的項目) */
 const canDeleteCardItem = (item) => {
-  if (!item || isGuest.value) return false;
-  if (isAdminUser()) return true;
-  return isMyCreatedItem(item);
+  if (!item) return false;
+  return checkDeletePermission(item).allowed;
 };
 
 const creatorOptions = computed(() => {

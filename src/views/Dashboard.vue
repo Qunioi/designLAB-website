@@ -191,11 +191,16 @@ const randomPrompt = computed(() => {
   return list[0];
 });
 
+import { copyToClipboard } from '../utils/clipboard';
+
 const copied = ref(false);
-const copyPrompt = () => {
-  navigator.clipboard.writeText(randomPrompt.value.prompt);
-  copied.value = true;
-  setTimeout(() => copied.value = false, 2000);
+const copyPrompt = async () => {
+  if (!randomPrompt.value || !randomPrompt.value.prompt) return;
+  const success = await copyToClipboard(randomPrompt.value.prompt);
+  if (success) {
+    copied.value = true;
+    setTimeout(() => copied.value = false, 2000);
+  }
 };
 
 const handleRecentClick = (item) => {

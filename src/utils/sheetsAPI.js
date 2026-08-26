@@ -54,10 +54,19 @@ export async function fetchSheetData(key) {
   const url = getSheetsUrl();
   if (!url) throw new Error('Sheets URL 未設定');
   const sheetName = KEY_MAP[key] || key;
-  const res = await fetch(`${url}?sheet=${sheetName}`);
-  const json = await res.json();
-  if (!json.success) throw new Error(json.error || '讀取失敗');
-  return json.data || [];
+  try {
+    const res = await fetch(`${url}?sheet=${sheetName}`);
+    if (!res.ok) {
+      console.warn(`[SheetsAPI] 擷取 ${sheetName} 失敗 (HTTP ${res.status})，改用本地暫存資料`);
+      return [];
+    }
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error || '讀取失敗');
+    return json.data || [];
+  } catch (err) {
+    console.warn(`[SheetsAPI] 擷取 ${sheetName} 發生例外:`, err);
+    return [];
+  }
 }
 
 /** 新增 / 更新一筆資料（fire-and-forget） */

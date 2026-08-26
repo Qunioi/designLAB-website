@@ -113,13 +113,9 @@
 
           <!-- AI Center Form -->
           <div v-else-if="type === 'AI_CENTER'" class="form-grid">
-            <div class="form-group">
+            <div class="form-group full-width">
               <label>AI 工具名稱 <span class="required">*</span></label>
               <input v-model="form.name" type="text" placeholder="例如：Midjourney v6" required />
-            </div>
-            <div class="form-group">
-              <label>工具網站連結</label>
-              <input v-model="form.link" type="text" @blur="form.link = ensureProtocol(form.link)" placeholder="例如：https://midjourney.com" />
             </div>
             <div class="form-group full-width">
               <label>主要使用情境</label>
