@@ -93,7 +93,7 @@ const filters = computed(() => [
   font-size: 0.65rem;
   font-weight: 600;
   color: var(--color-accent);
-  background: rgba(16, 185, 129, 0.1);
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
   padding: 0.15rem 0.4rem;
   border-radius: 4px;
 }

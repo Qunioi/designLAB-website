@@ -44,14 +44,7 @@
   </nav>
 
   <div class="mobile-nav-shell">
-    <button
-      type="button"
-      class="mobile-nav-trigger glass-panel"
-      :aria-expanded="isMobileMenuOpen ? 'true' : 'false'"
-      aria-controls="mobile-nav-drawer"
-      aria-label="開啟主要導覽"
-      @click="isMobileMenuOpen = true"
-    >
+    <div class="mobile-nav-trigger glass-panel">
       <div class="mobile-nav-brand">
         <div class="logo-icon"></div>
         <div class="mobile-nav-title">
@@ -59,10 +52,22 @@
           <span class="mobile-current-view">{{ currentViewLabel.labelZh }}</span>
         </div>
       </div>
-      <span class="mobile-menu-icon" aria-hidden="true">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-      </span>
-    </button>
+      <div class="mobile-header-actions">
+        <NotificationBell v-if="!isGuest" />
+        <button
+          type="button"
+          class="mobile-menu-btn"
+          :aria-expanded="isMobileMenuOpen ? 'true' : 'false'"
+          aria-controls="mobile-nav-drawer"
+          aria-label="開啟主要導覽"
+          @click="isMobileMenuOpen = !isMobileMenuOpen"
+        >
+          <span class="mobile-menu-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </span>
+        </button>
+      </div>
+    </div>
 
     <Transition name="mobile-drawer">
       <div v-if="isMobileMenuOpen" class="mobile-nav-backdrop" @click="closeMobileMenu">
@@ -167,6 +172,14 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue';
+import NotificationBell from './NotificationBell.vue';
+import { getCurrentUser } from '../utils/userStore';
+
+const isGuest = computed(() => {
+  const u = getCurrentUser();
+  const uname = (u.username || '').toLowerCase();
+  return !uname || uname === '@guest' || uname === '@account' || u.nickname === '訪客';
+});
 
 const props = defineProps({
   currentView: {
@@ -307,7 +320,7 @@ watch(() => props.currentView, () => {
   display: flex;
   align-items: center;
   gap: 0.85rem;
-  padding: 1.25rem 1rem;
+  padding: 0.85rem 1rem;
   color: var(--text-secondary);
   transition: all 0.2s ease;
   width: 100%;
@@ -446,9 +459,12 @@ watch(() => props.currentView, () => {
     top: 0.75rem;
     bottom: 0.75rem;
   }
-  .logo-text, .menu-label-group, .user-info {
+  .logo-text,
+  .menu-label-group,
+  .user-info {
     display: none;
   }
+
   .logo-area {
     padding: 0 0 1.5rem 0;
     justify-content: center;
@@ -472,7 +488,7 @@ watch(() => props.currentView, () => {
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .navigation-sidebar {
     display: none;
   }
@@ -491,7 +507,7 @@ watch(() => props.currentView, () => {
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0.85rem 1rem;
+    padding: 0.25rem .25rem 0.25rem 1rem;
     background: var(--sidebar-bg);
     border: 1px solid var(--border-color);
     border-radius: 16px;
@@ -525,6 +541,32 @@ watch(() => props.currentView, () => {
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 190px;
+  }
+
+  .mobile-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex-shrink: 0;
+  }
+
+.mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-menu-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--color-primary);
   }
 
   .mobile-menu-icon {

@@ -54,6 +54,15 @@
   --lh-normal: 1.55;
   --lh-relaxed: 1.7;
 
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
   /* Font families — 全面優先套用 Google Noto Sans TC (思源黑體 繁體中文) */
   --font-title: 'Noto Sans TC', 'LINE Seed TW', 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-body: 'Noto Sans TC', 'LINE Seed TW', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -86,6 +95,10 @@
   --color-secondary: #818cf8;
   --color-accent: #34d399;
   --color-danger: #f87171;
+  --color-success: var(--color-accent);
+  --color-warning: #f59e0b;
+  --color-info: var(--color-secondary);
+  --color-error: var(--color-danger);
 
   --glow-primary: rgba(99, 102, 241, 0.12);
   --glow-secondary: rgba(129, 140, 248, 0.12);
@@ -476,6 +489,15 @@ button {
   color: inherit;
 }
 
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 /* 全域按鈕統一樣式 (固定高對比白色文字 + 各主題動態光暈 shadow) */
 .add-btn,
 .btn-save {
@@ -599,7 +621,7 @@ input[list]::-webkit-list-button {
 .main-content {
   flex: 1;
   margin-left: var(--sidebar-width);
-  padding: 2.5rem;
+  padding: var(--space-8);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -651,8 +673,7 @@ input[list]::-webkit-list-button {
 .bento-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1.25rem;
-  margin-top: 1.5rem;
+  gap: var(--space-5);
 }
 
 
@@ -672,7 +693,7 @@ input[list]::-webkit-list-button {
 }
 
 .page-title {
-  font-size: 2rem;
+  font-size: var(--fs-h1);
   font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -0.02em;
@@ -680,7 +701,7 @@ input[list]::-webkit-list-button {
 
 .page-subtitle {
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: var(--fs-body);
   margin-top: 0.2rem;
 }
 
@@ -690,21 +711,21 @@ input[list]::-webkit-list-button {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1.25rem;
+  padding: var(--space-3) var(--space-5);
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 14px;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .search-box {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
   background: var(--bg-input);
   border: 1px solid var(--border-color);
-  padding: 0.5rem 1rem;
+  padding: var(--space-2) var(--space-4);
   border-radius: 10px;
   width: 320px;
   transition: border-color 0.2s;
@@ -728,14 +749,14 @@ input[list]::-webkit-list-button {
 
 .filter-options {
   display: flex;
-  gap: 0.75rem;
+  gap: var(--space-3);
   flex-wrap: wrap;
 }
 
 .filter-select {
   background: var(--bg-input);
   border: 1px solid var(--border-color);
-  padding: 0.5rem 1rem;
+  padding: var(--space-2) var(--space-4);
   border-radius: 10px;
   font-size: 0.85rem;
   color: var(--text-secondary);
@@ -879,8 +900,8 @@ input[list]::-webkit-list-button {
   font-size: 1rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-2);
 }
 
 .section-desc {
@@ -949,7 +970,7 @@ input[list]::-webkit-list-button {
 
   .main-content {
     margin-left: 0;
-    padding: calc(env(safe-area-inset-top, 0px) + 5.75rem) 1.25rem calc(env(safe-area-inset-bottom, 0px) + 4.8rem);
+    padding: calc(env(safe-area-inset-top, 0px) + 5.75rem) var(--space-5) calc(env(safe-area-inset-bottom, 0px) + 4.8rem);
   }
 
   .bento-grid {

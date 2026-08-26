@@ -213,7 +213,7 @@ const handleRecentClick = (item) => {
 .dashboard-container {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--space-6);
 }
 
 .dashboard-header {
@@ -223,19 +223,19 @@ const handleRecentClick = (item) => {
 }
 
 .page-title {
-  font-size: 2.25rem;
+  font-size: var(--fs-h1);
   font-weight: 800;
   letter-spacing: -1px;
 }
 
 .page-subtitle {
   color: var(--text-secondary);
-  font-size: 0.95rem;
+  font-size: var(--fs-body);
   margin-top: 0.25rem;
 }
 
 .bento-card {
-  padding: 1.5rem;
+  padding: var(--space-6);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -302,8 +302,8 @@ const handleRecentClick = (item) => {
 }
 
 .stats-card h3 {
-  font-size: 1.1rem;
-  margin-bottom: 1rem;
+  font-size: var(--fs-h3);
+  margin-bottom: var(--space-4);
 }
 
 .stats-grid {
@@ -358,12 +358,12 @@ const handleRecentClick = (item) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-4);
   width: 100%;
 }
 
 .card-header h3 {
-  font-size: 1.1rem;
+  font-size: var(--fs-h3);
 }
 
 .header-action {
@@ -382,7 +382,7 @@ const handleRecentClick = (item) => {
 .recent-item-row {
   display: flex;
   gap: 1rem;
-  padding: 0.75rem 1rem;
+  padding: var(--space-3) var(--space-4);
   border-radius: 12px;
   background: var(--bg-subtle);
   border: 1px solid var(--border-color);
@@ -486,7 +486,7 @@ const handleRecentClick = (item) => {
 .num.approved { color: var(--color-accent); }
 
 .prop-stat .lbl {
-  font-size: 0.75rem;
+  font-size: var(--fs-caption);
   color: var(--text-secondary);
   margin-top: 0.25rem;
 }
@@ -619,6 +619,32 @@ const handleRecentClick = (item) => {
   }
   .recent-card {
     grid-column: span 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .welcome-card,
+  .stats-card,
+  .recent-card,
+  .proposal-card,
+  .ai-prompt-card,
+  .quick-action-card {
+    grid-column: 1 / -1;
+  }
+  .search-trigger {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .bento-card {
+    padding: var(--space-5);
+  }
+}
+
+@media (max-width: 640px) {
+  .proposal-summary {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
   }
 }
 </style>

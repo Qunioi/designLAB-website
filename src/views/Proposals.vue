@@ -165,7 +165,7 @@ const handleDelete = (item) => {
 
 .kanban-board {
   display: grid;
-  grid-template-columns: repeat(4, minmax(360px, 1fr));
+  grid-template-columns: repeat(4, minmax(260px, 1fr));
   gap: 1rem;
   align-items: start;
   overflow-x: auto;
@@ -278,10 +278,18 @@ const handleDelete = (item) => {
   transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
-.kanban-card:hover .card-actions {
+.proposal-kanban-card:hover .card-actions {
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0);
+}
+
+@media (hover: none), (max-width: 768px) {
+  .card-actions {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: none !important;
+  }
 }
 
 .action-icon-btn {
@@ -302,13 +310,13 @@ const handleDelete = (item) => {
 }
 
 .action-icon-btn.edit:hover {
-  color: #fbbf24;
-  border-color: rgba(245, 158, 11, 0.4);
+  color: var(--color-warning);
+  border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
 }
 
 .action-icon-btn.delete:hover {
-  color: #ef4444;
-  border-color: rgba(239, 68, 68, 0.4);
+  color: var(--color-error);
+  border-color: color-mix(in srgb, var(--color-error) 40%, transparent);
 }
 
 .prop-title {
@@ -395,13 +403,16 @@ const handleDelete = (item) => {
 
 @media (max-width: 1024px) {
   .kanban-board {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 640px) {
   .kanban-board {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .kanban-column {
+    min-height: auto;
   }
 }
 </style>

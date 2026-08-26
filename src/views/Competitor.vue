@@ -102,11 +102,11 @@ const filters = computed(() => [
 
 <style scoped>
 /* 獨特指示燈狀態與顏色標題 */
-.pros-title    { color: #10b981; }
-.cons-title    { color: #ef4444; }
+.pros-title    { color: var(--color-success); }
+.cons-title    { color: var(--color-error); }
 .takeaways-title { color: var(--color-primary); }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; }
-.status-dot.green  { background: #10b981; }
-.status-dot.red    { background: #ef4444; }
+.status-dot.green  { background: var(--color-success); }
+.status-dot.red    { background: var(--color-error); }
 .status-dot.purple { background: var(--color-primary); }
 </style>

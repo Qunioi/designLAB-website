@@ -558,4 +558,28 @@ const getFilterButtonLabel = (f) => {
   color: var(--color-danger);
   text-decoration: underline;
 }
+
+@media (max-width: 768px) {
+  .filter-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.75rem 1rem;
+  }
+  .search-box {
+    width: 100%;
+  }
+  .filter-options {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .filter-dropdown-btn {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.8rem;
+  }
+  .tag-dropdown-menu {
+    right: auto;
+    left: 0;
+    max-width: calc(100vw - 2.5rem);
+  }
+}
 </style>

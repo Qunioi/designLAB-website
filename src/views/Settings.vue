@@ -2499,5 +2499,31 @@ const lightThemes = [
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
 }
+
+@media (max-width: 640px) {
+  .add-user-modal-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .add-user-modal-form .field-input,
+  .add-user-modal-form .role-select,
+  .add-user-modal-form .add-member-btn {
+    width: 100%;
+  }
+  .user-modal-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .user-modal-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .user-mgmt-modal,
+  .auth-modal {
+    width: 95%;
+    padding: 1.25rem 1rem;
+  }
+}
 </style>
 

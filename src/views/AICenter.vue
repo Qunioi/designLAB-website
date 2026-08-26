@@ -34,21 +34,25 @@
           <div class="ai-title-group">
             <h2 class="ai-name">{{ item.name }}</h2>
           </div>
-          <div class="card-actions">
-            <button class="action-icon-btn edit" @click="$emit('trigger-crud', { type: 'AI_CENTER', item })" title="編輯"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></button>
-            <button v-if="canDelete(item)" class="action-icon-btn delete" @click="handleDelete(item)" title="刪除"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-          </div>
         </div>
 
         <div class="ai-card-body">
           <div class="ai-section">
-            <h4 class="section-title">使用情境 (Use Case)</h4>
+            <h4 class="section-title">
+              <span>
+                ♦︎ 使用情境
+              </span>
+              <div class="card-actions">
+                <button class="action-icon-btn edit" @click="$emit('trigger-crud', { type: 'AI_CENTER', item })" title="編輯"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></button>
+                <button v-if="canDelete(item)" class="action-icon-btn delete" @click="handleDelete(item)" title="刪除"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+              </div>
+            </h4>
             <p class="section-desc">{{ item.useCase }}</p>
           </div>
 
           <div class="ai-section prompt-section" v-if="item.prompt">
             <div class="prompt-header">
-              <h4 class="section-title">= 推薦 Prompt</h4>
+              <h4 class="section-title">♦︎ 提示詞</h4>
               <!-- <button 
                 class="copy-btn" 
                 :class="{ copied: copyStates[item.id] }"
@@ -72,7 +76,7 @@
           </div>
 
           <div class="ai-section" v-if="item.workflow">
-            <h4 class="section-title">工作流程 (Workflow)</h4>
+            <h4 class="section-title">♦︎ 工作流程</h4>
             <div class="workflow-steps">
               <div v-for="(step, idx) in parseWorkflow(item.workflow)" :key="idx" class="workflow-step-item">
                 <span class="step-num">{{ idx + 1 }}</span>
@@ -208,7 +212,7 @@ const handleDelete = (item) => {
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  /* gap: 1.25rem; */
   background: var(--glass-bg);
 }
 
@@ -218,9 +222,9 @@ const handleDelete = (item) => {
 }
 
 .ai-card-header {
-  display: flex;
+  /* display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: flex-start; */
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 0.75rem;
 }
@@ -252,6 +256,9 @@ const handleDelete = (item) => {
   pointer-events: none;
   transition: opacity 0.2s ease, transform 0.2s ease;
   transform: translateY(-2px);
+  position: absolute;
+  right: 0;
+  top: -4px;
 }
 
 .ai-card:hover .card-actions {
@@ -278,25 +285,25 @@ const handleDelete = (item) => {
 }
 
 .action-icon-btn.edit:hover {
-  color: #fbbf24;
-  border-color: rgba(245, 158, 11, 0.4);
+  color: var(--color-warning);
+  border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
 }
 
 .action-icon-btn.delete:hover {
-  color: #ef4444;
-  border-color: rgba(239, 68, 68, 0.4);
+  color: var(--color-error);
+  border-color: color-mix(in srgb, var(--color-error) 40%, transparent);
 }
 
 .ai-section {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
 }
 
 .section-title {
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--text-primary);
+  position: relative;
 }
 
 .section-desc {
@@ -480,9 +487,14 @@ const handleDelete = (item) => {
   color: var(--text-secondary);
 }
 
-@media (max-width: 768px) {
+@media (hover: none), (max-width: 768px) {
   .ai-grid {
     grid-template-columns: 1fr;
+  }
+  .card-actions {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: none !important;
   }
 }
 </style>

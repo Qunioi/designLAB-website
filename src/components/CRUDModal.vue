@@ -118,15 +118,15 @@
               <input v-model="form.name" type="text" placeholder="例如：Midjourney v6" required />
             </div>
             <div class="form-group full-width">
-              <label>主要使用情境</label>
+              <label>使用情境</label>
               <textarea v-model="form.useCase" rows="2" placeholder="例如：概念插畫生成、配色風格探索..."></textarea>
             </div>
             <div class="form-group full-width">
-              <label>推薦 Prompt 範本</label>
+              <label>提示詞</label>
               <textarea v-model="form.prompt" rows="3" placeholder="請輸入經測試效果良好的 Prompt..."></textarea>
             </div>
             <div class="form-group full-width">
-              <label>工作流程 (Workflow) - 請用 -> 分隔步驟</label>
+              <label>工作流程(請用 -> 分隔步驟)</label>
               <textarea v-model="form.workflow" rows="2" placeholder="例如：ChatGPT 優化 Prompt -> Midjourney 生成 -> Figma 局部微調"></textarea>
             </div>
           </div>
@@ -556,6 +556,17 @@ textarea {
 }
 
 @media (max-width: 640px) {
+  .modal-backdrop {
+    padding: 0.75rem;
+  }
+  .modal-container {
+    max-height: 94vh;
+    border-radius: 16px;
+  }
+  .modal-body {
+    padding: 1rem;
+    -webkit-overflow-scrolling: touch;
+  }
   .form-grid {
     grid-template-columns: 1fr;
   }
