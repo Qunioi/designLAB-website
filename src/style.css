@@ -98,8 +98,9 @@
 
   /* Font Families */
   --font-title: 'Outfit', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body: 'Outfit', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   /* --font-body: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; */
-  /* --font-code: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace; */
+  --font-code: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
 
   /* Layout */
   --sidebar-width: 260px;
@@ -157,10 +158,14 @@
   --z-lightbox: 1200;
   --z-fullscreen: 1300;
 
-  /* Subtle Crisp Shadow (No diffused neon halos) */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.35);
+  /* Theme-aware depth tokens: hue comes from each theme's primary colour. */
+  --shadow-color: #000000;
+  --shadow-sm: 0 1px 3px color-mix(in srgb, var(--shadow-color) 16%, transparent);
+  --shadow-md: 0 4px 12px color-mix(in srgb, var(--shadow-color) 22%, transparent);
+  --shadow-lg: 0 12px 28px color-mix(in srgb, var(--shadow-color) 30%, transparent);
+  --shadow-media: 0 20px 50px color-mix(in srgb, var(--shadow-color) 42%, transparent);
+  --shadow-up: 0 -4px 20px color-mix(in srgb, var(--shadow-color) 24%, transparent);
+  --shadow-inset: inset 0 0 10px color-mix(in srgb, var(--shadow-color) 10%, transparent);
 
   --glow-primary: rgba(99, 102, 241, 0.08);
   --glow-secondary: rgba(129, 140, 248, 0.08);
@@ -191,6 +196,7 @@
   --bg-hover: rgba(139, 92, 199, 0.16);
   --bg-input: rgba(201, 203, 234, 0.055);
   --sidebar-bg: #171926;
+  --shadow-color: #8b5cc7;
 }
 
 /* DARK 2 — GitHub Dark / Graphite Workshop */
@@ -214,6 +220,7 @@
   --bg-hover: rgba(120, 169, 255, 0.12);
   --bg-input: rgba(226, 232, 240, 0.05);
   --sidebar-bg: #14161c;
+  --shadow-color: #78a9ff;
 }
 
 /* DARK 3 — Obsidian Neon (Warm Ink + Copper) */
@@ -236,6 +243,7 @@
   --bg-hover: rgba(229, 168, 107, 0.13);
   --bg-input: rgba(255, 237, 213, 0.05);
   --sidebar-bg: #12100f;
+  --shadow-color: #e5a86b;
 }
 
 /* DARK 4 — Nord Polar Night */
@@ -257,6 +265,7 @@
   --bg-hover: rgba(136, 192, 208, 0.08);
   --bg-input: rgba(236, 239, 244, 0.04);
   --sidebar-bg: #111620;
+  --shadow-color: #88c0d0;
 }
 
 /* LIGHT 1 — Cloud Canvas (Airy Crisp Pure White + Royal Azure) */
@@ -278,9 +287,7 @@
   --bg-hover: rgba(37, 99, 235, 0.06);
   --bg-input: rgba(15, 23, 42, 0.03);;
   --sidebar-bg: #f1f5fa;
-  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
-  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
-  --shadow-lg: 0 12px 28px rgba(15, 23, 42, 0.12);
+  --shadow-color: #2563eb;
 }
 
 /* LIGHT 2 — Material Light (Subtle Cool Grey + Electric Azure) */
@@ -302,9 +309,7 @@
   --bg-hover: hsl(174 42% 50% / 0.1);
   --bg-input: rgba(30, 41, 59, 0.035);
   --sidebar-bg: #f1f5fa;
-  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
-  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
-  --shadow-lg: 0 12px 28px rgba(15, 23, 42, 0.12);
+  --shadow-color: hsl(174 42% 50%);
 }
 
 /* LIGHT 3 — Office Access (Office Red + Paper White) */
@@ -326,9 +331,7 @@
   --bg-hover: rgba(178, 58, 63, 0.09);
   --bg-input: rgba(50, 49, 48, 0.045);
   --sidebar-bg: #faf9f8;
-  --shadow-sm: 0 1px 3px rgba(50, 49, 48, 0.08);
-  --shadow-md: 0 4px 12px rgba(50, 49, 48, 0.12);
-  --shadow-lg: 0 12px 28px rgba(50, 49, 48, 0.16);
+  --shadow-color: #b23a3f;
 }
 
 /* LIGHT 4 — Nord Snow (Arctic Crisp Ice Canvas) */
@@ -350,6 +353,28 @@
   --bg-hover: rgba(94, 129, 172, 0.07);
   --bg-input: rgba(46, 52, 64, 0.035);
   --sidebar-bg: #e5ebf3;
+  --shadow-color: #5e81ac;
+}
+
+/* Recalculate depth tokens on the themed element itself.
+   CSS custom properties declared on :root are otherwise resolved before a
+   descendant theme class can override --shadow-color. */
+.theme-midnight-indigo,
+.theme-midnight-slate,
+.theme-charcoal-ember,
+.theme-github-dark,
+.theme-obsidian-neon,
+.theme-nord-dark,
+.theme-cloud-canvas,
+.theme-material-light,
+.theme-office-access,
+.theme-nord-light {
+  --shadow-sm: 0 1px 3px color-mix(in srgb, var(--shadow-color) 16%, transparent);
+  --shadow-md: 0 4px 12px color-mix(in srgb, var(--shadow-color) 22%, transparent);
+  --shadow-lg: 0 12px 28px color-mix(in srgb, var(--shadow-color) 30%, transparent);
+  --shadow-media: 0 20px 50px color-mix(in srgb, var(--shadow-color) 42%, transparent);
+  --shadow-up: 0 -4px 20px color-mix(in srgb, var(--shadow-color) 24%, transparent);
+  --shadow-inset: inset 0 0 10px color-mix(in srgb, var(--shadow-color) 10%, transparent);
 }
 
 /* ============================================================

@@ -370,7 +370,7 @@ const getFilterButtonLabel = (f) => {
   border-radius: 12px;
   padding: 0.75rem;
   z-index: 500;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;

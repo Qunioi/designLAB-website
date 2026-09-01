@@ -160,13 +160,13 @@ const menuItems = [
     view: 'Dashboard', 
     labelZh: '首頁',
     labelEn: 'Dashboard', 
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>`
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7"></path><path d="M5 9v11h14V9"></path><path d="M9 20v-6h6v6"></path></svg>`
   },
   { 
     view: 'UIResearch', 
     labelZh: 'UI 設計研究', 
     labelEn: 'UI Research', 
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>`
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>`
   },
   { 
     view: 'MotionResearch', 
@@ -184,13 +184,13 @@ const menuItems = [
     view: 'AICenter', 
     labelZh: 'AI 工具中心', 
     labelEn: 'AI Center', 
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>`
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"></path><path d="m19 16 .8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16Z"></path></svg>`
   },
   { 
     view: 'Resources', 
     labelZh: '設計資源',
     labelEn: 'Resources', 
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5v-15Z"></path><path d="M4 20.5A2.5 2.5 0 0 1 6.5 18H20"></path><path d="M8 7h8M8 10h6"></path></svg>`
   }
   // ,
   // { 
@@ -236,10 +236,10 @@ watch(() => props.currentView, () => {
   width: calc(var(--sidebar-width) - 1.25rem);
   display: flex;
   flex-direction: column;
-  border-radius: var(--radius-xl);
+  border-radius: 22px;
   background: var(--sidebar-bg);
   border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
+  /* box-shadow: var(--shadow-sm); */
   z-index: 100;
   padding: 0.5rem 0.25rem;
 }
@@ -413,6 +413,7 @@ watch(() => props.currentView, () => {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  line-height: 1.2;
 }
 
 .user-name {
@@ -685,6 +686,20 @@ watch(() => props.currentView, () => {
     color: var(--text-muted);
   }
 
+  .mobile-settings-entry .user-info {
+    display: flex;
+    min-width: 0;
+  }
+
+  .mobile-settings-entry .user-name,
+  .mobile-settings-entry .user-role {
+    color: var(--text-primary);
+  }
+
+  .mobile-settings-entry .user-role {
+    color: var(--text-muted);
+  }
+
   .mobile-menu-item.active .menu-title-zh {
     color: var(--color-primary);
   }
@@ -738,7 +753,7 @@ watch(() => props.currentView, () => {
     padding: 0.5rem 0.25rem calc(env(safe-area-inset-bottom, 0px) + 0.35rem);
     background: var(--bg-elevated);
     border-top: 1px solid var(--border-color);
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--shadow-up);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
   }

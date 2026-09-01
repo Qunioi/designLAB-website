@@ -145,7 +145,7 @@ const handleMarkAllRead = () => {
   align-items: center;
   justify-content: center;
   line-height: 1;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-sm);
   font-variant-numeric: tabular-nums;
   z-index: 2;
 }

@@ -6,8 +6,9 @@
     />
 
     <div class="bento-grid">
-      <!-- 1. Welcome Card -->
-      <div class="bento-card welcome-card glass-panel">
+      <!-- 1. Unified overview: orientation + knowledge inventory -->
+      <section class="dashboard-overview glass-panel">
+      <div class="bento-card welcome-card">
         <div class="welcome-content">
           <h2>從一個設計問題開始</h2>
           <p>搜尋研究案例、整理設計洞察，或查看目前的優化提案，快速找到下一個可執行的方向。</p>
@@ -19,9 +20,11 @@
         </div>
       </div>
 
-      <!-- 2. Stats Card -->
-      <div class="bento-card stats-card glass-panel">
-        <h3>庫存知識庫</h3>
+      <div class="bento-card stats-card">
+        <div class="stats-heading">
+          <h3>內容總覽</h3>
+          <span>共 {{ stats.total }} 筆</span>
+        </div>
         <div class="stats-grid">
           <div class="stat-item" @click="$emit('change-view', 'UIResearch')">
             <span class="stat-val">{{ stats.ui }}</span>
@@ -41,6 +44,7 @@
           </div>
         </div>
       </div>
+      </section>
 
       <!-- 3. Latest research cards -->
       <section class="dashboard-latest">
@@ -195,7 +199,11 @@ const stats = computed(() => {
     ui: getStorageData('UI_RESEARCH').length,
     motion: getStorageData('MOTION_RESEARCH').length,
     comp: getStorageData('COMPETITORS').length,
-    ai: getStorageData('AI_CENTER').length
+    ai: getStorageData('AI_CENTER').length,
+    total: getStorageData('UI_RESEARCH').length
+      + getStorageData('MOTION_RESEARCH').length
+      + getStorageData('COMPETITORS').length
+      + getStorageData('AI_CENTER').length
   };
 });
 
@@ -313,6 +321,59 @@ const handleRecentClick = (item) => {
   border-radius: var(--radius-xl);
 }
 
+.dashboard-overview {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+  align-items: stretch;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--bg-card) 86%, transparent);
+}
+
+.dashboard-overview .welcome-card,
+.dashboard-overview .stats-card {
+  grid-column: auto;
+  min-height: 250px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.dashboard-overview .welcome-card {
+  justify-content: center;
+}
+
+.dashboard-overview .stats-card {
+  justify-content: center;
+  border-left: 1px solid var(--border-color);
+}
+
+.dashboard-overview .stats-card h3 {
+  margin: 0;
+}
+
+.dashboard-overview .stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+  flex: 0 1 auto;
+}
+
+.stats-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.stats-heading span {
+  color: var(--text-muted);
+  font-size: var(--fs-tiny);
+  white-space: nowrap;
+}
+
 .welcome-card {
   grid-column: span 3;
   padding: 2.25rem;
@@ -403,6 +464,19 @@ const handleRecentClick = (item) => {
   min-width: 0;
 }
 
+.dashboard-overview .stat-item {
+  min-height: 72px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.65rem 0.75rem;
+}
+
+.dashboard-overview .stat-lbl {
+  text-align: left;
+}
+
 .stat-item:hover {
   background: var(--bg-hover);
   border-color: var(--color-primary);
@@ -410,7 +484,7 @@ const handleRecentClick = (item) => {
 }
 
 .stat-val {
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 800;
   color: var(--color-primary);
   line-height: 1;
@@ -493,7 +567,7 @@ const handleRecentClick = (item) => {
 .dashboard-card-info {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.2rem;
   padding: 0.85rem;
 }
 
@@ -515,8 +589,8 @@ const handleRecentClick = (item) => {
   min-width: 0;
   color: var(--text-primary);
   font-family: var(--font-title);
-  font-size: var(--fs-body-lg);
-  font-weight: 700;
+  font-size: var(--fs-body);
+  font-weight: 600;
   line-height: 1.35;
   display: -webkit-box;
   overflow: hidden;
@@ -840,7 +914,7 @@ const handleRecentClick = (item) => {
   }
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1040px) {
   .dashboard-latest-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -862,6 +936,9 @@ const handleRecentClick = (item) => {
   .dashboard-latest-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+  .dashboard-overview {
+    grid-template-columns: minmax(0, 1fr) minmax(190px, 240px);
+  }
 }
 
 @media (max-width: 768px) {
@@ -882,7 +959,15 @@ const handleRecentClick = (item) => {
     padding: var(--space-5);
   }
   .dashboard-latest-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dashboard-overview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dashboard-overview .stats-card {
+    min-height: 0;
+    border-top: 1px solid var(--border-color);
+    border-left: 0;
   }
 }
 

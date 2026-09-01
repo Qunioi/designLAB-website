@@ -1021,7 +1021,7 @@ const lightThemes = [
 .settings-view {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1rem;
 }
 
 .settings-header {
@@ -1449,7 +1449,7 @@ const lightThemes = [
   margin: 8px 8px 0 8px;
   border-radius: 8px;
   border: 1px solid rgba(128, 128, 128, 0.15);
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-inset);
 }
 
 .preview-sidebar {
@@ -1556,10 +1556,6 @@ const lightThemes = [
 
 
 /* ========= GOOGLE SHEETS PANEL ========= */
-.sheets-panel {
-  margin-top: 1.5rem;
-}
-
 .connection-dot {
   width: 8px;
   height: 8px;
@@ -2365,7 +2361,7 @@ const lightThemes = [
   border: 1px solid var(--border-color-hover);
   border-radius: var(--modal-radius);
   padding: 1.75rem;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--shadow-lg);
   margin: auto;
   display: flex;
   flex-direction: column;

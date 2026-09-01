@@ -526,7 +526,7 @@ onUnmounted(() => {
   justify-content: center;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  box-shadow: var(--shadow-media);
 }
 
 .fullscreen-image {

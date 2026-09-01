@@ -52,7 +52,7 @@ defineEmits(['close']);
   max-height: 85vh;
   object-fit: contain;
   border-radius: 12px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--shadow-media);
 }
 
 .fullscreen-close-btn {

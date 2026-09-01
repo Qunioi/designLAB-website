@@ -12,7 +12,7 @@
 
 .glass-panel:hover {
   border-color: var(--border-color-hover);
-  box-shadow: var(--shadow-md);
+  /* box-shadow: var(--shadow-md); */
 }
 
 .card-actions { display: flex; gap: 0.35rem; }

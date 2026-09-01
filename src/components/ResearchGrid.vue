@@ -674,7 +674,7 @@ const handleDelete = (item) => {
   background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--shadow-lg);
   z-index: 500;
   display: flex;
   flex-direction: column;
@@ -859,7 +859,7 @@ const handleDelete = (item) => {
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--bg-card) 84%, transparent);
   border: 1px solid color-mix(in srgb, var(--border-color) 62%, transparent);
-  box-shadow: var(--shadow-sm);
+  /* box-shadow: var(--shadow-sm); */
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .research-card:hover {
@@ -989,7 +989,7 @@ const handleDelete = (item) => {
   background: rgba(15, 23, 42, 0.58);
   color: #ffffff;
   opacity: 0.88;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-sm);
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
 }
 .media-ext-link svg {
@@ -1260,7 +1260,7 @@ const handleDelete = (item) => {
   max-height: 85vh;
   border-radius: 12px;
   outline: none;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--shadow-media);
 }
 
 .lightbox-img {
@@ -1300,7 +1300,7 @@ const handleDelete = (item) => {
   max-height: 95vh;
   object-fit: contain;
   border-radius: 12px;
-  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.8);
+  box-shadow: var(--shadow-media);
   cursor: default;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
