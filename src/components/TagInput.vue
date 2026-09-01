@@ -153,17 +153,16 @@ const filteredSuggestions = computed(() => {
   align-items: center;
   gap: 0.4rem;
   background: var(--bg-input);
-  border: 1px solid transparent;
+  border: 1px solid var(--border-color);
   padding: 0.45rem 0.65rem;
-  border-radius: 10px;
-  min-height: 42px;
-  transition: all 0.2s ease;
+  border-radius: var(--radius-sm);
+  min-height: 40px;
+  transition: border-color 0.18s ease;
   cursor: text;
 }
 
 .tag-chips-wrapper:focus-within {
   border-color: var(--color-primary);
-  box-shadow: 0 0 10px var(--glow-primary);
 }
 
 .tag-chip {
@@ -171,19 +170,20 @@ const filteredSuggestions = computed(() => {
   align-items: center;
   gap: 0.35rem;
   color: var(--text-secondary);
+  background: var(--bg-subtle);
   border: 1px solid var(--border-color);
-  
   font-size: 0.7175rem;
   font-weight: 600;
   padding: 0.2rem 0.55rem;
   border-radius: 16px;
   line-height: 1.2;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .tag-chip:hover {
-  background: var(--glow-primary);
-  color: var(--color-primary);
-  border: 1px solid var(--color-primary);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-color-hover);
 }
 
 .remove-btn {
@@ -196,7 +196,7 @@ const filteredSuggestions = computed(() => {
   font-size: 0.5875rem;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
 }
 .remove-btn:hover {
   background: var(--color-primary);
@@ -215,21 +215,20 @@ const filteredSuggestions = computed(() => {
 }
 
 .chip-input::placeholder {
-  color: var(--text-muted) !important;
-  opacity: 1 !important;
-  -webkit-text-fill-color: var(--text-muted) !important;
+  color: var(--text-muted);
+  opacity: 1;
 }
 
 /* 歷史標籤建議選單 */
 .suggestions-dropdown {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 4px);
   left: 0;
   right: 0;
   background: var(--bg-elevated);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
   z-index: 100;
   overflow: hidden;
 }
@@ -263,13 +262,13 @@ const filteredSuggestions = computed(() => {
   padding: 0.25rem 0.6rem;
   border-radius: 16px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .suggestion-item:hover {
-  background: var(--glow-primary);
-  color: var(--color-primary);
-  border-color: var(--color-primary);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-color-hover);
   transform: translateY(-1px);
 }
 

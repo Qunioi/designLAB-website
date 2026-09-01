@@ -384,7 +384,14 @@ export function getUserTheme() {
   const profiles = getUserProfiles();
   const matched = profiles.find(p => p.username.toLowerCase() === currentUser.username.toLowerCase());
   const userTheme = localStorage.getItem(`design_lab_theme_${currentUser.username.toLowerCase()}`);
-  return matched?.themeClass || userTheme || 'theme-cloud-canvas';
+  const savedTheme = matched?.themeClass || userTheme || 'theme-cloud-canvas';
+  const legacyThemeAliases = {
+    'theme-midnight-slate': 'theme-midnight-indigo',
+    'theme-charcoal-ember': 'theme-github-dark',
+    'theme-sand-dune': 'theme-material-light',
+    'theme-frost-mint': 'theme-office-access'
+  };
+  return legacyThemeAliases[savedTheme] || savedTheme;
 }
 
 /** 檢查當前是否處於開發者模擬帳號狀態 */

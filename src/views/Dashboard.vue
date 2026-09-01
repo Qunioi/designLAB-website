@@ -7,7 +7,7 @@
 
     <div class="bento-grid">
       <!-- 1. Welcome Card -->
-      <div class="bento-card welcome-card glass-panel glow-purple">
+      <div class="bento-card welcome-card glass-panel">
         <div class="welcome-content">
           <h2>從一個設計問題開始</h2>
           <p>搜尋研究案例、整理設計洞察，或查看目前的優化提案，快速找到下一個可執行的方向。</p>
@@ -68,7 +68,7 @@
       </div>
 
       <!-- 4. Proposal Stats -->
-      <div class="bento-card proposal-card glass-panel glow-blue" @click="$emit('change-view', 'Proposals')">
+      <div class="bento-card proposal-card glass-panel" @click="$emit('change-view', 'Proposals')">
         <div class="card-header">
           <h3>優化提案進度</h3>
           <button class="card-action-link" type="button" @click.stop="$emit('change-view', 'Proposals')">互動看板 →</button>
@@ -205,8 +205,8 @@ const proposalStats = computed(() => {
 
 const recentItems = computed(() => {
   const _ = refreshTrigger.value;
-  const ui = getStorageData('UI_RESEARCH').map(i => ({ ...i, type: 'ui', typeLabel: 'UI 研究' }));
-  const motion = getStorageData('MOTION_RESEARCH').map(i => ({ ...i, type: 'motion', typeLabel: '動態設計' }));
+  const ui = getStorageData('UI_RESEARCH').map(i => ({ ...i, type: 'ui', typeLabel: 'UI 設計研究' }));
+  const motion = getStorageData('MOTION_RESEARCH').map(i => ({ ...i, type: 'motion', typeLabel: '動態研究' }));
   
   return [...ui, ...motion].slice(0, 3);
 });
@@ -275,7 +275,7 @@ const handleRecentClick = (item) => {
 .dashboard-container {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: 2rem;
 }
 
 .dashboard-header {
@@ -285,81 +285,86 @@ const handleRecentClick = (item) => {
 }
 
 .bento-card {
-  padding: var(--space-6);
+  padding: 1.75rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 180px;
+  min-height: 190px;
+  border-radius: var(--radius-xl);
 }
 
 .welcome-card {
   grid-column: span 3;
+  padding: 2.25rem;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .welcome-card:hover {
-  border-color: var(--color-primary);
+  border-color: var(--border-color-hover);
   box-shadow: var(--shadow-md);
 }
 
 .welcome-content h2 {
-  font-size: 1.438rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
   margin-bottom: 0.75rem;
   color: var(--text-primary);
 }
 
 .welcome-content p {
   color: var(--text-secondary);
-  font-size: 0.8375rem;
-  line-height: 1.5;
-  max-width: 80%;
-  margin-bottom: 1.25rem;
+  font-size: var(--fs-body);
+  line-height: 1.65;
+  max-width: 85%;
+  margin-bottom: 1.5rem;
 }
 
 .search-trigger {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.85rem;
   background: var(--bg-input);
   border: 1px solid var(--border-color);
   padding: 0.65rem 1.25rem;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   color: var(--text-secondary);
-  width: 280px;
+  width: 320px;
+  max-width: 100%;
   justify-content: space-between;
-  transition: all 0.2s ease;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
   box-shadow: var(--shadow-sm);
 }
 
 .search-trigger:hover {
   background: var(--bg-hover);
   border-color: var(--color-primary);
-  color: var(--color-primary);
-  box-shadow: 0 4px 15px var(--glow-primary);
+  color: var(--text-primary);
 }
 
 .kbd-badge {
   background: var(--bg-subtle);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
-  font-size: 0.6875rem;
+  font-size: var(--fs-tiny);
   font-weight: 700;
-  padding: 0.15rem 0.4rem;
+  padding: 0.15rem 0.45rem;
   border-radius: 6px;
 }
 
 .stats-card h3 {
   font-size: var(--fs-h3);
-  margin-bottom: var(--space-4);
+  font-weight: 700;
+  margin-bottom: 1rem;
 }
 
 .stats-grid {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.55rem;
   flex: 1;
   justify-content: space-between;
 }
@@ -368,13 +373,13 @@ const handleRecentClick = (item) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.75rem;
   background: var(--bg-subtle);
   border: 1px solid var(--border-color);
-  padding: 0.45rem 0.75rem;
-  border-radius: 8px;
+  padding: 0.55rem 0.85rem;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.15s ease;
   min-width: 0;
 }
 
@@ -385,11 +390,12 @@ const handleRecentClick = (item) => {
 }
 
 .stat-val {
-  font-size: 1.238rem;
+  font-size: 1.35rem;
   font-weight: 800;
   color: var(--color-primary);
   line-height: 1;
   flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-lbl {
@@ -397,6 +403,7 @@ const handleRecentClick = (item) => {
   color: var(--text-secondary);
   white-space: nowrap;
   text-align: right;
+  font-weight: 500;
 }
 
 .recent-card {
@@ -408,23 +415,19 @@ const handleRecentClick = (item) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-3);
+  margin-bottom: 1rem;
   width: 100%;
 }
 
 .card-header h3 {
   font-size: var(--fs-h3);
+  font-weight: 700;
 }
 
 .card-action-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  /* min-height: var(--control-height-sm); */
-  /* padding: 0.35rem 0.7rem; */
-  /* border: 1px solid color-mix(in srgb, var(--color-primary) 42%, var(--border-color)); */
-  /* border-radius: var(--radius-sm); */
-  /* background: var(--glow-primary); */
   color: var(--color-primary);
   font: inherit;
   font-size: var(--fs-meta);
@@ -432,15 +435,14 @@ const handleRecentClick = (item) => {
   line-height: 1.2;
   white-space: nowrap;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.18s ease, color 0.18s ease;
 }
 
 .card-action-link:hover {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: #ffffff;
-  box-shadow: 0 2px 8px var(--glow-primary);
-  transform: translateY(-1px);
+  background: var(--bg-hover);
+  color: var(--color-primary);
 }
 
 .card-action-link:active {
@@ -456,41 +458,43 @@ const handleRecentClick = (item) => {
 
 .recent-item-row {
   display: flex;
-  gap: 1rem;
-  padding: var(--space-3) var(--space-4);
-  border-radius: 12px;
+  gap: 0.85rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: var(--radius-md);
   background: var(--bg-subtle);
   border: 1px solid var(--border-color);
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
   align-items: center;
 }
 
 .recent-item-row:hover {
   background: var(--bg-hover);
-  border-color: var(--color-primary);
-  box-shadow: 0 4px 20px var(--glow-primary);
-  transform: translateX(4px);
+  border-color: var(--border-color-hover);
+  box-shadow: var(--shadow-sm);
+  transform: translateX(2px);
 }
 
 .recent-img {
-  width: 50px;
-  height: 50px;
-  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
   object-fit: cover;
   background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
 }
 
 .recent-text {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.2rem;
   flex: 1;
-  overflow: hidden;
+  min-width: 0;
 }
 
 .recent-row-title {
-  font-size: 0.8375rem;
+  font-size: var(--fs-body);
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
@@ -504,25 +508,10 @@ const handleRecentClick = (item) => {
   align-items: center;
 }
 
-.type-badge {
-  font-size: 0.5875rem;
-  padding: 0.1rem 0.35rem;
-  border-radius: 4px;
-}
-
-.type-badge.ui {
-  background: var(--glow-primary);
-  color: var(--color-primary);
-}
-
-.type-badge.motion {
-  background: var(--glow-secondary);
-  color: var(--color-secondary);
-}
-
 .date {
-  font-size: 0.6875rem;
+  font-size: var(--fs-meta);
   color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
 }
 
 .proposal-card {
@@ -540,22 +529,29 @@ const handleRecentClick = (item) => {
 .prop-stat {
   display: flex;
   flex-direction: column;
+  background: var(--bg-subtle);
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
 }
 
 .prop-stat .num {
-  font-size: 1.538rem;
+  font-size: 1.35rem;
   font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
 }
 
 .num.idea { color: var(--text-muted); }
-.num.eval { color: #f59e0b; }
+.num.eval { color: var(--color-warning); }
 .num.proto { color: var(--color-secondary); }
 .num.approved { color: var(--color-accent); }
 
 .prop-stat .lbl {
   font-size: var(--fs-caption);
   color: var(--text-secondary);
-  margin-top: 0.25rem;
+  margin-top: 0.2rem;
+  font-weight: 500;
 }
 
 .ai-prompt-card {
@@ -573,65 +569,62 @@ const handleRecentClick = (item) => {
 }
 
 .ai-tool-pill {
-  font-size: 0.6375rem;
+  font-size: var(--fs-tiny);
   font-weight: 600;
   padding: 0.15rem 0.5rem;
   border-radius: 9999px;
-  background: var(--glow-primary);
+  background: var(--bg-hover);
   color: var(--color-primary);
-  border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
+  border: 1px solid var(--border-color);
 }
 
 .cycle-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.6875rem;
+  font-size: var(--fs-tiny);
   font-weight: 500;
   padding: 0.25rem 0.55rem;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: var(--bg-subtle);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
 .cycle-btn:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
-  border-color: var(--text-muted);
+  border-color: var(--border-color-hover);
 }
 
 .ai-card-content {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
-  flex: 1;
+  gap: 0.5rem;
 }
 
 .ai-usecase-row {
   display: flex;
-  align-items: baseline;
-  gap: 0.45rem;
-  font-size: 0.7175rem;
-  line-height: 1.4;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .usecase-tag {
-  font-size: 0.6575rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: var(--fs-meta);
+  font-weight: 600;
+  color: var(--color-primary);
 }
 
 .usecase-tag .dot {
-  display: inline-block;
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: var(--color-primary);
-  margin-right: 4px;
 }
 
 .usecase-text {
@@ -645,7 +638,7 @@ const handleRecentClick = (item) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.6875rem;
+  font-size: var(--fs-meta);
   color: var(--text-muted);
   padding-top: 0.2rem;
 }
@@ -656,7 +649,7 @@ const handleRecentClick = (item) => {
   gap: 0.4rem;
   color: var(--text-secondary);
   font-weight: 500;
-  font-size: 0.6875rem;
+  font-size: var(--fs-meta);
 }
 
 .tool-label .dot {
@@ -680,41 +673,41 @@ const handleRecentClick = (item) => {
 .btn {
   flex: 1;
   padding: 0.75rem;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-weight: 600;
   font-size: 0.7875rem;
   text-align: center;
-  transition: all 0.2s ease;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
 
 .btn-primary {
-  background: var(--glow-primary);
+  background: var(--bg-subtle);
   border: 1px solid var(--color-primary);
   color: var(--color-primary);
 }
 .btn-primary:hover {
   background: var(--color-primary);
-  color: white;
+  color: #ffffff;
 }
 
 .btn-secondary {
-  background: var(--glow-secondary);
+  background: var(--bg-subtle);
   border: 1px solid var(--color-secondary);
   color: var(--color-secondary);
 }
 .btn-secondary:hover {
   background: var(--color-secondary);
-  color: white;
+  color: #ffffff;
 }
 
 .btn-tertiary {
-  background: var(--glow-secondary);
+  background: var(--bg-subtle);
   border: 1px solid var(--color-accent);
   color: var(--color-accent);
 }
 .btn-tertiary:hover {
   background: var(--color-accent);
-  color: white;
+  color: #ffffff;
 }
 
 @media (max-width: 1280px) and (min-width: 1025px) {

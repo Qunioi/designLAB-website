@@ -9,6 +9,7 @@
         @focus="handleFocus"
         @blur="handleBlur"
         :placeholder="placeholder || '請輸入或點選建議分類...'"
+        :required="required"
         class="category-input-field"
       />
       <button
@@ -83,6 +84,10 @@ const props = defineProps({
   placeholder: {
     type: String,
     default: ''
+  },
+  required: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -166,31 +171,39 @@ onUnmounted(() => {
 
 .category-input-field {
   width: 100%;
-  background: var(--bg-input);
+  /* background: var(--bg-input);
   border: 1px solid transparent;
   padding: 0.6rem 2.2rem 0.6rem 0.85rem;
   border-radius: 8px;
   font-size: 0.7875rem;
+  color: var(--text-primary); */
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
   color: var(--text-primary);
-  transition: all 0.2s ease;
+  padding: 0.5rem 0.85rem;
+  outline: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   font-family: var(--font-body);
 }
 
 .category-input-field::placeholder {
-  color: var(--text-muted) !important;
-  opacity: 1 !important;
-  -webkit-text-fill-color: var(--text-muted) !important;
+  color: var(--text-muted);
+  opacity: 1;
 }
 
 .category-input-field:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 10px var(--glow-primary);
   outline: none;
 }
 
 .dropdown-toggle-btn {
   position: absolute;
   right: 0.75rem;
+  width: 32px;
+  height: 32px;
   background: transparent;
   border: none;
   color: var(--text-muted);
@@ -198,69 +211,62 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  padding: 0.2rem;
-  transition: color 0.2s ease;
+  padding: 0.25rem;
+  transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .dropdown-toggle-btn:hover {
-  color: var(--color-primary);
+  color: var(--text-primary);
 }
 
-.arrow-icon {
-  transition: transform 0.2s ease;
-}
-
-.arrow-icon.open {
+.dropdown-toggle-btn.is-open {
   transform: rotate(180deg);
   color: var(--color-primary);
 }
 
-/* ── 自訂歷史建議下拉選單 ─────────────────────── */
 .category-dropdown-menu {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 4px);
   left: 0;
   right: 0;
+  max-height: min(240px, 32vh);
   background: var(--bg-elevated);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
-  z-index: 500;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  overflow-y: auto;
+  z-index: 20;
+  overscroll-behavior: contain;
 }
 
 .dropdown-header {
-  padding: 0.55rem 0.85rem;
-  border-bottom: 1px solid var(--border-color);
-  font-size: 0.6625rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   color: var(--text-muted);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .options-list {
-  max-height: 200px;
-  overflow-y: auto;
-  padding: 0.35rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+  list-style: none;
+  padding: 0.25rem;
+  margin: 0;
 }
 
 .option-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
-  padding: 0.5rem 0.85rem;
-  border-radius: 6px;
+  min-height: 40px;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-sm);
   font-size: 0.7875rem;
   color: var(--text-secondary);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
   background: transparent;
   border: none;
-  cursor: pointer;
-  transition: all 0.15s ease;
+  width: 100%;
   text-align: left;
   font-family: var(--font-body);
 }
@@ -271,7 +277,7 @@ onUnmounted(() => {
 }
 
 .option-item.active {
-  background: var(--glow-primary);
+  background: var(--bg-hover);
   color: var(--color-primary);
   font-weight: 600;
 }
@@ -290,21 +296,21 @@ onUnmounted(() => {
 }
 
 .create-new-btn {
-  background: var(--glow-primary);
+  background: var(--bg-subtle);
   color: var(--color-primary);
-  border: 1px solid var(--color-primary);
+  border: 1px solid var(--border-color);
   padding: 0.4rem 0.75rem;
   border-radius: 6px;
   font-size: 0.7375rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
   text-align: center;
 }
 
 .create-new-btn:hover {
-  background: var(--color-primary);
-  color: #ffffff;
+  background: var(--bg-hover);
+  border-color: var(--color-primary);
 }
 
 .fade-enter-active, .fade-leave-active { transition: opacity 0.18s ease; }

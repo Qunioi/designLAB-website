@@ -111,7 +111,7 @@ const handleMarkAllRead = () => {
 .bell-btn {
   width: 38px;
   height: 38px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   display: flex;
@@ -119,29 +119,35 @@ const handleMarkAllRead = () => {
   justify-content: center;
   color: var(--text-secondary);
   position: relative;
-  transition: all 0.2s ease;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
   cursor: pointer;
 }
 
 .bell-btn:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
-  border-color: var(--color-primary);
-  transform: translateY(-1px);
+  border-color: var(--border-color-hover);
 }
 
 .unread-badge {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  background: #ef4444;
-  color: white;
-  font-size: 0.6175rem;
-  font-weight: 800;
-  padding: 0.15rem 0.4rem;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+  top: -3px;
+  right: -3px;
+  background: var(--color-danger);
+  color: #ffffff;
+  font-size: var(--fs-tiny);
+  font-weight: 700;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  font-variant-numeric: tabular-nums;
+  z-index: 2;
 }
 
 /* 通知下拉面板 (完全不透明實色背景，避免透光) */
@@ -150,15 +156,14 @@ const handleMarkAllRead = () => {
   top: calc(100% + 0.6rem);
   right: 0;
   width: 330px;
-  background: var(--bg-elevated); /* 實心背景，不含半透明 opacity */
-  border: 1px solid var(--border-color-hover);
-  border-radius: 16px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
   z-index: 1000;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  opacity: 1 !important;
 }
 
 .notif-header {
@@ -232,7 +237,7 @@ const handleMarkAllRead = () => {
 }
 
 .notif-time {
-  font-size: 0.6875rem;
+  font-size: var(--fs-tiny);
   color: var(--text-muted);
   font-weight: 500;
 }

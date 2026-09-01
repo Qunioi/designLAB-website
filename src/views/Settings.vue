@@ -185,7 +185,7 @@
         <!-- 獨立彈窗 1：團隊成員管理 Modal 視窗 -->
         <Teleport to="body">
           <div v-if="showUserMgmtModal" class="modal-backdrop" :class="currentTheme" @click.self="showUserMgmtModal = false">
-            <div class="modal-card user-mgmt-modal glass-panel">
+            <div class="modal-card user-mgmt-modal glass-panel" role="dialog" aria-modal="true">
               <div class="modal-header">
                 <h3>
                   <svg class="crown-icon-svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -194,7 +194,7 @@
                   </svg>
                   <span>團隊成員管理</span>
                 </h3>
-                <button class="close-btn" @click="showUserMgmtModal = false">✕</button>
+                <button type="button" class="close-btn" aria-label="關閉團隊成員管理" @click="showUserMgmtModal = false">✕</button>
               </div>
 
               <div class="modal-body user-mgmt-body">
@@ -278,13 +278,13 @@
         <!-- 獨立彈窗 2：修改個人密碼 Modal 視窗 -->
         <Teleport to="body">
           <div v-if="showChangePassModal" class="modal-backdrop" :class="currentTheme" @click.self="showChangePassModal = false">
-            <div class="modal-card auth-modal glass-panel">
+            <div class="modal-card auth-modal glass-panel" role="dialog" aria-modal="true">
               <div class="modal-header">
                 <h3>
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                   <span>修改個人密碼 (Change Password)</span>
                 </h3>
-                <button class="close-btn" @click="showChangePassModal = false">✕</button>
+                <button type="button" class="close-btn" aria-label="關閉修改密碼" @click="showChangePassModal = false">✕</button>
               </div>
               <div class="modal-body">
                 <p class="auth-desc">修改帳號 <code>{{ username }}</code> 的個人登入密碼：</p>
@@ -332,10 +332,10 @@
         <!-- 管理員密碼驗證 Modal 視窗 (帶 :class="currentTheme") -->
         <Teleport to="body">
           <div v-if="showAuthModal" class="modal-backdrop" :class="currentTheme" @click.self="showAuthModal = false">
-            <div class="modal-card auth-modal glass-panel">
+            <div class="modal-card auth-modal glass-panel" role="dialog" aria-modal="true">
               <div class="modal-header">
                 <h3>管理員身份解鎖驗證</h3>
-                <button class="close-btn" @click="showAuthModal = false">✕</button>
+                <button type="button" class="close-btn" aria-label="關閉管理員驗證" @click="showAuthModal = false">✕</button>
               </div>
               <div class="modal-body">
                 <p class="auth-desc">請輸入管理員 <code>@quni_jhuang</code> 專屬驗證密碼（設定於 USERS 表單）：</p>
@@ -379,7 +379,7 @@
               v-for="theme in darkThemes" 
               :key="theme.class"
               class="theme-card"
-              :class="{ selected: currentTheme === theme.class }"
+              :class="[theme.class, { selected: currentTheme === theme.class }]"
               @click="$emit('select-theme', theme.class)"
             >
               <div class="theme-preview" :style="theme.previewStyle">
@@ -400,7 +400,6 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                   </span>
                 </div>
-                <p class="theme-card-desc">{{ theme.desc }}</p>
               </div>
             </div>
           </div>
@@ -414,7 +413,7 @@
               v-for="theme in lightThemes" 
               :key="theme.class"
               class="theme-card"
-              :class="{ selected: currentTheme === theme.class }"
+              :class="[theme.class, { selected: currentTheme === theme.class }]"
               @click="$emit('select-theme', theme.class)"
             >
               <div class="theme-preview" :style="theme.previewStyle">
@@ -435,7 +434,6 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                   </span>
                 </div>
-                <p class="theme-card-desc">{{ theme.desc }}</p>
               </div>
             </div>
           </div>
@@ -929,42 +927,38 @@ const pushAll = async () => {
 
 const darkThemes = [
   {
-    class: 'theme-midnight-slate',
-    name: 'Midnight Slate',
-    desc: 'Refined deep navy with cool indigo accents. Clean geometry, sharp focus.',
-    previewStyle: { background: '#0f1117' },
-    sidebarColor: '#171b24',
-    textColor: 'rgba(241,243,248,0.6)',
-    accentColor: '#6366f1',
-    cardColor: 'rgba(23,27,36,0.7)',
-    borderColor: 'rgba(255,255,255,0.07)'
+    class: 'theme-midnight-indigo',
+    name: 'Palenight Theme',
+    previewStyle: { background: '#0e0f14' },
+    sidebarColor: '#171926',
+    textColor: 'rgba(243,241,247,0.72)',
+    accentColor: '#8b5cc7',
+    cardColor: 'rgba(41,45,66,0.92)',
+    borderColor: 'rgba(201,203,234,0.12)'
   },
   {
-    class: 'theme-charcoal-ember',
-    name: 'GitHub Dark',
-    desc: "Official GitHub Dark palette. Deep canvas (#0d1117) with crisp blue accents.",
-    previewStyle: { background: '#0d1117' },
-    sidebarColor: '#161b22',
-    textColor: 'rgba(240,246,252,0.6)',
-    accentColor: '#58a6ff',
-    cardColor: 'rgba(22,27,34,0.85)',
-    borderColor: 'rgba(240,246,252,0.1)'
+    class: 'theme-github-dark',
+    name: 'Graphite Blue',
+    previewStyle: { background: '#17191f' },
+    sidebarColor: '#14161c',
+    textColor: 'rgba(245,247,251,0.68)',
+    accentColor: '#78a9ff',
+    cardColor: 'rgba(35,39,49,0.9)',
+    borderColor: 'rgba(226,232,240,0.1)'
   },
   {
     class: 'theme-obsidian-neon',
-    name: 'Obsidian Neon',
-    desc: 'True-black OLED with electric cyan & magenta. Futuristic scanline overlay.',
-    previewStyle: { background: '#030304' },
-    sidebarColor: '#0a0a0e',
-    textColor: 'rgba(125,249,255,0.5)',
-    accentColor: '#ff00c8',
-    cardColor: 'rgba(10,10,14,0.85)',
-    borderColor: 'rgba(0,255,240,0.08)'
+    name: 'Ember Atelier',
+    previewStyle: { background: '#171412' },
+    sidebarColor: '#12100f',
+    textColor: 'rgba(255,247,237,0.68)',
+    accentColor: '#e5a86b',
+    cardColor: 'rgba(41,35,31,0.9)',
+    borderColor: 'rgba(255,237,213,0.1)'
   },
   {
     class: 'theme-nord-dark',
     name: 'Nord Polar Night',
-    desc: 'Arctic, north-bluish dark palette inspired by Nord Theme. High calm focus.',
     previewStyle: { background: '#2e3440' },
     sidebarColor: '#3b4252',
     textColor: 'rgba(216,222,233,0.6)',
@@ -978,35 +972,32 @@ const lightThemes = [
   {
     class: 'theme-cloud-canvas',
     name: 'Cloud Canvas',
-    desc: 'Airy white with soft blue-grey tones. Paper-like, gentle shadows.',
     previewStyle: { background: '#f8f9fc' },
     sidebarColor: '#eef0f5',
     textColor: 'rgba(15,23,42,0.5)',
-    accentColor: '#4f46e5',
+    accentColor: '#2563eb',
     cardColor: 'rgba(255,255,255,0.92)',
     borderColor: 'rgba(15,23,42,0.06)'
   },
   {
-    class: 'theme-sand-dune',
+    class: 'theme-material-light',
     name: 'Material Light',
-    desc: 'Material Theme Lighter High Contrast. Crisp white/gray canvas (#fafafa) with teal & cyan accents.',
     previewStyle: { background: '#fafafa' },
     sidebarColor: '#f0f0f0',
     textColor: 'rgba(33,33,33,0.6)',
-    accentColor: '#39adb5',
+    accentColor: 'hsl(174 42% 50%)',
     cardColor: 'rgba(255,255,255,0.95)',
     borderColor: 'rgba(0,0,0,0.08)'
   },
   {
-    class: 'theme-frost-mint',
+    class: 'theme-office-access',
     name: 'Office Access',
-    desc: 'Inspired by Office Theme (Access). Ultra-bright clean white canvas (#fdfdfd) with burgundy red accents.',
-    previewStyle: { background: '#fdfdfd' },
-    sidebarColor: '#f7f7f8',
-    textColor: 'rgba(34,32,30,0.6)',
-    accentColor: '#a23835',
+    previewStyle: { background: '#f3f2f1' },
+    sidebarColor: '#faf9f8',
+    textColor: 'rgba(50,49,48,0.68)',
+    accentColor: '#b23a3f',
     cardColor: '#ffffff',
-    borderColor: 'rgba(0,0,0,0.06)'
+    borderColor: 'rgba(50,49,48,0.12)'
   },
 
 
@@ -1014,8 +1005,7 @@ const lightThemes = [
 
   {
     class: 'theme-nord-light',
-    name: 'Nord Snow Storm',
-    desc: 'Arctic crisp snow-storm palette inspired by Nord Theme. Nordic deep blue.',
+    name: 'Nord Snow',
     previewStyle: { background: '#eceff4' },
     sidebarColor: '#e5e9f0',
     textColor: 'rgba(46,52,64,0.6)',
@@ -1057,7 +1047,7 @@ const lightThemes = [
 .settings-layout {
   display: grid;
   grid-template-columns: 320px 1fr;
-  gap: 1.5rem;
+  gap: 1rem;
   align-items: start;
 }
 
@@ -1110,11 +1100,11 @@ const lightThemes = [
 .dev-badge {
   background: var(--color-primary);
   color: #ffffff;
-  font-size: 0.6875rem;
+  font-size: var(--fs-meta);
   font-weight: 700;
   padding: 0.2rem 0.6rem;
   border-radius: 99px;
-  box-shadow: 0 2px 8px var(--glow-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .dev-select-row {
@@ -1130,22 +1120,22 @@ const lightThemes = [
 }
 
 .impersonate-trigger-btn {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  color: #ffffff !important;
-  border: none;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border: 1px solid var(--color-primary);
   padding: 0.55rem 1.1rem;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   font-size: 0.7875rem;
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: 0 3px 12px var(--glow-primary);
-  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
 .impersonate-trigger-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 16px var(--glow-primary);
+  background: var(--bg-hover);
+  color: var(--color-primary);
 }
 
 .impersonate-trigger-btn:disabled {
@@ -1197,19 +1187,19 @@ const lightThemes = [
 
 .stop-impersonate-btn {
   background: var(--color-danger);
-  color: #ffffff !important;
-  border: none;
+  color: #ffffff;
+  border: 1px solid var(--color-danger);
   padding: 0.5rem 1rem;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 0.7625rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
 .stop-impersonate-btn:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+  background: var(--bg-hover);
+  color: var(--color-danger);
 }
 
 /* ========= PROFILE PANEL ========= */
@@ -1238,7 +1228,7 @@ const lightThemes = [
   font-size: 0.7375rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .logout-btn:hover {
@@ -1348,13 +1338,13 @@ const lightThemes = [
 
 .field-input {
   width: 100%;
-  padding: 0.6rem 0.85rem;
-  background: var(--bg-hover) !important;
-  border: 1px solid var(--border-color-hover) !important;
+  padding: 0.55rem 0.85rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   font-size: var(--fs-body);
-  color: var(--text-primary) !important;
-  transition: all 0.2s ease;
+  color: var(--text-primary);
+  transition: border-color 0.18s ease;
 }
 
 .field-input::placeholder {
@@ -1363,9 +1353,8 @@ const lightThemes = [
 }
 
 .field-input:focus {
-  border-color: var(--color-primary) !important;
-  box-shadow: 0 0 0 3px var(--glow-primary) !important;
-  background: var(--bg-card) !important;
+  border-color: var(--color-primary);
+  outline: none;
 }
 
 
@@ -1380,7 +1369,7 @@ const lightThemes = [
   border-radius: var(--radius-sm);
   font-size: var(--fs-body);
   font-weight: var(--fw-semibold);
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .save-btn:hover:not(:disabled) {
@@ -1436,19 +1425,19 @@ const lightThemes = [
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease;
   position: relative;
 }
 
 .theme-card:hover {
   border-color: var(--border-color-hover);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .theme-card.selected {
-  border-color: var(--color-primary) !important;
-  box-shadow: 0 0 18px var(--glow-primary), var(--shadow-md) !important;
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
   background: var(--bg-elevated);
 }
 
@@ -1537,17 +1526,7 @@ const lightThemes = [
   background: var(--color-primary);
   color: #ffffff;
   flex-shrink: 0;
-  box-shadow: 0 0 8px var(--glow-primary);
-}
-
-.theme-card-desc {
-  font-size: 0.6975rem;
-  color: var(--text-muted);
-  line-height: 1.35;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
 @media (max-width: 1366px) {
@@ -1589,12 +1568,10 @@ const lightThemes = [
   background: var(--text-muted);
 }
 .connection-dot.connected {
-  background: #10b981;
-  box-shadow: 0 0 6px #10b981;
+  background: var(--color-success);
 }
 .connection-dot.error {
-  background: #ef4444;
-  box-shadow: 0 0 6px #ef4444;
+  background: var(--color-error);
 }
 .connection-dot.unknown {
   background: var(--text-muted);
@@ -1647,7 +1624,7 @@ const lightThemes = [
   font-size: 0.7575rem;
   font-weight: 600;
   white-space: nowrap;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   color: var(--text-primary);
 }
 .test-btn:hover:not(:disabled) {
@@ -1690,7 +1667,7 @@ const lightThemes = [
   border-radius: 10px;
   font-size: 0.7875rem;
   font-weight: 600;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 .sheets-btn:disabled {
   opacity: 0.5;
@@ -1737,21 +1714,21 @@ const lightThemes = [
 }
 
 .id-login-btn {
-  padding: 0.6rem 1rem;
+  padding: 0.55rem 1rem;
   border-radius: var(--radius-sm);
   background: var(--color-primary);
-  color: white !important;
+  color: var(--color-on-primary);
+  border: 1px solid var(--color-primary);
   font-size: 0.7575rem;
   font-weight: 600;
   white-space: nowrap;
-  transition: all 0.2s ease;
-  border: none;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
   cursor: pointer;
 }
 
 .id-login-btn:hover:not(:disabled) {
-  opacity: 0.9;
-  transform: translateY(-1px);
+  background: var(--bg-hover);
+  color: var(--color-primary);
 }
 
 .id-login-btn:disabled {
@@ -1801,7 +1778,7 @@ const lightThemes = [
 .password-toggle-btn:disabled,
 .password-toggle-btn.disabled {
   opacity: 0.25;
-  pointer-events: none !important;
+  pointer-events: none;
 }
 
 /* 管理成員觸發按鈕 (Personal Settings Panel) */
@@ -1823,7 +1800,7 @@ const lightThemes = [
   font-size: 0.8175rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .manage-users-trigger-btn:hover {
@@ -1835,7 +1812,7 @@ const lightThemes = [
 .user-count-badge {
   background: var(--glow-primary);
   color: var(--color-primary);
-  font-size: 0.6875rem;
+  font-size: var(--fs-meta);
   font-weight: 700;
   padding: 0.1rem 0.5rem;
   border-radius: 999px;
@@ -1843,30 +1820,33 @@ const lightThemes = [
 }
 
 /* Auth Modal & User Management Modal (100% 連動當前 Appearance 主題色) */
+/* Auth Modal & User Management Modal (100% 連動當前 Appearance 主題色) */
 .auth-modal,
 .user-mgmt-modal {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--border-color-hover) !important;
-  color: var(--text-primary) !important;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35) !important;
+  background: var(--bg-elevated);
+  border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--modal-radius);
+  max-height: var(--modal-max-height);
 }
 
 /* 標頭對齊與隔線 */
 .auth-modal .modal-header,
 .user-mgmt-modal .modal-header {
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  margin-bottom: 1.25rem !important;
-  padding-bottom: 0.85rem !important;
-  border-bottom: 1px solid var(--border-color) !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .auth-modal .modal-header h3,
 .user-mgmt-modal .modal-header h3 {
-  font-size: 1.038rem;
+  font-size: 1.05rem;
   font-weight: 700;
-  color: var(--text-primary) !important;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -1874,6 +1854,11 @@ const lightThemes = [
 
 .auth-modal .close-btn,
 .user-mgmt-modal .close-btn {
+  width: var(--modal-control-size);
+  height: var(--modal-control-size);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
   border: none;
   font-size: 1.188rem;
@@ -1881,7 +1866,7 @@ const lightThemes = [
   cursor: pointer;
   padding: 0.2rem;
   line-height: 1;
-  transition: color 0.2s ease;
+  transition: color 0.18s ease;
 }
 
 .auth-modal .close-btn:hover,
@@ -1889,26 +1874,32 @@ const lightThemes = [
   color: var(--text-primary);
 }
 
+.auth-modal .close-btn:focus-visible,
+.user-mgmt-modal .close-btn:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
 /* 底部對齊與隔線 */
 .auth-modal .modal-footer,
 .user-mgmt-modal .modal-footer {
-  display: flex !important;
-  justify-content: flex-end !important;
-  align-items: center !important;
-  gap: 0.75rem !important;
-  margin-top: 1.25rem !important;
-  padding-top: 1rem !important;
-  border-top: 1px solid var(--border-color) !important;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
 }
 
 /* User Management Modal 特殊佈局 */
 .user-mgmt-modal {
   width: 92%;
   max-width: 620px;
-  border-radius: 20px;
-  padding: 1.75rem;
+  border-radius: var(--modal-radius);
+  padding: 1.5rem;
   margin: auto;
-  max-height: 85vh;
+  max-height: var(--modal-max-height);
 }
 
 .user-mgmt-body {
@@ -1923,14 +1914,14 @@ const lightThemes = [
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  background: var(--bg-elevated) !important;
-  border: 1px solid var(--border-color) !important;
-  border-radius: 12px;
-  padding: 1.1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem;
 }
 
 .um-section-label {
-  font-size: 0.7575rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--text-secondary);
   letter-spacing: 0.5px;
@@ -1946,10 +1937,10 @@ const lightThemes = [
 
 .add-user-modal-form .field-input,
 .add-user-modal-form .role-select {
-  border-radius: 8px;
-  padding: 0.6rem 0.85rem;
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.85rem;
   font-size: 0.7875rem;
-  transition: all 0.2s ease;
+  transition: border-color 0.18s ease;
 }
 
 .add-user-modal-form .field-input::placeholder {
@@ -1959,36 +1950,39 @@ const lightThemes = [
 
 .add-user-modal-form .field-input:focus,
 .add-user-modal-form .role-select:focus {
-  border-color: var(--color-primary) !important;
-  box-shadow: 0 0 10px var(--glow-primary);
+  border-color: var(--color-primary);
+  outline: none;
 }
 
 .role-select {
   cursor: pointer;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
 }
 
 .role-select option {
-  background: var(--bg-secondary);
+  background: var(--bg-elevated);
   color: var(--text-primary);
 }
 
 .add-member-btn {
-  padding: 0.65rem 1.15rem;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  border: none;
-  color: #ffffff !important;
+  padding: 0.55rem 1.15rem;
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  color: var(--color-on-primary);
   font-size: 0.7575rem;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: 0 4px 15px var(--glow-primary);
-  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
 
 .add-member-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px var(--glow-primary);
+  background: var(--bg-hover);
+  color: var(--color-primary);
 }
 
 /* 成員清單：極簡扁平 List 視圖 (無獨立卡片粗框) */
@@ -1996,7 +1990,7 @@ const lightThemes = [
   display: flex;
   flex-direction: column;
   border: 1px solid var(--border-color);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: var(--bg-card);
   overflow: hidden;
   max-height: 280px;
@@ -2008,20 +2002,19 @@ const lightThemes = [
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 0.75rem;
-  background: transparent !important;
-  border: none !important;
-  border-bottom: 1px solid var(--border-color) !important;
-  border-radius: 0 !important;
-  transition: background 0.2s ease;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  border-radius: 0;
+  transition: background-color 0.15s ease;
 }
 
 .user-modal-card:last-child {
-  border-bottom: none !important;
+  border-bottom: none;
 }
 
-/* 預設深色主題 Hover：保持深色科技光彩不變 */
 .user-modal-card:hover {
-  background: var(--glow-primary) !important;
+  background: var(--bg-hover);
 }
 
 .user-modal-card:hover .user-modal-name {
@@ -2031,21 +2024,6 @@ const lightThemes = [
 .user-modal-card:hover .user-avatar-sm {
   background: var(--color-primary);
   color: #ffffff;
-}
-
-/* 淺色主題專屬 Hover：淺色版面使用清爽背景灰 (0.04 透明度灰)，深色主題完全不動 */
-.theme-cloud-canvas .user-modal-card:hover,
-.theme-material-light .user-modal-card:hover,
-.theme-office-access .user-modal-card:hover,
-.theme-nord-snow-storm .user-modal-card:hover {
-  background: rgba(0, 0, 0, 0.04) !important;
-}
-
-.theme-cloud-canvas .user-modal-card:hover .user-modal-name,
-.theme-material-light .user-modal-card:hover .user-modal-name,
-.theme-office-access .user-modal-card:hover .user-modal-name,
-.theme-nord-snow-storm .user-modal-card:hover .user-modal-name {
-  color: var(--text-primary) !important;
 }
 
 .user-avatar-sm {
@@ -2107,7 +2085,7 @@ const lightThemes = [
   justify-content: center;
   cursor: pointer;
   padding: 0;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .order-btn:hover:not(:disabled) {
@@ -2142,9 +2120,9 @@ const lightThemes = [
 .crown-icon-svg {
   width: 14px;
   height: 14px;
-  stroke: #f59e0b;
-  fill: rgba(245, 158, 11, 0.2);
-  filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.35));
+  stroke: var(--color-warning);
+  fill: color-mix(in srgb, var(--color-warning) 20%, transparent);
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--color-warning) 35%, transparent));
   transition: transform 0.2s ease;
 }
 
@@ -2209,7 +2187,7 @@ const lightThemes = [
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .add-user-btn:hover {
@@ -2291,7 +2269,7 @@ const lightThemes = [
 
 
 .role-badge {
-  font-size: 0.6375rem;
+  font-size: var(--fs-meta);
   font-weight: 700;
   padding: 0.15rem 0.5rem;
   border-radius: 6px;
@@ -2340,7 +2318,7 @@ const lightThemes = [
   font-size: 0.7875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .unlock-admin-btn:hover {
@@ -2371,7 +2349,7 @@ const lightThemes = [
 }
 
 .lock-btn {
-  font-size: 0.6875rem;
+  font-size: var(--fs-meta);
   color: var(--text-muted);
   background: transparent;
   border: none;
@@ -2385,7 +2363,7 @@ const lightThemes = [
   max-width: 440px;
   background: var(--bg-card);
   border: 1px solid var(--border-color-hover);
-  border-radius: 18px;
+  border-radius: var(--modal-radius);
   padding: 1.75rem;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
   margin: auto;
@@ -2451,12 +2429,12 @@ const lightThemes = [
   border-radius: 10px;
   color: var(--text-primary);
   font-size: 0.8875rem;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .auth-input:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 12px var(--glow-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .auth-error-msg {
@@ -2487,7 +2465,7 @@ const lightThemes = [
   font-size: 0.7875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .auth-modal .cancel-btn:hover {
@@ -2496,21 +2474,21 @@ const lightThemes = [
 }
 
 .auth-modal .submit-btn {
-  padding: 0.6rem 1.4rem;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  border: none;
-  color: #ffffff !important;
+  padding: 0.55rem 1.3rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  color: var(--color-on-primary);
   font-size: 0.7875rem;
   font-weight: 600;
-  box-shadow: 0 4px 15px var(--glow-primary);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
 .auth-modal .submit-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px var(--glow-primary);
+  background: var(--bg-hover);
+  color: var(--color-primary);
 }
 
 

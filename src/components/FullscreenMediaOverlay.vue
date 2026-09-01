@@ -1,7 +1,7 @@
 <template>
   <Transition name="fade">
-    <div v-if="media.url" class="fullscreen-image-backdrop" @click="$emit('close')">
-      <button class="fullscreen-close-btn" @click="$emit('close')" title="關閉全螢幕 (ESC)">
+    <div v-if="media.url" class="fullscreen-image-backdrop" role="dialog" aria-modal="true" aria-label="全螢幕媒體檢視" @click="$emit('close')">
+      <button type="button" class="fullscreen-close-btn" @click="$emit('close')" aria-label="關閉全螢幕媒體" title="關閉全螢幕 (ESC)">
         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
       <div class="fullscreen-media-content" @click.stop>
@@ -27,13 +27,13 @@ defineEmits(['close']);
 .fullscreen-image-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.92);
+  background: var(--modal-backdrop);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 3000;
+  z-index: var(--z-fullscreen);
   padding: 2rem;
 }
 
@@ -43,7 +43,7 @@ defineEmits(['close']);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 3005;
+  z-index: calc(var(--z-fullscreen) + 5);
 }
 
 .fullscreen-video-element,
@@ -69,13 +69,18 @@ defineEmits(['close']);
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 3010;
-  transition: all 0.2s ease;
+  z-index: calc(var(--z-fullscreen) + 10);
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .fullscreen-close-btn:hover {
   background: rgba(255, 255, 255, 0.35);
   transform: scale(1.1);
+}
+
+.fullscreen-close-btn:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
 }
 
 .fade-enter-active,

@@ -66,8 +66,9 @@ const isGuest = computed(() => {
 .page-header-component {
   display: flex;
   flex-direction: column;
-  /* margin-bottom: 1rem; */
-  /* gap: 0.35rem; */
+  gap: 0.35rem;
+  margin-bottom: 0.25rem;
+  padding-top: 0.25rem;
 }
 
 .header-main-row {
@@ -85,23 +86,47 @@ const isGuest = computed(() => {
   min-width: 0;
 }
 
-@media (max-width: 768px) {
+.page-title {
+  font-family: var(--font-title);
+  font-size: var(--fs-h1);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+}
+
+.page-subtitle {
+  font-size: var(--fs-body);
+  color: var(--text-secondary);
+  line-height: 1.5;
+  max-width: 680px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* Navigation owns the notification entry on every mobile layout. Keep the
+   page-level action for desktop only so tablet widths do not duplicate it. */
+@media (max-width: 900px) {
   .page-header-bell {
-    display: none !important;
+    display: none;
   }
 }
 
 @media (max-width: 640px) {
   .page-title {
-    font-size: 1.438rem;
+    font-size: 1.35rem;
   }
   .add-btn {
     padding: 0.45rem 0.85rem;
-    font-size: 0.7575rem;
-    border-radius: 10px;
+    font-size: 0.75rem;
+    border-radius: var(--radius-sm);
   }
   .page-subtitle {
-    font-size: 0.7575rem;
+    font-size: 0.75rem;
   }
 }
 </style>

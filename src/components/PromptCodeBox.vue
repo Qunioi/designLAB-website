@@ -26,31 +26,42 @@ defineEmits(['copy']);
   width: 100%;
   text-align: left;
   background: var(--bg-input);
-  padding: 0.75rem 0.85rem 1.6rem;
-  border-radius: 8px;
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
-  font-family: 'Fira Code', 'Roboto Mono', Monaco, Consolas, monospace;
-  font-size: 0.7175rem;
+  font-family: var(--font-code);
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--text-primary);
   min-height: 65px;
-  max-height: 90px;
+  max-height: 95px;
   overflow-y: auto;
-  line-height: 1.5;
+  line-height: 1.55;
   white-space: pre-wrap;
   cursor: pointer;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+.prompt-code-box::-webkit-scrollbar {
+  width: 4px;
+}
+
+.prompt-code-box::-webkit-scrollbar-thumb {
+  background: var(--border-color-hover);
+  border-radius: 4px;
 }
 
 .prompt-code-box:hover,
 .prompt-code-box:focus-visible {
   border-color: var(--color-primary);
-  background: color-mix(in srgb, var(--bg-input) 90%, var(--color-primary));
+  background: var(--bg-hover);
 }
 
 .prompt-code-box.copied {
   border-color: var(--color-primary);
-  box-shadow: 0 0 10px var(--glow-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .click-copy-hint {

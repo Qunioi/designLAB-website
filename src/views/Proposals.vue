@@ -272,29 +272,32 @@ const handleDelete = (item) => {
 
 .column-count {
   margin-left: auto;
-  font-size: 0.6875rem;
+  font-size: var(--fs-meta);
   background: var(--bg-hover);
-  padding: 0.15rem 0.4rem;
+  padding: 0.15rem 0.5rem;
   border-radius: 999px;
   color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
 }
 
 .column-cards-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 
 .proposal-kanban-card {
-  background: var(--bg-subtle);
+  background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 1rem;
+  border-radius: var(--radius-md);
+  padding: 1.15rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  transition: all 0.2s ease;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
   cursor: grab;
+  box-shadow: var(--shadow-sm);
 }
 
 .proposal-kanban-card:active {
@@ -302,10 +305,9 @@ const handleDelete = (item) => {
 }
 
 .proposal-kanban-card:hover {
-  background: var(--bg-subtle);
   border-color: var(--border-color-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  box-shadow: var(--shadow-md);
 }
 
 .prop-card-actions {
@@ -315,40 +317,46 @@ const handleDelete = (item) => {
 }
 
 .prop-date {
-  font-size: 0.7375rem;
+  font-size: var(--fs-meta);
   color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
 }
 
 .prop-title {
-  font-size: 0.8875rem;
+  font-size: 0.95rem;
   font-weight: 700;
+  letter-spacing: -0.015em;
   line-height: 1.4;
 }
 
 .prop-impact {
-  font-size: 0.7875rem;
+  font-size: var(--fs-body);
   color: var(--text-secondary);
-  line-height: 1.4;
+  line-height: 1.45;
   background: var(--bg-subtle);
-  padding: 0.5rem;
-  border-radius: 6px;
-  border-left: 2px solid rgba(255,255,255,0.1);
+  padding: 0.5rem 0.65rem;
+  border-radius: var(--radius-sm);
+  border-left: 2px solid var(--border-color);
 }
 
 .related-research-badge {
-  font-size: 0.7375rem;
+  font-size: var(--fs-meta);
   color: var(--color-primary);
-  background: var(--glow-primary);
-  padding: 0.35rem 0.5rem;
-  border-radius: 6px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  padding: 0.3rem 0.55rem;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  transition: background-color 0.18s ease, color 0.18s ease;
 }
+
 .related-research-badge:hover {
-  background: var(--glow-primary);
+  background: var(--bg-hover);
+  color: var(--color-primary);
   text-decoration: underline;
 }
 
@@ -359,50 +367,49 @@ const handleDelete = (item) => {
 .figma-btn {
   display: block;
   text-align: center;
-  font-size: 0.6875rem;
+  font-size: var(--fs-meta);
   font-weight: 600;
   padding: 0.4rem;
-  border-radius: 8px;
-  background: rgba(236, 72, 153, 0.1);
-  border: 1px solid rgba(236, 72, 153, 0.2);
-  color: #f472b6;
-  transition: all 0.2s ease;
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  color: var(--color-primary);
+  transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
 }
 
 .figma-btn:hover {
-  background: #ec4899;
-  color: white;
-  border-color: #ec4899;
+  background: var(--bg-hover);
+  border-color: var(--color-primary);
 }
 
 .prop-move-bar {
   display: flex;
   justify-content: space-between;
   margin-top: 0.5rem;
-  border-top: 1px solid rgba(255,255,255,0.03);
+  border-top: 1px solid var(--color-divider);
   padding-top: 0.5rem;
 }
 
 .status-change-label {
   color: var(--text-secondary);
-  font-size: 0.7175rem;
+  font-size: var(--fs-meta);
   font-weight: 600;
 }
 
 .proposal-status-select {
-  min-height: 34px;
+  min-height: var(--control-height-md);
   padding: 0.35rem 2rem 0.35rem 0.6rem;
   border: 1px solid var(--border-color);
   border-radius: 8px;
   background-color: var(--bg-input);
   color: var(--text-primary);
   font-family: var(--font-body);
-  font-size: 0.7375rem;
+  font-size: var(--fs-meta);
   cursor: pointer;
 }
 
 .move-btn {
-  font-size: 0.6375rem;
+  font-size: var(--fs-tiny);
   color: var(--text-muted);
 }
 

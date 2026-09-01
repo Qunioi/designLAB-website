@@ -69,13 +69,6 @@ const filters = computed(() => [
   overflow: hidden;
 }
 
-.lightbox-section {
-  margin-top: 0.25rem;
-  background: var(--bg-subtle);
-  padding: 1rem;
-  border-radius: 10px;
-  border: 1px solid var(--border-color);
-}
 .category-badge {
   font-size: 0.5875rem;
   font-weight: 600;

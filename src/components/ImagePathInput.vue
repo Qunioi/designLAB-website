@@ -6,6 +6,7 @@
         :value="modelValue"
         type="url"
         :placeholder="placeholder"
+        :required="required"
         @input="$emit('update:modelValue', $event.target.value)"
         @blur="handleBlur"
       />
@@ -22,6 +23,7 @@ import { ensureProtocol } from '../utils/formatters';
 
 defineProps({
   modelValue: { type: String, default: '' },
+  required: { type: Boolean, default: false },
   placeholder: { type: String, default: '貼上圖片路徑，例如：https://duk.tw/tpUaQ1.png' }
 });
 
@@ -45,15 +47,14 @@ const handleBlur = (event) => {
   display: flex;
   align-items: center;
   background: var(--bg-input);
-  border: 1px solid transparent;
-  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
   overflow: hidden;
-  transition: all 0.2s ease;
+  transition: border-color 0.18s ease;
 }
 
 .image-path-row:focus-within {
   border-color: var(--color-primary);
-  box-shadow: 0 0 10px var(--glow-primary);
 }
 
 .link-icon {
@@ -67,7 +68,7 @@ const handleBlur = (event) => {
   flex: 1;
   background: transparent;
   border: 0;
-  padding: 0.65rem 0.85rem;
+  padding: 0.55rem 0.85rem;
   color: var(--text-primary);
   outline: none;
 }

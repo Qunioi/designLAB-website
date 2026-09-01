@@ -1,7 +1,7 @@
 <template>
   <ResearchGrid
-    pageTitle="動態設計研究"
-    pageSubtitle="蒐集微互動、轉場特效與動態設計案例，提升介面的動態反饋體驗"
+    pageTitle="動態研究"
+    pageSubtitle="蒐集微互動、轉場特效與動態研究案例，提升介面的動態反饋體驗"
     addBtnLabel="+ 新增動態案例"
     storageKey="MOTION_RESEARCH"
     crudType="MOTION_RESEARCH"
@@ -10,10 +10,10 @@
     badgeField="motionType"
     coverField="cover"
     linkField="link"
-    researchContext="動態設計研究"
+    researchContext="動態研究"
     emptyText="無相符的動態案例。點選右上角新增一筆！"
     deleteConfirmPrefix="確定要刪除《"
-    deleteConfirmSuffix="》這筆動態研究案嗎？"
+    deleteConfirmSuffix="》這筆動態研究嗎？"
     :filters="filters"
     :searchFields="['title', 'takeaways', 'tags', 'tools']"
     :highlightedId="highlightedId"

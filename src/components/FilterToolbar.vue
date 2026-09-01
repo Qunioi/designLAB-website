@@ -287,7 +287,7 @@ const getFilterButtonLabel = (f) => {
 }
 
 .search-box input {
-  font-size: 0.7875rem;
+  font-size: var(--fs-label);
   width: 100%;
   min-height: 0;
   background: transparent;
@@ -328,7 +328,7 @@ const getFilterButtonLabel = (f) => {
   font-size: 12px;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
   font-family: var(--font-body);
   height: 36px;
   white-space: nowrap;
@@ -346,7 +346,7 @@ const getFilterButtonLabel = (f) => {
 .filter-dropdown-btn.active {
   border-color: var(--color-primary);
   color: var(--color-primary);
-  background: var(--glow-primary);
+  background: var(--bg-hover);
 }
 
 .filter-dropdown-btn .arrow {
@@ -391,7 +391,7 @@ const getFilterButtonLabel = (f) => {
 
 .clear-btn {
   color: var(--color-primary);
-  font-size: 0.6875rem;
+  font-size: var(--fs-meta);
   cursor: pointer;
   background: none;
   border: none;
@@ -488,7 +488,7 @@ const getFilterButtonLabel = (f) => {
   border: 1px solid var(--border-color);
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
   text-align: center;
 }
 
@@ -502,7 +502,7 @@ const getFilterButtonLabel = (f) => {
   color: #ffffff;
   border-color: var(--color-primary);
   font-weight: 700;
-  box-shadow: 0 2px 8px var(--glow-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .adv-panel-divider {
@@ -521,7 +521,7 @@ const getFilterButtonLabel = (f) => {
   padding: 0 4px;
   background: var(--color-primary);
   color: #ffffff;
-  font-size: 0.6375rem;
+  font-size: var(--fs-meta);
   font-weight: 700;
   border-radius: 99px;
 }
@@ -553,10 +553,10 @@ const getFilterButtonLabel = (f) => {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  background: var(--color-primary) !important;
-  color: #ffffff !important;
-  border: 1px solid var(--color-primary) !important;
-  box-shadow: 0 3px 12px var(--glow-primary);
+  background: var(--color-primary);
+  color: #ffffff;
+  border: 1px solid var(--color-primary);
+  box-shadow: var(--shadow-sm);
   font-size: 0.7375rem;
   font-weight: 600;
   padding: 0.22rem 0.65rem;
@@ -567,7 +567,7 @@ const getFilterButtonLabel = (f) => {
 .chip-category-prefix {
   opacity: 0.9;
   font-weight: 600;
-  color: #ffffff !important;
+  color: #ffffff;
 }
 
 .chip-remove-btn {
@@ -578,16 +578,16 @@ const getFilterButtonLabel = (f) => {
   height: 15px;
   border-radius: 50%;
   font-size: 0.5875rem;
-  color: #ffffff !important;
+  color: #ffffff;
   background: rgba(255, 255, 255, 0.25);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
   border: none;
 }
 
 .chip-remove-btn:hover {
   background: rgba(255, 255, 255, 0.45);
-  color: #ffffff !important;
+  color: #ffffff;
 }
 
 .reset-all-tags-btn {
@@ -626,6 +626,11 @@ const getFilterButtonLabel = (f) => {
   .filter-dropdown-btn {
     font-size: 0.7375rem;
     padding: 0.35rem 0.55rem;
+  }
+  .search-box,
+  .filter-dropdown-btn {
+    min-height: 44px;
+    height: 44px;
   }
   .tag-dropdown-menu {
     left: 0;

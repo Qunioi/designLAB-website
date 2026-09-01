@@ -1,11 +1,11 @@
 <template>
   <Transition name="modal-fade">
     <div v-if="isOpen" class="theme-modal-backdrop" @click="close">
-      <div class="theme-modal-container glass-panel" @click.stop>
+      <div class="theme-modal-container glass-panel" role="dialog" aria-modal="true" aria-labelledby="theme-modal-title" @click.stop>
         <!-- Header -->
         <div class="theme-modal-header">
-          <h2>選擇 Design LAB 設計風格</h2>
-          <button class="close-btn" @click="close"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+          <h2 id="theme-modal-title">選擇 Design LAB 視覺風格</h2>
+          <button class="close-btn" @click="close" aria-label="關閉"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
         </div>
 
         <!-- Body -->
@@ -37,7 +37,6 @@
                   <h4>{{ theme.name }}</h4>
                   <span class="active-badge" v-if="currentTheme === theme.class">使用中</span>
                 </div>
-                <p class="theme-desc">{{ theme.desc }}</p>
               </div>
             </div>
           </div>
@@ -63,24 +62,36 @@ const emit = defineEmits(['close', 'select-theme']);
 
 const themes = [
   {
-    class: 'theme-dark-premium',
-    name: '極致暗黑 (Dark Premium)',
-    desc: '預設低認知負擔的暗黑色系，搭配流暢紫色與藍色漸變，讓圖片素材更聚焦。',
+    class: 'theme-midnight-indigo',
+    name: 'Palenight Theme',
   },
   {
-    class: 'theme-light-minimal',
-    name: '極簡白日 (Light Minimal)',
-    desc: '清新乾淨的灰白配色，以深色字體和高對比度的寶藍色凸顯介面重點。',
+    class: 'theme-github-dark',
+    name: '石墨藍 (Graphite Blue)',
   },
   {
-    class: 'theme-cyberpunk',
-    name: '未來霓虹 (Cyberpunk)',
-    desc: '極黑背景結合高飽和度的霓虹粉紅、螢光綠與青色，呈現強烈的科技叛逆感。',
+    class: 'theme-nord-dark',
+    name: '極地暗夜 (Nord Polar Night)',
   },
   {
-    class: 'theme-glass-pro',
-    name: '極致毛玻璃 (Aura Glass)',
-    desc: '半透明毛玻璃層次，背景襯以緩慢流動旋轉的彩色奧若拉極光光暈，極具質感。',
+    class: 'theme-obsidian-neon',
+    name: '暖焰工坊 (Ember Atelier)',
+  },
+  {
+    class: 'theme-cloud-canvas',
+    name: '雲端畫布 (Cloud Canvas)',
+  },
+  {
+    class: 'theme-material-light',
+    name: '材質晴光 (Material Light)',
+  },
+  {
+    class: 'theme-office-access',
+    name: 'Office 酒紅 (Office Access)',
+  },
+  {
+    class: 'theme-nord-light',
+    name: '極地雪原 (Nord Snow)',
   }
 ];
 
@@ -96,27 +107,25 @@ const selectTheme = (themeClass) => {
 <style scoped>
 .theme-modal-backdrop {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.65);
+  inset: 0;
+  background: var(--modal-backdrop);
   backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--z-overlay);
   padding: 1.5rem;
 }
 
 .theme-modal-container {
   width: 100%;
-  max-width: 640px;
+  max-width: 760px;
+  max-height: var(--modal-max-height);
   background: var(--bg-elevated);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--modal-radius);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -126,34 +135,45 @@ const selectTheme = (themeClass) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.25rem 1.5rem;
+  padding: var(--modal-header-padding);
   border-bottom: 1px solid var(--border-color);
 }
 
 .theme-modal-header h2 {
-  font-size: 1.087rem;
+  font-size: 1.05rem;
   font-weight: 700;
 }
 
 .close-btn {
+  width: var(--modal-control-size);
+  height: var(--modal-control-size);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1.188rem;
   color: var(--text-muted);
-  transition: color 0.2s ease;
+  transition: color 0.18s ease;
 }
 
 .close-btn:hover {
   color: var(--text-primary);
 }
 
+.close-btn:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
 .theme-modal-body {
-  padding: 1.5rem;
+  padding: var(--modal-padding);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.85rem;
+  overflow-y: auto;
 }
 
 .theme-intro {
-  font-size: 0.7875rem;
+  font-size: 0.8125rem;
   color: var(--text-secondary);
   line-height: 1.5;
 }
@@ -162,39 +182,38 @@ const selectTheme = (themeClass) => {
 .theme-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  margin-top: 0.5rem;
+  gap: 0.85rem;
+  margin-top: 0.25rem;
 }
 
 .theme-card {
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
-  background: var(--bg-subtle);
+  background: var(--bg-card);
   cursor: pointer;
   overflow: hidden;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color 0.18s ease, transform 0.15s ease, background-color 0.18s ease;
   display: flex;
   flex-direction: column;
 }
 
 .theme-card:hover {
   border-color: var(--border-color-hover);
-  background: var(--bg-subtle);
-  transform: translateY(-2px);
+  background: var(--bg-card-hover);
+  transform: translateY(-1px);
 }
 
 .theme-card.active {
   border-color: var(--color-primary);
-  box-shadow: 0 0 15px var(--glow-primary);
-  background: var(--bg-subtle);
+  background: var(--bg-card-hover);
 }
 
 /* Preview Box inside Card */
 .theme-preview-box {
-  height: 80px;
+  height: 64px;
   background-color: var(--bg-primary);
   border-bottom: 1px solid var(--border-color);
-  padding: 0.75rem;
+  padding: 0.65rem;
   position: relative;
   display: flex;
   align-items: center;
@@ -207,8 +226,8 @@ const selectTheme = (themeClass) => {
 }
 
 .color-dot {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
   display: inline-block;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -220,20 +239,20 @@ const selectTheme = (themeClass) => {
 .color-dot.accent { background-color: var(--color-accent); }
 
 .preview-card-shape {
-  width: 70px;
-  height: 44px;
+  width: 58px;
+  height: 36px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  border-radius: 6px;
+  box-shadow: var(--shadow-sm);
 }
 
 /* Theme Details */
 .theme-card-info {
-  padding: 1rem;
+  padding: 0.85rem;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.35rem;
   flex: 1;
 }
 
@@ -244,39 +263,37 @@ const selectTheme = (themeClass) => {
 }
 
 .theme-name-row h4 {
-  font-size: 0.8375rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .active-badge {
-  font-size: 0.5875rem;
+  font-size: var(--fs-tiny);
   font-weight: 700;
-  color: white;
+  color: #ffffff;
   background: var(--color-primary);
-  padding: 0.15rem 0.4rem;
+  padding: 0.12rem 0.4rem;
   border-radius: 4px;
-}
-
-.theme-desc {
-  font-size: 0.6875rem;
-  color: var(--text-secondary);
-  line-height: 1.4;
 }
 
 /* Animations */
 .modal-fade-enter-active,
 .modal-fade-leave-active {
-  transition: all 0.3s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .modal-fade-enter-from,
 .modal-fade-leave-to {
   opacity: 0;
-  transform: scale(0.95);
+  transform: scale(0.97);
 }
 
 @media (max-width: 640px) {
+  .theme-modal-backdrop { padding: 0.75rem; }
+  .theme-modal-container { max-height: calc(100dvh - 1.5rem); border-radius: 16px; }
+  .theme-modal-header,
+  .theme-modal-body { padding-left: 1rem; padding-right: 1rem; }
   .theme-grid {
     grid-template-columns: 1fr;
   }

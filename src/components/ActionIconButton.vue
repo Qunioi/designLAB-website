@@ -25,32 +25,44 @@ defineEmits(['click']);
 .action-icon-btn {
   width: 26px;
   height: 26px;
-  border-radius: 50%;
+  border-radius: 6px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 0.7375rem;
-  background: var(--bg-hover);
+  background: var(--bg-subtle);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
-  transition: all 0.2s ease;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
 .action-icon-btn:hover {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: #fff;
+  background: var(--bg-hover);
+  border-color: var(--border-color-hover);
+  color: var(--text-primary);
+}
+
+.action-icon-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .action-icon-btn {
+    width: 38px;
+    height: 38px;
+  }
 }
 
 .action-icon-btn.edit:hover {
-  background: color-mix(in srgb, var(--color-warning) 14%, var(--bg-hover));
-  border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
+  background: var(--bg-hover);
+  border-color: var(--color-warning);
   color: var(--color-warning);
 }
 
 .action-icon-btn.delete:hover {
-  background: color-mix(in srgb, var(--color-error) 14%, var(--bg-hover));
-  border-color: color-mix(in srgb, var(--color-error) 40%, transparent);
-  color: var(--color-error);
+  background: var(--bg-hover);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
 }
 </style>

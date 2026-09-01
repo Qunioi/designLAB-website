@@ -2,26 +2,31 @@
   <div class="file-uploader-box">
     <!-- 當已有媒體（URL 或已上傳檔案）時顯示預覽 -->
     <div v-if="modelValue" class="media-preview-card glass-panel">
-      <div class="preview-media-wrapper clickable-preview" @click="openFullscreenModal" title="點擊全螢幕放大預覽檔案">
-        <video v-if="isVideo" :src="modelValue" class="preview-media video-player" muted></video>
-        <img v-else :src="modelValue" class="preview-media image-view" alt="預覽圖" />
-        <div class="zoom-hover-overlay">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
-          <span>點擊放大</span>
-        </div>
+      <div class="media-url-editor">
+        <label for="media-url-input">目前素材網址</label>
+        <input id="media-url-input" type="url" :value="modelValue" @input="handleUrlInput" @blur="handleUrlBlur" placeholder="貼上可公開開啟的 .mp4 或 .webm 網址" class="solid-url-input" />
       </div>
-      <div class="preview-actions">
-        <span class="preview-url-text" :title="modelValue">{{ modelValue }}</span>
+      <div class="media-preview-content">
+        <div class="preview-media-wrapper clickable-preview" @click="openFullscreenModal" title="點擊全螢幕放大預覽檔案">
+          <video v-if="isVideo" :src="modelValue" class="preview-media video-player" muted></video>
+          <img v-else :src="modelValue" class="preview-media image-view" alt="預覽圖" />
+          <div class="zoom-hover-overlay">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+            <span>點擊放大</span>
+          </div>
+        </div>
+        <div class="preview-actions">
         <div class="btn-group-row">
           <button type="button" class="preview-expand-btn" @click="openFullscreenModal" title="全螢幕檢視細節">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
             <span>放大預覽</span>
           </button>
-          <button type="button" class="remove-media-btn" @click="clearMedia" title="移除媒體檔案">
+          <button type="button" class="remove-media-btn" @click="clearMedia" title="清除目前網址">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            <span>移除並重新上傳</span>
+            <span>清除網址</span>
           </button>
         </div>
+      </div>
       </div>
     </div>
 
@@ -216,12 +221,11 @@ onUnmounted(() => {
   border: 1px solid var(--border-color);
   border-radius: 8px;
   overflow: hidden;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .url-input-group:focus-within {
   border-color: var(--color-primary);
-  box-shadow: 0 0 10px var(--glow-primary);
 }
 
 .input-icon-prefix {
@@ -244,9 +248,8 @@ onUnmounted(() => {
 }
 
 .solid-url-input::placeholder {
-  color: var(--text-muted) !important;
-  opacity: 1 !important;
-  -webkit-text-fill-color: var(--text-muted) !important;
+  color: var(--text-muted);
+  opacity: 1;
 }
 
 .solid-upload-btn {
@@ -261,7 +264,7 @@ onUnmounted(() => {
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
   user-select: none;
 }
 
@@ -284,21 +287,21 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
-  border: 1.5px dashed var(--border-color);
-  border-radius: 8px;
-  background: var(--bg-subtle);
-  padding: 0.5rem 0.85rem;
-  font-size: 0.7175rem;
-  color: var(--text-muted);
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  background: var(--bg-input);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.2s ease;
+  color: var(--text-muted);
+  font-size: 0.7375rem;
+  transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
 .compact-dropzone:hover,
 .compact-dropzone.is-dragging {
   border-color: var(--color-primary);
-  background: var(--glow-primary);
+  background: var(--bg-hover);
   color: var(--color-primary);
 }
 
@@ -309,12 +312,48 @@ onUnmounted(() => {
 /* ── 已有媒體時的預覽卡片 (Preview Card) ────────────── */
 .media-preview-card {
   display: flex;
-  align-items: center;
-  gap: 1rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
   padding: 0.75rem;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 10px;
+}
+
+.media-url-editor {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.media-url-editor label {
+  color: var(--text-secondary);
+  font-size: var(--fs-meta);
+  font-weight: 600;
+}
+
+.media-url-editor .solid-url-input {
+  width: 100%;
+  min-height: 40px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.75rem;
+  font-size: var(--fs-body);
+  color: var(--text-primary);
+}
+
+.media-url-editor .solid-url-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 18%, transparent);
+  outline: none;
+}
+
+.media-preview-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
 }
 
 .preview-media-wrapper {
@@ -348,7 +387,7 @@ onUnmounted(() => {
   justify-content: center;
   gap: 0.2rem;
   color: #ffffff;
-  font-size: 0.6375rem;
+  font-size: var(--fs-meta);
   font-weight: 600;
   opacity: 0;
   transition: opacity 0.2s ease;
@@ -368,6 +407,23 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 0.5rem;
   overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .media-preview-content {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .preview-media-wrapper {
+    width: 100%;
+    height: 120px;
+  }
+
+  .btn-group-row > button {
+    min-height: 40px;
+    flex: 1;
+  }
 }
 
 .preview-url-text {
@@ -396,11 +452,11 @@ onUnmounted(() => {
   padding: 0.3rem 0.65rem;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
 }
 
 .preview-expand-btn:hover {
-  background: var(--glow-primary);
+  background: var(--bg-hover);
   border-color: var(--color-primary);
 }
 
@@ -416,7 +472,7 @@ onUnmounted(() => {
   padding: 0.3rem 0.65rem;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .remove-media-btn:hover {
@@ -431,7 +487,7 @@ onUnmounted(() => {
   background: rgba(0, 0, 0, 0.92);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  z-index: 999999 !important;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -452,8 +508,8 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
-  z-index: 1000000 !important;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  z-index: 1001;
 }
 
 .preview-close-btn:hover {

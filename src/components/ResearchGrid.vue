@@ -55,7 +55,10 @@
           @keydown.enter.prevent="openLightbox(item)"
           @keydown.space.prevent="openLightbox(item)"
         >
-          <img :src="getCover(item)" class="card-media" :alt="getTitle(item)" loading="lazy" />
+          <img v-if="getCover(item)" :src="getCover(item)" class="card-media" :alt="getTitle(item)" loading="lazy" />
+          <div v-else class="card-media-placeholder" aria-hidden="true">
+            <span>{{ getTitle(item) }}</span>
+          </div>
           <div class="hover-overlay">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
             <span>點擊看詳情</span>
@@ -102,12 +105,18 @@
     <!-- Lightbox Modal -->
     <Transition name="fade">
       <div v-if="lightbox.isOpen" class="lightbox-backdrop" @click="closeLightbox">
-        <div class="lightbox-container glass-panel" @click.stop>
-          <button class="lightbox-close" @click="closeLightbox">
+        <div
+          class="lightbox-container glass-panel"
+          role="dialog"
+          aria-modal="true"
+          :aria-labelledby="`lightbox-title-${lightbox.item?.id}`"
+          @click.stop
+        >
+          <button class="lightbox-close" type="button" @click="closeLightbox" aria-label="關閉詳細資料" title="關閉">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
           <div class="lightbox-scroll-area">
-            <div class="lightbox-media-box" v-if="getLightboxVideo(lightbox.item) || getLightboxCover(lightbox.item)">
+            <div class="lightbox-media-box" :class="{ 'image-lightbox-media': !getLightboxVideo(lightbox.item) }" v-if="!hideLightboxMedia && (getLightboxVideo(lightbox.item) || getLightboxCover(lightbox.item))">
               <div
                 v-if="getLightboxVideo(lightbox.item)"
                 class="clickable-media-box video-media-container"
@@ -131,10 +140,16 @@
               <div
                 v-else
                 class="clickable-media-box"
+                role="button"
+                tabindex="0"
+                :aria-label="`放大檢視《${getTitle(lightbox.item)}》圖片`"
                 @click="openFullscreenMedia(getLightboxCover(lightbox.item), false)"
+                @keydown.enter.prevent="openFullscreenMedia(getLightboxCover(lightbox.item), false)"
+                @keydown.space.prevent="openFullscreenMedia(getLightboxCover(lightbox.item), false)"
                 title="點擊全螢幕放大檢視圖片"
               >
-                <img :src="getLightboxCover(lightbox.item)" class="lightbox-img" alt="點擊放大" />
+                <img v-if="getLightboxCover(lightbox.item)" :src="getLightboxCover(lightbox.item)" class="lightbox-img" alt="點擊放大" />
+                <div v-else class="lightbox-media-placeholder" aria-hidden="true">{{ getTitle(lightbox.item) }}</div>
                 <div class="media-zoom-overlay">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
                   <span>點擊全螢幕檢視</span>
@@ -146,7 +161,8 @@
                 <span :class="badgeClass" class="clickable-badge" @click="handleBadgeClick(lightbox.item); closeLightbox();" title="點擊切換分類篩選">{{ getBadgeText(lightbox.item) }}</span>
                 <span class="lightbox-date" v-if="lightbox.item.createdAt || lightbox.item.updatedAt">{{ formatDateTime(lightbox.item.createdAt || lightbox.item.updatedAt) }}</span>
               </div>
-              <h2 class="lightbox-title">{{ getTitle(lightbox.item) }}</h2>
+              <h2 :id="`lightbox-title-${lightbox.item?.id}`" class="lightbox-title">{{ getTitle(lightbox.item) }}</h2>
+              <div class="lightbox-slot-content">
               <slot
                 name="lightbox-content"
                 :item="lightbox.item"
@@ -156,15 +172,9 @@
                 :toggle-single-filter="toggleSingleFilter"
                 :is-single-filter-selected="isSingleFilterSelected"
               />
+              </div>
               <div class="lightbox-footer">
                 <div class="lightbox-actions-group" v-if="!isGuest">
-                  <button
-                    type="button"
-                    class="create-proposal-btn"
-                    @click="$emit('trigger-crud', { type: 'PROPOSALS', item: { title: `優化 ${getTitle(lightbox.item)}`, relatedResearch: `${getTitle(lightbox.item)} (${researchContext})` } }); closeLightbox();"
-                  >
-                    建立優化提案
-                  </button>
                   <button type="button" class="lightbox-icon-btn edit" @click="$emit('trigger-crud', { type: crudType, item: lightbox.item }); closeLightbox();" :aria-label="`編輯`" title="編輯">
                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                   </button>
@@ -180,7 +190,7 @@
                 </div>
                 <a v-if="getLightboxLink(lightbox.item)" :href="getLightboxLink(lightbox.item)" target="_blank" rel="noopener noreferrer" class="source-btn">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                  <span>參考示意圖</span>
+                  <span>{{ linkBtnLabel }}</span>
                 </a>
               </div>
             </div>
@@ -227,6 +237,7 @@ const props = defineProps({
   lightboxLinkField:  { type: String, default: '' },
   linkBtnLabel: { type: String, default: '參考網址' },
   researchContext: { type: String, default: '研究案例' },
+  hideLightboxMedia: { type: Boolean, default: false },
   emptyText:    { type: String, default: '無相符資料。點選右上角新增一筆！' },
   deleteConfirmPrefix: { type: String, default: '確定要刪除《' },
   deleteConfirmSuffix: { type: String, default: '》嗎？' },
@@ -435,6 +446,10 @@ const getItemValues = (item, field, optField) => {
     return val.map(s => String(s).trim()).filter(Boolean);
   }
   if (typeof val === 'string') {
+    // 分類是單一語意值；例如「UI/UX Skills」不可被斜線拆成兩個分類。
+    if (field === 'category' || optField === 'category') {
+      return val.trim() ? [val.trim()] : [];
+    }
     return val.split(/[,/，#\n\r]+/).map(s => s.trim()).filter(Boolean);
   }
   return [String(val).trim()];
@@ -606,7 +621,7 @@ const handleDelete = (item) => {
 
 .clickable-badge {
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, opacity 0.2s ease;
 }
 .clickable-badge:hover {
   opacity: 0.85;
@@ -630,7 +645,7 @@ const handleDelete = (item) => {
   font-size: 0.7875rem;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
   font-family: var(--font-body);
 }
 .tag-dropdown-btn:hover,
@@ -664,13 +679,13 @@ const handleDelete = (item) => {
   align-items: center;
   padding: 0.6rem 0.85rem;
   border-bottom: 1px solid var(--border-color);
-  font-size: 0.6875rem;
+  font-size: var(--fs-meta);
   font-weight: 700;
   color: var(--text-muted);
 }
 .clear-btn {
   color: var(--color-primary);
-  font-size: 0.6875rem;
+  font-size: var(--fs-meta);
   font-weight: 600;
   cursor: pointer;
 }
@@ -695,7 +710,7 @@ const handleDelete = (item) => {
   font-size: 0.7375rem;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease;
 }
 .tag-option-item:hover {
   background: var(--bg-hover);
@@ -723,7 +738,7 @@ const handleDelete = (item) => {
 }
 
 .chips-label {
-  font-size: 0.6875rem;
+  font-size: var(--fs-meta);
   color: var(--text-muted);
   font-weight: 600;
 }
@@ -745,11 +760,11 @@ const handleDelete = (item) => {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  background: var(--color-primary) !important;
-  color: #ffffff !important;
-  border: 1px solid var(--color-primary) !important;
-  box-shadow: 0 3px 12px var(--glow-primary);
-  font-size: 0.6875rem;
+  background: var(--color-primary);
+  color: #ffffff;
+  border: 1px solid var(--color-primary);
+  box-shadow: var(--shadow-sm);
+  font-size: var(--fs-meta);
   font-weight: 600;
   padding: 0.22rem 0.65rem;
   border-radius: 99px;
@@ -759,7 +774,7 @@ const handleDelete = (item) => {
 .chip-category-prefix {
   opacity: 0.9;
   font-weight: 600;
-  color: #ffffff !important;
+  color: #ffffff;
 }
 
 .chip-remove-btn {
@@ -770,19 +785,19 @@ const handleDelete = (item) => {
   height: 15px;
   border-radius: 50%;
   font-size: 0.5875rem;
-  color: #ffffff !important;
+  color: #ffffff;
   background: rgba(255, 255, 255, 0.25);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease;
 }
 .chip-remove-btn:hover {
   background: rgba(255, 255, 255, 0.45);
-  color: #ffffff !important;
+  color: #ffffff;
 }
 
 .reset-all-tags-btn,
 .reset-filter-btn {
-  font-size: 0.6875rem;
+  font-size: var(--fs-meta);
   color: var(--text-muted);
   text-decoration: underline;
   cursor: pointer;
@@ -804,8 +819,7 @@ const handleDelete = (item) => {
   font-size: 0.8875rem;
 }
 
-.empty-primary-btn,
-.create-proposal-btn {
+.empty-primary-btn {
   min-height: 40px;
   padding: 0.55rem 0.9rem;
   border-radius: 10px;
@@ -816,42 +830,38 @@ const handleDelete = (item) => {
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
-.empty-primary-btn:hover,
-.create-proposal-btn:hover {
+.empty-primary-btn:hover {
   background: var(--color-secondary);
   transform: translateY(-1px);
 }
 
-.create-proposal-btn {
-  margin-right: 0.5rem;
-}
-
-/* ── Cards Grid (恢復原始卡片樣式) ─────── */
+/* ── Cards Grid (現代空氣感網格) ─────── */
 .cards-grid {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
 }
 
 .research-card {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: 16px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  transition: all 0.25s ease;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--bg-card) 84%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-color) 62%, transparent);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .research-card:hover {
   border-color: var(--border-color-hover);
-  transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 .research-card.highlighted {
   border-color: var(--color-primary);
-  box-shadow: 0 0 20px var(--glow-primary);
+  box-shadow: var(--shadow-md);
   animation: pulse-border 2s infinite;
 }
 
@@ -875,11 +885,11 @@ const handleDelete = (item) => {
   align-items: center;
   justify-content: center;
   border: 2px solid rgba(255, 255, 255, 0.18);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.18s ease;
 }
 .research-card:hover .mine-avatar-dot {
-  transform: scale(1.12);
-  box-shadow: 0 4px 16px var(--color-primary);
+  transform: scale(1.08);
 }
 
 /* ── Lightbox 中「我發佈」指示器 ─── */
@@ -914,6 +924,20 @@ const handleDelete = (item) => {
   object-fit: cover;
   transition: transform 0.35s ease;
 }
+
+.card-media-placeholder,
+.lightbox-media-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
+  color: var(--text-secondary);
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  text-align: center;
+}
 .card-media-wrapper:hover .card-media {
   transform: scale(1.05);
 }
@@ -923,33 +947,46 @@ const handleDelete = (item) => {
   position: absolute;
   top: 0.65rem; right: 0.65rem;
   width: 32px; height: 32px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   z-index: 5;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .ext-link-wrapper:hover {
-  box-shadow: 0 0 0 2px var(--color-primary), 0 0 22px var(--color-primary), 0 0 8px var(--color-primary) !important;
+  box-shadow: var(--shadow-md);
+  transform: scale(1.05);
 }
 
 .media-ext-link {
-  /* 位置已移到 wrapper，本身只負責 icon 顯示 + mix-blend-mode */
+  /* 圖片上的低干擾浮層，避免操作按鈕搶走封面焦點 */
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%; height: 100%;
-  border-radius: 8px;
-  mix-blend-mode: difference;
-  background: #ffffff;
-  border: none;
-  color: #000000;
-  opacity: 0.82;
-  transition: opacity 0.2s ease;
+  border-radius: inherit;
+  background: rgba(15, 23, 42, 0.58);
+  color: #ffffff;
+  opacity: 0.88;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
 }
 .media-ext-link svg {
-  stroke: #000000;
+  stroke: currentColor;
+  width: 14px;
+  height: 14px;
 }
-.card-media-wrapper:hover .ext-link-wrapper .media-ext-link { opacity: 1; }
+.media-ext-link:hover,
+.media-ext-link:focus-visible {
+  opacity: 1;
+  background: var(--color-primary);
+  border-color: rgba(255, 255, 255, 0.9);
+  color: var(--color-on-primary);
+  transform: translateY(-1px);
+}
+.media-ext-link:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 55%, transparent);
+  outline-offset: 3px;
+}
 
 .hover-overlay {
   position: absolute;
@@ -969,19 +1006,20 @@ const handleDelete = (item) => {
 
 
 
-/* ── Card Body & Info (恢復原始內邊距與純粹底色) ── */
+/* ── Card Body & Info ── */
 .card-info {
-  padding: .75rem 1rem 1rem;
+  padding: 0.75rem 1rem 1rem;
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: 0.2rem;
+  gap: 0.1rem;
 }
 
 .card-meta-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 0.15rem;
 }
 
 .card-meta-left {
@@ -998,11 +1036,13 @@ const handleDelete = (item) => {
 }
 
 .card-title {
-  font-size: 0.9875rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.4;
   color: var(--text-primary);
-  margin-bottom: 0.2rem;
+  letter-spacing: -0.015em;
+  margin: 0.1rem 0 0.15rem;
+  word-break: break-word;
 }
 
 .card-footer {
@@ -1015,7 +1055,7 @@ const handleDelete = (item) => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 38px;
+  min-height: var(--control-height-md);
   padding: 0.55rem 0.9rem;
   border-radius: 10px;
   background: var(--bg-hover);
@@ -1023,7 +1063,7 @@ const handleDelete = (item) => {
   color: var(--text-primary);
   font-size: 0.7575rem;
   font-weight: 700;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .detail-btn:hover,
@@ -1039,39 +1079,44 @@ const handleDelete = (item) => {
   background: rgba(0, 0, 0, 0.82);
   backdrop-filter: blur(12px);
   display: flex; align-items: center; justify-content: center;
-  z-index: 2000;
-  padding: 2rem;
+  z-index: var(--z-lightbox);
+  padding: 1.5rem;
 }
 .lightbox-container {
   position: relative;
   width: 100%;
-  max-width: 720px;
-  max-height: 85vh;
+  max-width: 760px;
+  max-height: 88vh;
   background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+  border-radius: var(--modal-radius);
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 .lightbox-close {
   position: absolute;
-  top: 1rem; right: 1rem;
-  width: 32px; height: 32px;
+  top: 0.75rem; right: 0.75rem;
+  width: 40px; height: 40px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.1);
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.2);
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
   z-index: 10;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
-.lightbox-close:hover { background: rgba(0, 0, 0, 0.8); transform: scale(1.1); }
+.lightbox-close:hover,
+.lightbox-close:focus-visible { background: rgba(0, 0, 0, 0.8); transform: scale(1.04); }
+.lightbox-close:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 3px;
+}
 
 .lightbox-scroll-area {
   overflow-y: auto;
-  padding: 1.75rem;
+  padding: 1.5rem 1.75rem 1.75rem;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
@@ -1081,7 +1126,9 @@ const handleDelete = (item) => {
 .lightbox-media-box {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  height: 300px;
+  aspect-ratio: auto;
+  max-height: none;
   border-radius: 12px;
   overflow: hidden;
   background: #000000;
@@ -1090,10 +1137,24 @@ const handleDelete = (item) => {
   justify-content: center;
 }
 
+.image-lightbox-media {
+  aspect-ratio: auto;
+  height: 300px;
+  max-height: none;
+  background: var(--bg-input);
+}
+
+.image-lightbox-media .clickable-media-box {
+  aspect-ratio: auto;
+  height: 100%;
+  min-height: 0;
+  background: var(--bg-input);
+}
+
 .lightbox-video {
   width: 100%;
   height: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: auto;
   border-radius: 12px;
   outline: none;
   object-fit: contain;
@@ -1103,7 +1164,8 @@ const handleDelete = (item) => {
 .clickable-media-box {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  height: 100%;
+  aspect-ratio: auto;
   border-radius: 12px;
   overflow: hidden;
   background: #000000;
@@ -1111,6 +1173,10 @@ const handleDelete = (item) => {
   align-items: center;
   justify-content: center;
   cursor: zoom-in;
+}
+.clickable-media-box:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: -3px;
 }
 
 .media-zoom-overlay {
@@ -1131,10 +1197,17 @@ const handleDelete = (item) => {
   gap: 0.4rem;
   opacity: 0;
   transform: translateY(0);
-  transition: all 0.22s ease;
+  transition: opacity 0.22s ease, transform 0.22s ease;
   z-index: 10;
   cursor: pointer;
   pointer-events: auto;
+}
+
+.media-zoom-overlay:focus-visible,
+.clickable-media-box:focus-visible .media-zoom-overlay {
+  opacity: 1;
+  outline: 3px solid var(--color-primary);
+  outline-offset: 3px;
 }
 
 .clickable-media-box:hover .media-zoom-overlay,
@@ -1148,7 +1221,7 @@ const handleDelete = (item) => {
 .video-media-container {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  height: 100%;
 }
 
 .fullscreen-media-content {
@@ -1170,9 +1243,16 @@ const handleDelete = (item) => {
 
 .lightbox-img {
   width: 100%;
-  max-height: 400px;
-  object-fit: contain;
+  height: 100%;
+  max-height: 100%;
+  object-fit: cover;
   transition: transform 0.3s ease;
+}
+
+.lightbox-media-placeholder {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 .clickable-media-box:hover .lightbox-img {
   transform: scale(1.02);
@@ -1188,7 +1268,7 @@ const handleDelete = (item) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 3000;
+  z-index: var(--z-fullscreen);
   padding: 1.5rem;
   cursor: zoom-out;
 }
@@ -1217,8 +1297,8 @@ const handleDelete = (item) => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 3010;
-  transition: all 0.2s ease;
+  z-index: calc(var(--z-fullscreen) + 10);
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 .fullscreen-close-btn:hover {
   background: rgba(255, 255, 255, 0.35);
@@ -1227,6 +1307,35 @@ const handleDelete = (item) => {
 .lightbox-detail-content {
   display: flex;
   flex-direction: column;
+}
+.lightbox-slot-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.lightbox-slot-content :deep(.card-tags),
+.lightbox-slot-content :deep(.card-tools) {
+  margin-top: 0;
+}
+.lightbox-slot-content :deep(.lightbox-section) {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  background: color-mix(in srgb, var(--bg-subtle) 78%, transparent);
+  border: 0;
+  border-left: 3px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+}
+.lightbox-slot-content :deep(.section-title) {
+  margin: 0 0 0.35rem;
+  font-size: var(--fs-label);
+  line-height: 1.35;
+}
+.lightbox-slot-content :deep(.section-desc) {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--fs-meta);
+  line-height: var(--lh-relaxed);
+  white-space: pre-line;
 }
 .lightbox-detail-content .card-tags {
   margin-top: 0;
@@ -1238,18 +1347,21 @@ const handleDelete = (item) => {
   align-items: center;
 }
 .lightbox-date {
-  font-size: 0.6875rem;
+  font-size: var(--fs-meta);
   color: var(--text-muted);
+  padding-right: 2rem;
 }
 .lightbox-title {
   font-size: 1.288rem;
   font-weight: 800;
   line-height: 1.3;
   color: var(--text-primary);
-  margin: 0.5rem 0 0.5rem 0.2rem;
+  margin: 0.55rem 0 0.75rem;
 }
 .lightbox-footer { 
-  margin-top: 1.5rem; 
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 65%, transparent);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1275,18 +1387,18 @@ const handleDelete = (item) => {
   background: var(--bg-hover);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
-  transition: all 0.18s ease;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
   flex-shrink: 0;
 }
 .lightbox-icon-btn:hover {
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: #fff;
-  box-shadow: 0 0 12px var(--glow-primary);
+  box-shadow: var(--shadow-sm);
 }
 .lightbox-icon-btn.delete:hover {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
+  background: var(--color-danger);
+  border-color: var(--color-danger);
   color: #fff;
 }
 
@@ -1299,17 +1411,18 @@ const handleDelete = (item) => {
   border: 1px solid var(--color-primary);
   color: #fff;
   padding: 0.55rem 1.1rem;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
   font-size: 0.7575rem;
-  transition: all 0.2s ease;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
   text-decoration: none;
   flex-shrink: 0;
 }
 .source-btn:hover {
-  background: var(--color-secondary);
-  border-color: var(--color-secondary);
-  box-shadow: 0 0 16px var(--glow-primary);
+  background: var(--bg-hover);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
@@ -1327,7 +1440,13 @@ const handleDelete = (item) => {
 @media (max-width: 640px) {
   .filter-select { flex: 1; }
   .lightbox-backdrop { padding: 0.75rem; }
-  .lightbox-container { max-height: 94vh; border-radius: 16px; }
+  .lightbox-container { max-height: calc(100dvh - 1.5rem); border-radius: 16px; }
   .lightbox-scroll-area { padding: 1rem; -webkit-overflow-scrolling: touch; }
+  .lightbox-media-box { max-height: 38vh; }
+  .lightbox-media-box,
+  .image-lightbox-media { height: 220px; max-height: 220px; }
+  .lightbox-footer { align-items: stretch; flex-direction: column; }
+  .lightbox-actions-group { width: 100%; flex-wrap: wrap; }
+  .source-btn { width: 100%; justify-content: center; }
 }
 </style>

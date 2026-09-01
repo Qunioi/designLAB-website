@@ -1,8 +1,9 @@
 <template>
   <Transition name="modal-fade">
     <div v-if="isOpen" class="search-modal-backdrop" @click="close">
-      <div class="search-modal-container glass-panel" @click.stop>
+      <div class="search-modal-container glass-panel" role="dialog" aria-modal="true" aria-labelledby="search-modal-title" @click.stop>
         <div class="search-header">
+          <h2 id="search-modal-title" class="sr-only">全站搜尋</h2>
           <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
           <input 
             ref="searchInput"
@@ -44,7 +45,9 @@
               v-for="item in filteredResults" 
               :key="item.id" 
               class="result-item"
+              tabindex="0"
               @click="handleSelect(item)"
+              @keydown.enter.prevent="handleSelect(item)"
             >
               <div class="result-meta">
                 <span class="result-type-badge" :class="getTypeClass(item.type)">
@@ -186,33 +189,33 @@ const handleSelect = (item) => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(10px);
+  background: var(--modal-backdrop);
+  backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(10px);
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 10vh 1.25rem 2rem;
-  z-index: 1000;
+  padding: 8vh 1.5rem 2rem;
+  z-index: var(--z-overlay);
 }
 
 .search-modal-container {
   width: 100%;
-  max-width: 680px;
+  max-width: 720px;
   background: var(--bg-elevated);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--modal-radius);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  max-height: 70vh;
+  max-height: var(--modal-max-height);
 }
 
 .search-header {
   display: flex;
   align-items: center;
-  padding: 1.25rem 1.5rem;
+  padding: var(--modal-header-padding);
   border-bottom: 1px solid var(--border-color);
   gap: 1rem;
 }
@@ -223,9 +226,11 @@ const handleSelect = (item) => {
 
 .search-header input {
   flex: 1;
-  font-size: 1.038rem;
+  font-size: 1rem;
   font-weight: 500;
   outline: 0;
+  background: transparent;
+  border: none;
 }
 
 .search-header input::placeholder {
@@ -233,9 +238,9 @@ const handleSelect = (item) => {
 }
 
 .esc-badge {
-  font-size: 0.6375rem;
+  font-size: var(--fs-tiny);
   padding: 0.25rem 0.5rem;
-  background: var(--bg-hover);
+  background: var(--bg-subtle);
   border: 1px solid var(--border-color);
   border-radius: 4px;
   color: var(--text-muted);
@@ -252,7 +257,7 @@ const handleSelect = (item) => {
 }
 
 .search-body {
-  padding: 1.5rem;
+  padding: var(--modal-padding);
   overflow-y: auto;
   flex: 1;
 }
@@ -276,7 +281,7 @@ const handleSelect = (item) => {
 
 .suggested-tags .tag {
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .suggested-tags .tag:hover {
@@ -316,50 +321,61 @@ const handleSelect = (item) => {
 }
 
 .results-list {
+  overflow-y: auto;
+  padding: 0.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.25rem;
 }
 
 .result-item {
-  padding: 1rem;
-  border-radius: 12px;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  border: 1px solid transparent;
 }
 
-.result-item:hover {
+.result-item:hover,
+.result-item.selected {
   background: var(--bg-hover);
-  border-color: rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
+  border-color: var(--border-color);
 }
 
-.result-meta {
+.result-item:focus-visible,
+.esc-clear-btn:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.result-main {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 0.5rem;
+  min-width: 0;
+  flex: 1;
 }
 
-.result-type-badge {
-  font-size: 0.6375rem;
-  font-weight: 600;
-  padding: 0.15rem 0.5rem;
+.result-badge {
+  font-size: var(--fs-tiny);
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
   border-radius: 4px;
 }
 
 .result-category {
-  font-size: 0.6875rem;
+  font-size: var(--fs-tiny);
   color: var(--text-muted);
 }
 
 .result-title {
-  font-size: 0.8875rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.15rem;
 }
 
 .result-snippet {
@@ -371,22 +387,29 @@ const handleSelect = (item) => {
 }
 
 /* Badge colors */
-.badge-ui { background: var(--glow-primary); color: #c084fc; border: 1px solid var(--color-primary); }
-.badge-motion { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
-.badge-comp { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-.badge-ai { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-.badge-res { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-.badge-prop { background: rgba(236, 72, 153, 0.15); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.3); }
+.badge-ui { background: var(--bg-subtle); color: var(--color-primary); border: 1px solid var(--border-color); }
+.badge-motion { background: var(--bg-subtle); color: var(--color-secondary); border: 1px solid var(--border-color); }
+.badge-comp { background: var(--bg-subtle); color: var(--color-danger); border: 1px solid var(--border-color); }
+.badge-ai { background: var(--bg-subtle); color: var(--color-warning); border: 1px solid var(--border-color); }
+.badge-res { background: var(--bg-subtle); color: var(--color-accent); border: 1px solid var(--border-color); }
+.badge-prop { background: var(--bg-subtle); color: var(--color-secondary); border: 1px solid var(--border-color); }
 
 /* Transition */
 .modal-fade-enter-active,
 .modal-fade-leave-active {
-  transition: all 0.3s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .modal-fade-enter-from,
 .modal-fade-leave-to {
   opacity: 0;
   transform: scale(0.95);
+}
+
+@media (max-width: 640px) {
+  .search-modal-backdrop { padding: 0.75rem; }
+  .search-modal-container { max-height: calc(100dvh - 1.5rem); border-radius: 16px; }
+  .search-header,
+  .search-body { padding: 1rem; }
 }
 </style>

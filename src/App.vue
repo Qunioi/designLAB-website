@@ -48,6 +48,7 @@
       :is-open="crudModalOpen" 
       :type="crudType" 
       :item="crudItem" 
+      :current-theme="currentTheme"
       @close="crudModalOpen = false"
       @save="handleSave"
     />
@@ -268,19 +269,19 @@ const handleUserUpdate = (u) => {
 </script>
 
 <style>
-/* 全域轉場動畫 */
+/* 全域轉場動畫 (Airy Smooth Transition) */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .fade-enter-from {
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(6px);
 }
 
 .fade-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(-6px);
 }
 </style>

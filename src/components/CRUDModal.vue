@@ -1,9 +1,9 @@
 <template>
   <Transition name="modal-fade">
     <div v-if="isOpen" class="modal-backdrop" @click="close">
-      <div class="modal-container glass-panel" @click.stop>
+      <div :class="['modal-container', 'glass-panel', currentTheme]" role="dialog" aria-modal="true" aria-labelledby="crud-modal-title" @click.stop>
         <div class="modal-header">
-          <h2>{{ isEdit ? '編輯' : '新增' }} - {{ typeLabel }}</h2>
+          <h2 id="crud-modal-title">{{ isEdit ? '編輯' : '新增' }} - {{ typeLabel }}</h2>
           <button type="button" class="close-btn" aria-label="關閉表單" @click="close"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
         </div>
 
@@ -117,17 +117,29 @@
               <label>AI 工具名稱 <span class="required">*</span></label>
               <input v-model="form.name" type="text" placeholder="例如：Midjourney v6" required />
             </div>
-            <div class="form-group full-width">
-              <label>使用情境</label>
-              <textarea v-model="form.useCase" rows="2" placeholder="例如：概念插畫生成、配色風格探索..."></textarea>
+            <div class="form-group">
+              <label>工具分類 <span class="required">*</span></label>
+              <CategoryInput v-model="form.category" :options="historyCategories" placeholder="例如：圖像生成、研究分析" required />
+            </div>
+            <div class="form-group">
+              <label>AI 工具網址 <span class="required">*</span></label>
+              <input v-model="form.url" type="url" @blur="form.url = ensureProtocol(form.url)" placeholder="例如：https://chatgpt.com" required />
             </div>
             <div class="form-group full-width">
-              <label>提示詞</label>
-              <textarea v-model="form.prompt" rows="3" placeholder="請輸入經測試效果良好的 Prompt..."></textarea>
+              <label>工具封面 <span class="required">*</span></label>
+              <ImagePathInput v-model="form.cover" required />
             </div>
             <div class="form-group full-width">
-              <label>工作流程(請用 -> 分隔步驟)</label>
-              <textarea v-model="form.workflow" rows="2" placeholder="例如：ChatGPT 優化 Prompt -> Midjourney 生成 -> Figma 局部微調"></textarea>
+              <label>使用情境 <span class="required">*</span></label>
+              <textarea v-model="form.useCase" rows="4" placeholder="例如：概念插畫生成、配色風格探索..." required></textarea>
+            </div>
+            <div class="form-group full-width">
+              <label>提示詞 <span class="required">*</span></label>
+              <textarea v-model="form.prompt" rows="3" placeholder="請輸入經測試效果良好的 Prompt..." required></textarea>
+            </div>
+            <div class="form-group full-width">
+              <label>工作流程 <span class="required">*</span><span class="field-help-inline">請用 → 分隔步驟</span></label>
+              <textarea v-model="form.workflow" rows="2" placeholder="例如：ChatGPT 優化 Prompt -> Midjourney 生成 -> Figma 局部微調" required></textarea>
             </div>
           </div>
 
@@ -215,6 +227,10 @@ const props = defineProps({
   item: {
     type: Object,
     default: null
+  },
+  currentTheme: {
+    type: String,
+    default: 'theme-cloud-canvas'
   }
 });
 
@@ -224,10 +240,10 @@ const isEdit = computed(() => !!props.item);
 
 const typeLabel = computed(() => {
   switch (props.type) {
-    case 'UI_RESEARCH': return 'UI 研究案例';
-    case 'MOTION_RESEARCH': return '動態設計案例';
+    case 'UI_RESEARCH': return 'UI 設計研究';
+    case 'MOTION_RESEARCH': return '動態研究';
     case 'COMPETITORS': return '競品分析';
-    case 'AI_CENTER': return 'AI 工具工作流';
+    case 'AI_CENTER': return 'AI 工具';
     case 'RESOURCES': return '資源網頁';
     case 'PROPOSALS': return '優化提案';
     default: return '';
@@ -299,6 +315,11 @@ watch(() => [props.isOpen, props.item, props.type], () => {
   if (props.isOpen) {
     if (props.item) {
       const itemCopy = { ...props.item };
+
+      // 舊版 AI 工具使用 link 欄位；編輯時統一帶入目前的網址欄位。
+      if (props.type === 'AI_CENTER' && !itemCopy.url && itemCopy.link) {
+        itemCopy.url = itemCopy.link;
+      }
       
       let tagsArr = [];
       if (Array.isArray(itemCopy.tags)) {
@@ -353,6 +374,23 @@ const close = () => {
 };
 
 const handleSubmit = () => {
+  if (props.type === 'AI_CENTER') {
+    const requiredFields = [
+      ['name', 'AI 工具名稱'],
+      ['category', '工具分類'],
+      ['url', 'AI 工具網址'],
+      ['cover', '工具封面'],
+      ['useCase', '使用情境'],
+      ['prompt', '提示詞'],
+      ['workflow', '工作流程']
+    ];
+    const missingField = requiredFields.find(([field]) => !String(form.value[field] || '').trim());
+    if (missingField) {
+      alert(`請填寫「${missingField[1]}」後再儲存。`);
+      return;
+    }
+  }
+
   const formattedItem = { ...form.value };
   
   // 自動補齊所有網址欄位的 https:// 協定
@@ -397,52 +435,57 @@ const handleSubmit = () => {
 <style scoped>
 .modal-container {
   width: 100%;
-  max-width: 600px;
+  max-width: 720px;
   background: var(--bg-elevated);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--modal-radius);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  max-height: 90vh;
+  max-height: var(--modal-max-height);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.25rem 1.5rem;
+  padding: var(--modal-header-padding);
   border-bottom: 1px solid var(--border-color);
 }
 
 .modal-header h2 {
-  font-size: 1.087rem;
+  font-size: 1.05rem;
   font-weight: 700;
 }
 
 .close-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: var(--bg-hover);
+  width: var(--modal-control-size);
+  height: var(--modal-control-size);
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
   border: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
 .close-btn:hover {
-  background: var(--bg-subtle);
+  background: var(--bg-hover);
   color: var(--text-primary);
   border-color: var(--border-color-hover);
 }
 
+.close-btn:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
 .modal-body {
-  padding: 1.5rem;
+  padding: var(--modal-padding);
   overflow-y: auto;
   flex: 1;
 }
@@ -464,7 +507,7 @@ const handleSubmit = () => {
 }
 
 label {
-  font-size: 0.7375rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -475,12 +518,12 @@ label {
 
 input, select, textarea {
   background: var(--bg-input);
-  border: 1px solid transparent;
-  padding: 0.6rem 0.85rem;
-  border-radius: 8px;
-  font-size: 0.7875rem;
+  border: 1px solid var(--border-color);
+  padding: 0.55rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
   color: var(--text-primary);
-  transition: all 0.2s ease;
+  transition: border-color 0.18s ease;
 }
 
 input::placeholder,
@@ -488,14 +531,13 @@ textarea::placeholder,
 select::placeholder,
 input::-webkit-input-placeholder,
 textarea::-webkit-input-placeholder {
-  color: var(--text-muted) !important;
-  opacity: 1 !important;
-  -webkit-text-fill-color: var(--text-muted) !important;
+  color: var(--text-muted);
+  opacity: 1;
 }
 
 input:focus, select:focus, textarea:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 10px var(--glow-primary);
+  outline: none;
 }
 
 textarea {
@@ -512,29 +554,29 @@ textarea {
   justify-content: flex-end;
   gap: 0.75rem;
   border-top: 1px solid var(--border-color);
-  padding: 1rem 1.5rem;
-  margin-top: 1.5rem;
+  padding: 1rem var(--modal-padding);
+  margin-top: 1.25rem;
 }
 
 .btn-cancel {
-  padding: 0.6rem 1.2rem;
-  border-radius: 12px;
-  background: var(--bg-hover);
+  padding: 0.55rem 1.15rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
-  font-size: 0.7875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
-  transition: all 0.2s ease;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
 .btn-cancel:hover {
-  background: var(--bg-subtle);
+  background: var(--bg-hover);
   border-color: var(--border-color-hover);
 }
 
 .modal-fade-enter-active,
 .modal-fade-leave-active {
-  transition: all 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .modal-fade-enter-from,
@@ -548,7 +590,7 @@ textarea {
     padding: 0.75rem;
   }
   .modal-container {
-    max-height: 94vh;
+    max-height: calc(100dvh - 1.5rem);
     border-radius: 16px;
   }
   .modal-body {

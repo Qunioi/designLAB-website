@@ -2,8 +2,8 @@
   <nav class="navigation-sidebar glass-panel" aria-label="主要導覽">
     <!-- Logo -->
     <div class="logo-area">
-      <div class="logo-icon"></div>
-      <span class="logo-text">Design<span class="text-gradient">LAB</span></span>
+      <div class="logo-icon">D</div>
+      <span class="logo-text">Design<span class="logo-highlight">LAB</span></span>
     </div>
 
     <!-- Menu Links -->
@@ -49,9 +49,9 @@
   <div class="mobile-nav-shell">
     <div class="mobile-nav-trigger glass-panel">
       <div class="mobile-nav-brand">
-        <div class="logo-icon"></div>
+        <div class="logo-icon">D</div>
         <div class="mobile-nav-title">
-          <span class="mobile-brand-text">Design<span class="text-gradient">LAB</span></span>
+          <span class="mobile-brand-text">Design<span class="logo-highlight">LAB</span></span>
           <span class="mobile-current-view">{{ currentViewLabel.labelZh }}</span>
         </div>
       </div>
@@ -164,13 +164,13 @@ const menuItems = [
   },
   { 
     view: 'UIResearch', 
-    labelZh: 'UI 研究案例', 
+    labelZh: 'UI 設計研究', 
     labelEn: 'UI Research', 
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>`
   },
   { 
     view: 'MotionResearch', 
-    labelZh: '動態設計研究',
+    labelZh: '動態研究',
     labelEn: 'Motion Research', 
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>`
   },
@@ -191,13 +191,14 @@ const menuItems = [
     labelZh: '設計資源',
     labelEn: 'Resources', 
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`
-  },
-  { 
-    view: 'Proposals', 
-    labelZh: '產品優化提案', 
-    labelEn: 'Proposals Board', 
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`
   }
+  // ,
+  // { 
+  //   view: 'Proposals', 
+  //   labelZh: '產品優化提案', 
+  //   labelEn: 'Proposals Board', 
+  //   icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`
+  // }
 ];
 
 const currentViewLabel = computed(() => {
@@ -229,47 +230,62 @@ watch(() => props.currentView, () => {
 <style scoped>
 .navigation-sidebar {
   position: fixed;
-  top: 1.5rem;
-  left: 1.5rem;
-  bottom: 1.5rem;
-  width: calc(var(--sidebar-width) - 1.5rem);
+  top: 1.25rem;
+  left: 1.25rem;
+  bottom: 1.25rem;
+  width: calc(var(--sidebar-width) - 1.25rem);
   display: flex;
   flex-direction: column;
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   background: var(--sidebar-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
   z-index: 100;
+  padding: 0.5rem 0.25rem;
 }
 
 .logo-area {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 1rem 0.75rem;
+  padding: 0.85rem 0.85rem 1.15rem;
   border-bottom: 1px solid var(--border-color);
+  margin-bottom: 0.5rem;
 }
 
 .logo-icon {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  box-shadow: 0 0 15px var(--glow-primary);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.8125rem;
+  font-family: var(--font-title);
+  box-shadow: var(--shadow-sm);
 }
-
 
 .logo-text {
   font-family: var(--font-title);
-  font-size: 1.188rem;
+  font-size: 1.125rem;
   font-weight: 800;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.02em;
+}
+
+.logo-highlight {
+  color: var(--color-primary);
+  margin-left: 2px;
 }
 
 .menu-links {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
-  margin-top: 0.1rem;
+  gap: 0.25rem;
   flex: 1;
+  padding: 0 0.25rem;
 }
 
 .menu-item {
@@ -277,26 +293,25 @@ watch(() => props.currentView, () => {
   display: flex;
   align-items: center;
   gap: 0.85rem;
-  padding: 0.85rem 1rem;
+  padding: 0.65rem 0.85rem;
   color: var(--text-secondary);
-  transition: all 0.2s ease;
+  transition: color 0.18s ease, background-color 0.18s ease;
   width: 100%;
   text-align: left;
-  border-radius: 0;
-  border-left: 3px solid transparent;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
 }
 
 .menu-item:hover {
   color: var(--text-primary);
-  background: var(--bg-subtle);
+  background: var(--bg-hover);
 }
 
 .menu-item.active {
-  color: var(--text-primary);
+  color: var(--color-primary);
   background: var(--bg-hover);
-  border-left-color: var(--color-primary);
-  border-radius: 0;
-  padding-left: calc(1rem + 3px);
+  border-color: var(--border-color);
+  font-weight: 600;
 }
 
 .menu-item.active .menu-icon {
@@ -311,7 +326,7 @@ watch(() => props.currentView, () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
   flex-shrink: 0;
 }
 
@@ -326,13 +341,24 @@ watch(() => props.currentView, () => {
   font-size: 0.8175rem;
   font-weight: 500;
   color: var(--text-primary);
+  transition: color 0.18s ease;
 }
 
 .menu-subtitle-en {
-  font-size: 0.6175rem;
+  font-size: var(--fs-tiny);
   color: var(--text-muted);
   letter-spacing: 0.02em;
   margin-top: 0.1rem;
+  transition: color 0.18s ease;
+}
+
+.menu-item.active .menu-title-zh {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.menu-item.active .menu-subtitle-en {
+  color: var(--color-secondary);
 }
 
 .sidebar-footer {
@@ -342,7 +368,7 @@ watch(() => props.currentView, () => {
   border-radius: 12px;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: color 0.25s ease, background-color 0.25s ease, border-color 0.25s ease;
   margin-top: auto;
   width: 100%;
 }
@@ -353,12 +379,12 @@ watch(() => props.currentView, () => {
 }
 
 .sidebar-footer.active {
-  background: linear-gradient(90deg, var(--glow-primary) 0%, transparent 100%);
+  background: var(--bg-hover);
   border-color: var(--color-primary);
 }
 
 .sidebar-footer.active .user-avatar {
-  background: var(--glow-primary);
+  background: var(--bg-hover);
   border-color: var(--color-primary);
 }
 
@@ -379,7 +405,7 @@ watch(() => props.currentView, () => {
   align-items: center;
   justify-content: center;
   font-size: 1.087rem;
-  transition: all 0.25s ease;
+  transition: color 0.25s ease, background-color 0.25s ease, border-color 0.25s ease;
   flex-shrink: 0;
 }
 
@@ -541,14 +567,14 @@ watch(() => props.currentView, () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
     border-radius: 10px;
     /* background: var(--bg-subtle); */
     /* border: 1px solid var(--border-color); */
     color: var(--text-primary);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   .mobile-menu-btn:hover {
@@ -610,8 +636,8 @@ watch(() => props.currentView, () => {
   }
 
   .mobile-drawer-close {
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
     border-radius: 10px;
     background: var(--bg-subtle);
     border: 1px solid var(--border-color);
@@ -639,7 +665,32 @@ watch(() => props.currentView, () => {
     border-radius: 14px;
     color: var(--text-secondary);
     text-align: left;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+
+  /* The desktop compact-sidebar rule hides this group below 1024px. The
+     mobile drawer is intentionally expanded, so its labels must remain part
+     of the visible navigation and not only the accessible name. */
+  .mobile-menu-item .menu-label-group {
+    display: flex;
+    min-width: 0;
+  }
+
+  .mobile-menu-item .menu-title-zh,
+  .mobile-menu-item .menu-subtitle-en {
+    color: var(--text-primary);
+  }
+
+  .mobile-menu-item .menu-subtitle-en {
+    color: var(--text-muted);
+  }
+
+  .mobile-menu-item.active .menu-title-zh {
+    color: var(--color-primary);
+  }
+
+  .mobile-menu-item.active .menu-subtitle-en {
+    color: var(--color-secondary);
   }
 
   .mobile-menu-item.active,
@@ -662,7 +713,7 @@ watch(() => props.currentView, () => {
     border-radius: 14px;
     background: var(--bg-subtle);
     border: 1px solid var(--border-color);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
   }
 
   .mobile-drawer-enter-active,
@@ -704,7 +755,7 @@ watch(() => props.currentView, () => {
     background: transparent;
     border: none;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
   }
 
   .bottom-bar-item.active {

@@ -1,7 +1,45 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
 
 /* ============================================================
-   GOOGLE FONTS — NOTO SANS TC (思源黑體 繁體中文) & LINE SEED TW
+   TAILWIND CSS v4.3.3 — DESIGN TOKEN ARCHITECTURE
+   ============================================================ */
+@theme {
+  /* 品牌字體系統 (思源黑體 繁體中文 + Outfit 西文無襯線) */
+  --font-sans: 'Outfit', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: 'Outfit', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+
+  /* 語義化色彩 (Semantic Color Tokens) */
+  --color-brand: var(--color-primary);
+  --color-brand-secondary: var(--color-secondary);
+  --color-brand-accent: var(--color-accent);
+
+  --color-surface-base: var(--bg-primary);
+  --color-surface-card: var(--bg-card);
+  --color-surface-elevated: var(--bg-elevated);
+  --color-surface-hover: var(--bg-hover);
+  --color-surface-subtle: var(--bg-subtle);
+
+  --color-ink-primary: var(--text-primary);
+  --color-ink-secondary: var(--text-secondary);
+  --color-ink-muted: var(--text-muted);
+
+  --color-border-hairline: var(--border-color);
+  --color-border-strong: var(--border-color-hover);
+
+  /* 幾何與排版比例 */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 22px;
+}
+
+/* ============================================================
+   GOOGLE FONTS & LOCAL FALLBACKS
    ============================================================ */
 @font-face {
   font-family: 'LINE Seed TW';
@@ -19,32 +57,23 @@
   font-display: swap;
 }
 
-@font-face {
-  font-family: 'LINE Seed TW';
-  src: local('LINE Seed TW ExtraBold'), local('LINESeedTW-ExtraBold'), local('LINESeedTW_OTF_Eb');
-  font-weight: 800 900;
-  font-style: normal;
-  font-display: swap;
-}
-
-
-
-
-
+/* ============================================================
+   BASE TOKENS & DEFAULT PALETTE (Midnight Slate)
+   ============================================================ */
 :root {
-  /* Typography scale */
-  --fs-display: 2.4375rem;
-  --fs-h1: 1.6875rem;
-  --fs-h2: 1.1875rem;
-  --fs-h3: 0.9375rem;
-  --fs-body: 0.8125rem;
+  /* Typography Scale */
+  --fs-display: 2.25rem;
+  --fs-h1: 1.625rem;
+  --fs-h2: 1.25rem;
+  --fs-h3: 1rem;
   --fs-body-lg: 0.9375rem;
-  --fs-label: 0.75rem;
-  --fs-meta: 0.6875rem;
-  --fs-caption: 0.6875rem;
+  --fs-body: 0.875rem;
+  --fs-label: 0.8125rem;
+  --fs-meta: 0.75rem;
+  --fs-caption: 0.75rem;
   --fs-tiny: 0.6875rem;
 
-  /* Weight scale */
+  /* Font Weights */
   --fw-light: 300;
   --fw-regular: 400;
   --fw-medium: 500;
@@ -52,12 +81,12 @@
   --fw-bold: 700;
   --fw-black: 800;
 
-  /* Line heights */
+  /* Line Heights */
   --lh-tight: 1.25;
   --lh-normal: 1.55;
   --lh-relaxed: 1.7;
 
-  /* Spacing scale */
+  /* Spacing Scale */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -65,376 +94,278 @@
   --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
+  --space-container: clamp(16px, 2vw, 32px);
 
-  /* Font families — 全面優先套用 Google Noto Sans TC (思源黑體 繁體中文) */
-  --font-title: 'Noto Sans TC', 'LINE Seed TW', 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-body: 'Noto Sans TC', 'LINE Seed TW', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-
-
+  /* Font Families */
+  --font-title: 'Outfit', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* --font-body: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; */
+  /* --font-code: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace; */
 
   /* Layout */
   --sidebar-width: 260px;
-  --header-height: 70px;
+  --header-height: 64px;
   --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --control-height-sm: 36px;
-  --control-height-md: 40px;
-  --control-height-lg: 44px;
-
-  /* Default palette (Midnight Slate) */
-  --bg-primary: #0f1117;
-  --bg-secondary: #171b24;
-  --bg-card: rgba(23, 27, 36, 0.7);
-  --bg-card-hover: rgba(30, 35, 48, 0.85);
-  --bg-elevated: rgba(35, 40, 55, 0.9);
-
-  --border-color: rgba(255, 255, 255, 0.07);
-  --border-color-hover: rgba(255, 255, 255, 0.14);
-
-  --text-primary: #f1f3f8;
-  --text-secondary: #8b95a8;
-  --text-muted: #555d6e;
-
-  --color-primary: #6366f1;
-  --color-secondary: #818cf8;
-  --color-accent: #34d399;
-  --color-danger: #f87171;
-  --color-success: var(--color-accent);
-  --color-warning: #f59e0b;
-  --color-info: var(--color-secondary);
-  --color-error: var(--color-danger);
-
-  --glow-primary: rgba(99, 102, 241, 0.12);
-  --glow-secondary: rgba(129, 140, 248, 0.12);
-
-  /* Glass effect */
-  --glass-bg: rgba(23, 27, 36, 0.6);
-  --glass-blur: 20px;
-
-  /* Shadow system */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.15);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
-
-  /* Semantic surface variables (avoids hardcoded rgba) */
-  --bg-subtle: rgba(255, 255, 255, 0.03);
-  /* very faint element bg */
-  --bg-hover: rgba(255, 255, 255, 0.07);
-  /* hover state bg */
-  --bg-input: rgba(0, 0, 0, 0.18);
-  /* input / code block bg */
-  --sidebar-bg: rgba(18, 18, 26, 0.78);
-  /* sidebar panel bg */
-}
-
-
-/* ============================================================
-   DARK THEME 1 — Midnight Slate
-   Refined deep navy with cool indigo accents.
-   Clean geometric style, sharp borders.
-   ============================================================ */
-.theme-midnight-slate {
-  --bg-primary: #0b0d14;
-  --bg-secondary: #121622;
-  --bg-card: rgba(18, 22, 34, 0.65);
-  --bg-card-hover: rgba(26, 32, 48, 0.85);
-  --bg-elevated: rgba(24, 30, 46, 0.95);
-  --border-color: rgba(99, 102, 241, 0.12);
-  --border-color-hover: rgba(99, 102, 241, 0.28);
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --color-primary: #6366f1;
-  --color-secondary: #818cf8;
-  --color-accent: #34d399;
-  --color-danger: #f87171;
-  --glow-primary: rgba(99, 102, 241, 0.15);
-  --glow-secondary: rgba(129, 140, 248, 0.15);
-  --glass-bg: rgba(18, 22, 34, 0.6);
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --bg-subtle: rgba(255, 255, 255, 0.025);
-  --bg-hover: rgba(99, 102, 241, 0.08);
-  --bg-input: rgba(0, 0, 0, 0.22);
-  --sidebar-bg: rgba(11, 13, 20, 0.82);
-}
-
-
-/* ============================================================
-   DARK THEME 2 — GitHub Dark (formerly Charcoal Ember)
-   Official GitHub Dark theme palette with crisp blue accents.
-   ============================================================ */
-.theme-charcoal-ember,
-.theme-github-dark {
-  --bg-primary: #0d1117;
-  --bg-secondary: #161b22;
-  --bg-card: rgba(22, 27, 34, 0.85);
-  --bg-card-hover: rgba(33, 38, 45, 0.92);
-  --bg-elevated: #21262d;
-  --border-color: rgba(240, 246, 252, 0.1);
-  --border-color-hover: rgba(88, 166, 255, 0.35);
-  --text-primary: #f0f6fc;
-  --text-secondary: #8b949e;
-  --text-muted: #484f58;
-  --color-primary: #58a6ff;
-  --color-secondary: #1f6feb;
-  --color-accent: #3fb950;
-  --color-danger: #f85149;
-  --glow-primary: rgba(88, 166, 255, 0.2);
-  --glow-secondary: rgba(31, 111, 235, 0.2);
-  --glass-bg: rgba(22, 27, 34, 0.75);
   --radius-md: 10px;
   --radius-lg: 14px;
-  --bg-subtle: rgba(240, 246, 252, 0.04);
-  --bg-hover: rgba(240, 246, 252, 0.08);
-  --bg-input: rgba(1, 4, 9, 0.4);
-  --sidebar-bg: rgba(22, 27, 34, 0.88);
-}
+  --radius-xl: 18px;
+  --control-height-sm: 34px;
+  --control-height-md: 38px;
+  --control-height-lg: 42px;
 
+  /* Modal system */
+  --modal-radius: var(--radius-xl);
+  --modal-max-height: 90vh;
+  --modal-backdrop: rgba(3, 7, 18, 0.68);
+  --modal-padding: 1.25rem;
+  --modal-header-padding: 1rem 1.25rem;
+  --modal-control-size: 40px;
 
-/* ============================================================
-   DARK THEME 3 — Obsidian Neon
-   True black OLED surface with electric cyan + magenta.
-   Futuristic/cyberpunk grid style, hard edges.
-   ============================================================ */
-.theme-obsidian-neon {
-  --bg-primary: #030304;
-  --bg-secondary: #0a0a0e;
-  --bg-card: rgba(10, 10, 14, 0.85);
-  --bg-card-hover: rgba(18, 18, 25, 0.92);
-  --bg-elevated: rgba(22, 22, 30, 0.95);
-  --border-color: rgba(0, 255, 240, 0.08);
-  --border-color-hover: rgba(255, 0, 200, 0.2);
-  --text-primary: #ffffff;
-  --text-secondary: #7df9ff;
-  --text-muted: #3a6b6e;
-  --color-primary: #ff00c8;
-  --color-secondary: #00fff0;
-  --color-accent: #bdff00;
-  --color-danger: #ff003c;
-  --glow-primary: rgba(255, 0, 200, 0.18);
-  --glow-secondary: rgba(0, 255, 240, 0.18);
-  --glass-bg: rgba(10, 10, 14, 0.8);
-  --radius-md: 4px;
-  --radius-lg: 8px;
-  --bg-subtle: rgba(255, 255, 255, 0.03);
+  /* Default Surface Colors (Midnight Slate) */
+  --bg-primary: #0e1117;
+  --bg-secondary: #141822;
+  --bg-card: #161b26;
+  --bg-card-hover: #1c2230;
+  --bg-elevated: #202738;
+  --bg-subtle: rgba(255, 255, 255, 0.035);
   --bg-hover: rgba(255, 255, 255, 0.07);
-  --bg-input: rgba(0, 0, 0, 0.25);
-  --sidebar-bg: rgba(3, 3, 4, 0.9);
-}
+  --bg-input: rgba(30, 41, 59, 0.035);
+  --sidebar-bg: #11141d;
 
-/* Neon scanline overlay for Obsidian Neon */
-.app-container.theme-obsidian-neon::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background:
-    repeating-linear-gradient(0deg,
-      transparent,
-      transparent 2px,
-      rgba(0, 255, 240, 0.012) 2px,
-      rgba(0, 255, 240, 0.012) 4px);
-  pointer-events: none;
-  z-index: 9999;
-}
+  --border-color: rgba(255, 255, 255, 0.09);
+  --border-color-hover: rgba(255, 255, 255, 0.18);
 
+  --text-primary: #f0f3f8;
+  --text-secondary: #94a0b5;
+  --text-muted: #626e84;
+
+  --color-primary: #6366f1;
+  --color-secondary: #818cf8;
+  --color-accent: #10b981;
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
+  --color-on-primary: #ffffff;
+  --color-success: var(--color-accent);
+  --color-error: var(--color-danger);
+  --color-divider: var(--border-color);
+  --color-focus: var(--color-primary);
+
+  --z-base: 1;
+  --z-sticky: 100;
+  --z-drawer: 200;
+  --z-overlay: 1000;
+  --z-toast: 1100;
+  --z-lightbox: 1200;
+  --z-fullscreen: 1300;
+
+  /* Subtle Crisp Shadow (No diffused neon halos) */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.35);
+
+  --glow-primary: rgba(99, 102, 241, 0.08);
+  --glow-secondary: rgba(129, 140, 248, 0.08);
+}
 
 /* ============================================================
-   DARK THEME 4 — Nord Polar Night
-   Inspired by Nord Theme (https://www.nordtheme.com/)
+   8 THEME SPECIFICATIONS (CALIBRATED & CONTRAST-CERTIFIED)
    ============================================================ */
+
+/* DARK 1 — Midnight Indigo (Palenight-inspired Purple Slate) */
+.theme-midnight-indigo,
+.theme-midnight-slate {
+  --bg-primary: #0e0f14;
+  --bg-secondary: #1f2231;
+  --bg-card: #292d42;
+  --bg-card-hover: #343951;
+  --bg-elevated: #3b405a;
+  --border-color: rgba(201, 203, 234, 0.12);
+  --border-color-hover: rgba(139, 92, 199, 0.7);
+  --text-primary: #f3f1f7;
+  --text-secondary: #b1b4d0;
+  --text-muted: #747b9f;
+  --color-primary: #8b5cc7;
+  --color-secondary: #c792ea;
+  --color-accent: #89ddff;
+  --color-danger: #f07178;
+  --bg-subtle: rgba(201, 203, 234, 0.055);
+  --bg-hover: rgba(139, 92, 199, 0.16);
+  --bg-input: rgba(201, 203, 234, 0.055);
+  --sidebar-bg: #171926;
+}
+
+/* DARK 2 — GitHub Dark / Graphite Workshop */
+.theme-charcoal-ember,
+.theme-github-dark {
+  --bg-primary: #17191f;
+  --bg-secondary: #1d2028;
+  --bg-card: #232731;
+  --bg-card-hover: #2d3340;
+  --bg-elevated: #363d4b;
+  --border-color: rgba(226, 232, 240, 0.1);
+  --border-color-hover: rgba(120, 169, 255, 0.62);
+  --text-primary: #f5f7fb;
+  --text-secondary: #b9c1cf;
+  --text-muted: #8993a4;
+  --color-primary: #78a9ff;
+  --color-secondary: #a8c7ff;
+  --color-accent: #7dd3a8;
+  --color-danger: #ff8a80;
+  --bg-subtle: rgba(226, 232, 240, 0.05);
+  --bg-hover: rgba(120, 169, 255, 0.12);
+  --bg-input: rgba(226, 232, 240, 0.05);
+  --sidebar-bg: #14161c;
+}
+
+/* DARK 3 — Obsidian Neon (Warm Ink + Copper) */
+.theme-obsidian-neon {
+  --bg-primary: #171412;
+  --bg-secondary: #201c19;
+  --bg-card: #29231f;
+  --bg-card-hover: #382e27;
+  --bg-elevated: #44372e;
+  --border-color: rgba(255, 237, 213, 0.1);
+  --border-color-hover: rgba(229, 168, 107, 0.65);
+  --text-primary: #fff7ed;
+  --text-secondary: #d6c4b2;
+  --text-muted: #9d8978;
+  --color-primary: #e5a86b;
+  --color-secondary: #f0c08a;
+  --color-accent: #81c8b0;
+  --color-danger: #f17a72;
+  --bg-subtle: rgba(255, 237, 213, 0.05);
+  --bg-hover: rgba(229, 168, 107, 0.13);
+  --bg-input: rgba(255, 237, 213, 0.05);
+  --sidebar-bg: #12100f;
+}
+
+/* DARK 4 — Nord Polar Night */
 .theme-nord-dark {
-  --bg-primary: #2e3440;
-  --bg-secondary: #3b4252;
-  --bg-card: rgba(59, 66, 82, 0.85);
-  --bg-card-hover: rgba(67, 76, 94, 0.92);
-  --bg-elevated: rgba(76, 86, 106, 0.95);
-  --border-color: rgba(216, 222, 233, 0.15);
-  --border-color-hover: rgba(136, 192, 208, 0.4);
+  --bg-primary: #242933;
+  --bg-secondary: #2e3440;
+  --bg-card: #2e3440;
+  --bg-card-hover: #3b4252;
+  --bg-elevated: #434c5e;
+  --border-color: rgba(216, 222, 233, 0.07);
+  --border-color-hover: #88c0d0;
   --text-primary: #eceff4;
   --text-secondary: #d8dee9;
   --text-muted: #94a3b8;
   --color-primary: #88c0d0;
   --color-secondary: #81a1c1;
   --color-accent: #a3be8c;
-  --color-danger: #bf616a;
-  --glow-primary: rgba(136, 192, 208, 0.22);
-  --glow-secondary: rgba(129, 161, 193, 0.22);
-  --glass-bg: rgba(59, 66, 82, 0.7);
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --bg-subtle: rgba(255, 255, 255, 0.04);
-  --bg-hover: rgba(255, 255, 255, 0.08);
-  --bg-input: rgba(0, 0, 0, 0.2);
-  --sidebar-bg: rgba(59, 66, 82, 0.88);
+  --bg-subtle: rgba(236, 239, 244, 0.04);
+  --bg-hover: rgba(136, 192, 208, 0.08);
+  --bg-input: rgba(236, 239, 244, 0.04);
+  --sidebar-bg: #111620;
 }
 
-.theme-nord-dark .field-input::placeholder,
-.theme-nord-dark .field-hint {
-  color: #94a3b8 !important;
-  opacity: 0.9 !important;
-}
-
-
-
-/* ============================================================
-   LIGHT THEME 1 — Cloud Canvas
-   ============================================================ */
+/* LIGHT 1 — Cloud Canvas (Airy Crisp Pure White + Royal Azure) */
 .theme-cloud-canvas {
-  --bg-primary: #f8f9fc;
-  --bg-secondary: #ffffff;
-  --bg-card: rgba(255, 255, 255, 0.92);
-  --bg-card-hover: rgba(241, 243, 250, 0.98);
-  --bg-elevated: #ffffff;
-  --border-color: rgba(15, 23, 42, 0.08);
-  --border-color-hover: rgba(15, 23, 42, 0.15);
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-card: #fbfcfe;
+  --bg-card-hover: #f4f7fb;
+  --bg-elevated: #f7f9fc;
+  --border-color: rgba(15, 23, 42, 0.045);
+  --border-color-hover: rgba(37, 99, 235, 0.35);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --color-primary: #2563eb;
+  --color-secondary: #3b82f6;
+  --color-accent: #059669;
+  --bg-subtle: rgba(15, 23, 42, 0.03);
+  --bg-hover: rgba(37, 99, 235, 0.06);
+  --bg-input: rgba(15, 23, 42, 0.03);;
+  --sidebar-bg: #f1f5fa;
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 28px rgba(15, 23, 42, 0.12);
+}
+
+/* LIGHT 2 — Material Light (Subtle Cool Grey + Electric Azure) */
+.theme-material-light {
+  --bg-primary: #f4f6fb;
+  --bg-secondary: #eaeff7;
+  --bg-card: #fbfcfe;
+  --bg-card-hover: #f4f7fb;
+  --bg-elevated: #f7f9fc;
+  --border-color: rgba(30, 41, 59, 0.05);
+  --border-color-hover: hsl(174 42% 50% / 0.55);
   --text-primary: #0f172a;
   --text-secondary: #334155;
   --text-muted: #64748b;
-  --color-primary: #4f46e5;
-  --color-secondary: #6366f1;
-  --color-accent: #059669;
-  --color-danger: #dc2626;
-  --glow-primary: rgba(79, 70, 229, 0.15);
-  --glow-secondary: rgba(99, 102, 241, 0.15);
-  --glass-bg: rgba(255, 255, 255, 0.9);
-  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04);
-  --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.06);
-  --shadow-lg: 0 8px 32px rgba(15, 23, 42, 0.08);
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --bg-subtle: rgba(15, 23, 42, 0.04);
-  --bg-hover: rgba(15, 23, 42, 0.06);
-  --bg-input: rgba(15, 23, 42, 0.05);
-  --sidebar-bg: rgba(240, 242, 248, 0.92);
+  --color-primary: hsl(174 42% 50%);
+  --color-secondary: hsl(174 42% 38%);
+  --color-accent: #75a66b;
+  --bg-subtle: rgba(30, 41, 59, 0.035);
+  --bg-hover: hsl(174 42% 50% / 0.1);
+  --bg-input: rgba(30, 41, 59, 0.035);
+  --sidebar-bg: #f1f5fa;
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 28px rgba(15, 23, 42, 0.12);
 }
 
-
-/* ============================================================
-   LIGHT THEME 2 — Material Light (formerly Sand Dune)
-   Material Theme Lighter High Contrast palette.
-   Clean crisp light canvas (#fafafa) with vibrant cyan & teal accents.
-   ============================================================ */
-.theme-sand-dune,
-.theme-material-light {
-  --bg-primary: #fafafa;
-  --bg-secondary: #f0f0f0;
-  --bg-card: rgba(255, 255, 255, 0.95);
-  --bg-card-hover: rgba(245, 245, 245, 0.98);
-  --bg-elevated: #ffffff;
-  --border-color: rgba(0, 0, 0, 0.08);
-  --border-color-hover: rgba(0, 188, 212, 0.3);
-  --text-primary: #212121;
-  --text-secondary: #546e7a;
-  --text-muted: #90a4ae;
-  --color-primary: #39adb5;
-  --color-secondary: #6182b8;
-  --color-accent: #91b859;
-  --color-danger: #e53935;
-  --glow-primary: rgba(57, 173, 181, 0.18);
-  --glow-secondary: rgba(97, 130, 184, 0.18);
-  --glass-bg: rgba(255, 255, 255, 0.92);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.1);
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --bg-subtle: rgba(0, 0, 0, 0.04);
-  --bg-hover: rgba(0, 0, 0, 0.07);
-  --bg-input: rgba(0, 0, 0, 0.05);
-  --sidebar-bg: rgba(240, 240, 240, 0.92);
-}
-
-
-
-/* ============================================================
-   LIGHT THEME 3 — Office Access (formerly Rainglow/Frost Mint)
-   Inspired by Office Theme (Access) (VS Code theme).
-   Ultra-bright clean white canvas (#fdfdfd) with rich Access burgundy red accents.
-   ============================================================ */
-.theme-frost-mint,
-.theme-rainglow-light,
+/* LIGHT 3 — Office Access (Office Red + Paper White) */
 .theme-office-access {
-  --bg-primary: #f8f9fc;
-  --bg-secondary: #f1f3f9;
-  --bg-card: rgba(255, 255, 255, 0.92);
-  --bg-card-hover: rgba(245, 247, 252, 0.98);
-  --bg-elevated: rgba(255, 255, 255, 0.98);
-  --border-color: rgba(162, 56, 53, 0.12);
-  --border-color-hover: rgba(162, 56, 53, 0.35);
-  --text-primary: #22201e;
-  --text-secondary: #55504c;
-  --text-muted: #8c8680;
-  --color-primary: #a23835;
-  --color-secondary: #c0392b;
-  --color-accent: #27ae60;
-  --color-danger: #c0392b;
-  --glow-primary: rgba(162, 56, 53, 0.12);
-  --glow-secondary: rgba(192, 57, 43, 0.12);
-  --glass-bg: rgba(255, 255, 255, 0.9);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.08);
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --bg-subtle: rgba(162, 56, 53, 0.03);
-  --bg-hover: rgba(162, 56, 53, 0.07);
-  --bg-input: rgba(162, 56, 53, 0.04);
-  --sidebar-bg: rgba(247, 247, 248, 0.92);
+  --bg-primary: #f3f2f1;
+  --bg-secondary: #edebe9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f8f8f8;
+  --bg-elevated: #ffffff;
+  --border-color: rgba(50, 49, 48, 0.12);
+  --border-color-hover: rgba(178, 58, 63, 0.5);
+  --text-primary: #323130;
+  --text-secondary: #605e5c;
+  --text-muted: #797775;
+  --color-primary: #b23a3f;
+  --color-secondary: #8f2d32;
+  --color-accent: #2f7d68;
+  --bg-subtle: rgba(50, 49, 48, 0.045);
+  --bg-hover: rgba(178, 58, 63, 0.09);
+  --bg-input: rgba(50, 49, 48, 0.045);
+  --sidebar-bg: #faf9f8;
+  --shadow-sm: 0 1px 3px rgba(50, 49, 48, 0.08);
+  --shadow-md: 0 4px 12px rgba(50, 49, 48, 0.12);
+  --shadow-lg: 0 12px 28px rgba(50, 49, 48, 0.16);
 }
 
-
-
-
-
-
-/* ============================================================
-   LIGHT THEME 4 — Nord Snow Storm
-   Inspired by Nord Theme (https://www.nordtheme.com/)
-   ============================================================ */
+/* LIGHT 4 — Nord Snow (Arctic Crisp Ice Canvas) */
 .theme-nord-light {
-  --bg-primary: #eceff4;
-  --bg-secondary: #e5e9f0;
-  --bg-card: rgba(255, 255, 255, 0.95);
-  --bg-card-hover: rgba(218, 226, 237, 0.9);
-  --bg-elevated: #ffffff;
-  --border-color: rgba(46, 52, 64, 0.08);
-  --border-color-hover: rgba(94, 129, 172, 0.25);
+  --bg-primary: #f0f4f8;
+  --bg-secondary: #e5edf5;
+  --bg-card: #fbfcfe;
+  --bg-card-hover: #f4f7fb;
+  --bg-elevated: #f7f9fc;
+  --border-color: rgba(76, 86, 106, 0.06);
+  --border-color-hover: #5e81ac;
   --text-primary: #2e3440;
   --text-secondary: #4c566a;
   --text-muted: #7b88a1;
   --color-primary: #5e81ac;
   --color-secondary: #81a1c1;
-  --color-accent: #a3be8c;
-  --color-danger: #bf616a;
-  --glow-primary: rgba(94, 129, 172, 0.18);
-  --glow-secondary: rgba(129, 161, 193, 0.18);
-  --glass-bg: rgba(255, 255, 255, 0.9);
-  --shadow-sm: 0 1px 3px rgba(46, 52, 64, 0.05);
-  --shadow-md: 0 4px 16px rgba(46, 52, 64, 0.08);
-  --shadow-lg: 0 8px 32px rgba(46, 52, 64, 0.1);
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --bg-subtle: rgba(46, 52, 64, 0.04);
-  --bg-hover: rgba(46, 52, 64, 0.07);
-  --bg-input: rgba(46, 52, 64, 0.06);
-  --sidebar-bg: rgba(229, 233, 240, 0.92);
+  --color-accent: #88c0d0;
+  --bg-subtle: rgba(46, 52, 64, 0.035);
+  --bg-hover: rgba(94, 129, 172, 0.07);
+  --bg-input: rgba(46, 52, 64, 0.035);
+  --sidebar-bg: #e5ebf3;
 }
 
-
-
 /* ============================================================
-   RESET & BASE STYLES
+   RESET & GLOBAL BASE STYLES
    ============================================================ */
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+html {
+  overflow-x: clip;
+  text-rendering: optimizeLegibility;
 }
 
 body {
@@ -443,21 +374,57 @@ body {
   font-family: var(--font-body);
   font-size: var(--fs-body);
   line-height: var(--lh-normal);
-  overflow-x: hidden;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.35s ease, color 0.35s ease;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+/* ============================================================
+   GLOBAL SLIM SCROLLBARS (極簡精緻捲軸)
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-color-hover);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+/* Tabular numbers for dates, metrics, and counters */
+.stat-val,
+.prop-stat .num,
+.column-count,
+.date,
+.lightbox-date,
+.prop-date,
+.user-count-badge,
+.badge-count,
+.adv-active-count {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-title);
   color: var(--text-primary);
   line-height: var(--lh-tight);
+  font-style: normal;
 }
 
 h1 {
@@ -498,197 +465,118 @@ button {
 button:focus-visible,
 a:focus-visible,
 textarea:focus-visible,
-select:focus-visible {
+select:focus-visible,
+input:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 
-input,
-input:focus,
-input:focus-visible {
-  outline: 0;
-}
-
-/* 全域按鈕統一樣式 (固定高對比白色文字 + 各主題動態光暈 shadow) */
+/* ============================================================
+   BUTTONS — SOLID INK & TACTILE ELEVATION
+   ============================================================ */
 .add-btn,
-.btn-save {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)) !important;
-  color: #ffffff !important;
-  padding: 0.6rem 1.2rem;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 0.8375rem;
-  box-shadow: 0 4px 15px var(--glow-primary);
-  transition: all 0.2s ease;
-  border: none;
+.btn-save,
+.empty-primary-btn {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  padding: 0.55rem 1.15rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid transparent;
   cursor: pointer;
   min-height: var(--control-height-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  transition: background-color 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease;
 }
 
 .add-btn:hover,
-.btn-save:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px var(--glow-primary);
+.btn-save:hover,
+.empty-primary-btn:hover {
+  background: var(--color-secondary);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
+.add-btn:active,
+.btn-save:active,
+.empty-primary-btn:active {
+  transform: translateY(0);
+}
 
+/* ============================================================
+   FORMS, INPUTS & SELECTS
+   ============================================================ */
 input,
 textarea,
 select {
   font-family: var(--font-body);
   font-size: var(--fs-body);
-  background: none;
-  border: none;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
   outline: none;
-  color: inherit;
+  transition: border-color 0.18s ease, background-color 0.18s ease;
 }
 
-input,
-textarea,
-select,
-.filter-select,
-.detail-btn,
-.source-btn {
-  min-height: var(--control-height-md);
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--color-primary);
 }
 
-/* ============================================================
-   FORM PLACEHOLDER & LABEL COLOR SPECIFICATION
-   ============================================================ */
 label,
 .form-group label {
-  color: var(--text-primary) !important;
+  color: var(--text-primary);
   font-weight: 600;
+  font-size: var(--fs-label);
 }
 
 input::placeholder,
 textarea::placeholder,
-select::placeholder,
-input::-webkit-input-placeholder,
-textarea::-webkit-input-placeholder,
-input::-moz-placeholder,
-textarea::-moz-placeholder,
-input:-ms-input-placeholder,
-textarea:-ms-input-placeholder {
-  color: var(--text-muted) !important;
-  opacity: 1 !important;
-  -webkit-text-fill-color: var(--text-muted) !important;
+select::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
 }
 
-/* ============================================================
-   SELECT & DATALIST ARROW UNIFICATION (全站下拉選單與建議輸入框箭頭統一)
-   ============================================================ */
-select,
-input[list] {
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  -moz-appearance: none !important;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
-  background-repeat: no-repeat !important;
-  background-position: right 0.85rem center !important;
-  background-size: 12px 12px !important;
-  padding-right: 2.2rem !important;
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  background-size: 12px 12px;
+  padding-right: 2.2rem;
   cursor: pointer;
 }
 
-select:hover,
-select:focus,
-input[list]:hover,
-input[list]:focus {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
-}
-
-/* 隱藏 Chrome / Safari 原生 datalist 輸入框醜陋的倒三角形 */
-input[list]::-webkit-calendar-picker-indicator,
-input[list]::-webkit-list-button {
-  display: none !important;
-  opacity: 0 !important;
-  -webkit-appearance: none !important;
-  width: 0 !important;
-  height: 0 !important;
-}
-
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(128, 128, 128, 0.2);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(128, 128, 128, 0.35);
-}
-
-
 /* ============================================================
-   LAYOUT
+   LAYOUT ARCHITECTURE
    ============================================================ */
 .app-container {
   display: flex;
   min-height: 100vh;
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  transition: background-color 0.35s ease, color 0.35s ease;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 .main-content {
   flex: 1;
   min-width: 0;
   margin-left: var(--sidebar-width);
-  padding: var(--space-8);
+  padding: var(--space-container);
+  max-width: 1720px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
-
-
-/* ============================================================
-   GLASS PANEL — universal card/container
-   ============================================================ */
-.glass-panel {
-  background: var(--bg-card);
-  /* 僅保留實體表面，避免所有容器都產生玻璃模糊層 */
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glass-panel:hover {
-  border-color: var(--border-color-hover);
-  box-shadow: var(--shadow-md);
-}
-
-.glow-purple:hover {
-  box-shadow: var(--shadow-md);
-  border-color: var(--color-primary);
-}
-
-.glow-blue:hover {
-  box-shadow: var(--shadow-md);
-  border-color: var(--color-secondary);
-}
-
-
-/* ============================================================
-   GRADIENT TEXT
-   ============================================================ */
-.text-gradient {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
 
 /* ============================================================
    BENTO GRID
@@ -696,267 +584,25 @@ input[list]::-webkit-list-button {
 .bento-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-5);
+  gap: 1.5rem;
 }
-
 
 /* ============================================================
-   SHARED VIEW HEADERS & TOOLBARS
-   ============================================================ */
-.view-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  flex-shrink: 0;
-}
-
-.card-actions { display: flex; gap: 0.35rem; }
-.card-actions-reveal {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-2px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-:where(.ai-card, .proposal-kanban-card, .research-card):hover .card-actions-reveal,
-:where(.research-card):focus-within .card-actions-reveal {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0);
-}
-@media (hover: none), (max-width: 768px) {
-  .card-actions-reveal { opacity: 1; pointer-events: auto; transform: none; }
-}
-
-.page-title {
-  font-size: var(--fs-h1);
-  font-weight: 800;
-  color: var(--text-primary);
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.page-subtitle {
-  color: var(--text-secondary);
-  font-size: var(--fs-body);
-  line-height: 1.5;
-  margin-top: 0.15rem;
-}
-
-.filter-select {
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  padding: var(--space-2) var(--space-4);
-  border-radius: 10px;
-  font-size: 0.7875rem;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: var(--font-body);
-}
-
-.filter-select:hover,
-.filter-select:focus {
-  border-color: var(--color-primary);
-  color: var(--text-primary);
-  outline: none;
-}
-
-
-/* ============================================================
-   BADGES & TAGS
-   ============================================================ */
-.type-badge,
-.category-badge,
-.comp-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.22rem 0.75rem;
-  border-radius: 99px;
-  font-size: 0.6875rem;
-  line-height: 1.2;
-  background: var(--glow-primary);
-  color: var(--color-primary);
-  margin-bottom: 0.1rem;
-}
-
-
-.card-tools {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.2rem;
-}
-
-.tool-tag {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  background: var(--sidebar-bg);
-  border: 1px solid var(--bg-hover);
-  padding: 0.18rem 0.6rem;
-  border-radius: 15px;
-  line-height: 1.3;
-  letter-spacing: 0.01em;
-}
-
-.clickable-tool {
-  cursor: pointer;
-  user-select: none;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.clickable-tool:hover {
-  background: var(--glow-primary);
-  color: var(--color-primary);
-  border-color: var(--color-primary);
-  transform: translateY(-1px);
-}
-
-.clickable-tool.active {
-  background: var(--color-primary) !important;
-  color: #ffffff !important;
-  border-color: var(--color-primary) !important;
-  box-shadow: 0 2px 8px var(--glow-primary);
-}
-
-.card-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.2rem;
-  margin-top: 0.4rem;
-  align-items: center;
-}
-
-.tag {
-  font-size: 0.6875rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  background: transparent;
-  border: 1px solid var(--border-color);
-  padding: 0.16rem 0.5rem;
-  border-radius: 15px;
-  line-height: 1.3;
-  transition: all 0.18s ease;
-}
-
-.clickable-tag {
-  cursor: pointer;
-  user-select: none;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.clickable-tag:hover {
-  background: var(--bg-hover);
-  color: var(--color-primary);
-  border-color: var(--border-color);
-  transform: translateY(-1px);
-}
-
-.clickable-tag.active {
-  background: var(--color-primary) !important;
-  color: #ffffff !important;
-  border-color: var(--color-primary) !important;
-  box-shadow: 0 2px 8px var(--glow-primary);
-  font-weight: 600;
-}
-
-.tag-purple {
-  background: var(--glow-primary);
-  border-color: var(--border-color);
-  color: var(--color-primary);
-}
-
-.tag-blue {
-  background: var(--glow-secondary);
-  border-color: var(--border-color);
-  color: var(--color-secondary);
-}
-
-.tag-green {
-  background: var(--bg-hover);
-  border-color: var(--border-color);
-  color: var(--color-accent);
-}
-
-
-/* ============================================================
-   SHARED CONTENT SECTIONS & CARDS
-   ============================================================ */
-.lightbox-section {
-  margin-top: 0.35rem;
-}
-
-.section-title {
-  font-size: var(--fs-label);
-  font-weight: var(--fw-bold);
-  color: var(--text-primary);
-  margin-top: var(--space-2);
-  margin-bottom: var(--space-2);
-}
-
-.section-title span {
-  display: flex;
-  align-items: center;
-  gap: 0.2rem;
-}
-.section-title .dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--color-primary);
-  position: relative;
-  top: 1px;
-}
-
-.section-desc {
-  font-size: var(--fs-body);
-  color: var(--text-secondary);
-  line-height: 1.65;
-  white-space: pre-line;
-}
-
-
-
-/* ============================================================
-   GLOBAL MODAL BACKDROP (Viewport Centering)
-   ============================================================ */
-.modal-backdrop {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  background: rgba(0, 0, 0, 0.65) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: var(--space-6) !important;
-  z-index: 99999 !important;
-}
-
-
-/* ============================================================
-   TRANSITION ANIMATIONS
+   TRANSITIONS & ACCESSIBILITY
    ============================================================ */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.25s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.fade-enter-from,
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
 .fade-leave-to {
   opacity: 0;
+  transform: translateY(-6px);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -970,13 +616,12 @@ input[list]::-webkit-list-button {
   }
 }
 
-
 /* ============================================================
-   RESPONSIVE
+   RESPONSIVE LAYOUT
    ============================================================ */
 @media (max-width: 1024px) {
   :root {
-    --sidebar-width: 80px;
+    --sidebar-width: 72px;
   }
 
   .bento-grid {
@@ -989,12 +634,16 @@ input[list]::-webkit-list-button {
     --sidebar-width: 0px;
     --fs-display: 2rem;
     --fs-h1: 1.5rem;
-    --fs-h2: 1.125rem;
+    --fs-h2: 1.15rem;
   }
 
   .main-content {
     margin-left: 0;
-    padding: calc(env(safe-area-inset-top, 0px) + 5.75rem) var(--space-5) calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+    padding: calc(env(safe-area-inset-top, 0px) + 5.5rem) var(--space-4) calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+  }
+
+  .page-title {
+    overflow-wrap: anywhere;
   }
 
   .bento-grid {
