@@ -18,7 +18,7 @@
     deleteConfirmPrefix="確定要刪除《"
     deleteConfirmSuffix="》這筆競品分析嗎？"
     :filters="filters"
-    :searchFields="['name', 'title', 'category', 'pros', 'cons', 'takeaways', 'tags']"
+    :searchFields="['name', 'title', 'category', 'url', 'pros', 'cons', 'takeaways', 'tags']"
     :highlightedId="highlightedId"
     @trigger-crud="$emit('trigger-crud', $event)"
     @delete-done="$emit('delete-done')"

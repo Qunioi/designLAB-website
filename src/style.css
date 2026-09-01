@@ -584,7 +584,7 @@ select {
 .bento-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 /* ============================================================
@@ -629,7 +629,7 @@ select {
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   :root {
     --sidebar-width: 0px;
     --fs-display: 2rem;

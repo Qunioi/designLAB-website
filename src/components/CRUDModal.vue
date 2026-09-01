@@ -15,12 +15,12 @@
               <input v-model="form.title" type="text" placeholder="請輸入標題" required />
             </div>
             <div class="form-group">
-              <label>分類</label>
-              <CategoryInput v-model="form.category" :options="historyCategories" placeholder="例如：Layout, User Flow, Visual Style" />
+              <label>分類 <span class="required">*</span></label>
+              <CategoryInput v-model="form.category" :options="historyCategories" placeholder="例如：Layout, User Flow, Visual Style" required />
             </div>
             <div class="form-group">
               <label>來源網址</label>
-              <input v-model="form.source" type="text" @blur="form.source = ensureProtocol(form.source)" placeholder="例如：https://linear.app" />
+              <input v-model="form.sourceUrl" type="url" required @blur="form.sourceUrl = ensureProtocol(form.sourceUrl)" placeholder="例如：https://linear.app" />
             </div>
             <div class="form-group full-width">
               <label>標籤 (按 Enter 新增標籤，可點選歷史標籤)</label>
@@ -28,11 +28,11 @@
             </div>
             <div class="form-group full-width">
               <label>圖片上傳</label>
-              <ImagePathInput v-model="form.cover" />
+              <ImagePathInput v-model="form.cover" required />
             </div>
             <div class="form-group full-width">
               <label>研究心得 / 可借鏡重點</label>
-              <textarea v-model="form.takeaways" rows="3" placeholder="請輸入詳細的研究心得或設計分析..."></textarea>
+              <textarea v-model="form.takeaways" rows="3" required placeholder="請輸入詳細的研究心得或設計分析..."></textarea>
             </div>
           </div>
 
@@ -43,23 +43,23 @@
               <input v-model="form.title" type="text" placeholder="例如：Dynamic Island 彈性轉場動畫" required />
             </div>
             <div class="form-group">
-              <label>動畫類型 (可輸入或從建議選取)</label>
-              <CategoryInput v-model="form.motionType" :options="historyCategories" placeholder="例如：Micro-interaction, Drag & Drop" />
+              <label>動畫類型 (可輸入或從建議選取) <span class="required">*</span></label>
+              <CategoryInput v-model="form.motionType" :options="historyCategories" placeholder="例如：Micro-interaction, Drag & Drop" required />
             </div>
             <div class="form-group">
               <label>來源網址</label>
-              <input v-model="form.source" type="text" @blur="form.source = ensureProtocol(form.source)" placeholder="請貼上來源網址" />
+              <input v-model="form.sourceUrl" type="url" required @blur="form.sourceUrl = ensureProtocol(form.sourceUrl)" placeholder="請貼上來源網址" />
             </div>
             <div class="form-group full-width">
               <label>影片檔案 (.mp4 / .webm) <span class="required">*</span></label>
-              <FileUploader v-model="form.videoUrl" accept="video/*" placeholder="請貼上影片網或點擊選擇檔案上傳" />
+              <FileUploader v-model="form.videoUrl" accept="video/*,image/gif" placeholder="請貼上 MP4、WebM 或 GIF 網址" />
             </div>
             <div class="form-group full-width">
               <label>圖片上傳（可選）</label>
               <ImagePathInput v-model="form.cover" />
             </div>
             <div class="form-group full-width">
-              <label>製作工具 (按 Enter 新增標籤，可點選歷史製作工具)</label>
+              <label>製作工具 (按 Enter 新增標籤，可點選歷史製作工具) <span class="required">*</span></label>
               <TagInput v-model="form.tools" :suggested-tags="historyTools" placeholder="輸入製作工具如：SwiftUI, Vue, GSAP..." />
             </div>
             <div class="form-group full-width">
@@ -68,7 +68,7 @@
             </div>
             <div class="form-group full-width">
               <label>動畫特色與借鏡重點</label>
-              <textarea v-model="form.takeaways" rows="4" placeholder="請描述此動畫的物理特性與可借鏡處..."></textarea>
+              <textarea v-model="form.takeaways" rows="4" required placeholder="請描述此動畫的物理特性與可借鏡處..."></textarea>
             </div>
           </div>
 
@@ -91,23 +91,23 @@
             </div>
             <div class="form-group full-width">
               <label>官方網址</label>
-              <input v-model="form.url" type="text" @blur="form.url = ensureProtocol(form.url)" placeholder="例如：https://figma.com" />
+              <input v-model="form.url" type="url" required @blur="form.url = ensureProtocol(form.url)" placeholder="例如：https://figma.com" />
             </div>
             <div class="form-group full-width">
               <label>圖片上傳</label>
-              <ImagePathInput v-model="form.screenshot" />
+              <ImagePathInput v-model="form.screenshot" required />
             </div>
             <div class="form-group full-width">
               <label>優點 (Pros)</label>
-              <textarea v-model="form.pros" rows="2" placeholder="請輸入競品設計優點，可條列..." ></textarea>
+              <textarea v-model="form.pros" rows="2" required placeholder="請輸入競品設計優點，可條列..." ></textarea>
             </div>
             <div class="form-group full-width">
               <label>缺點 (Cons)</label>
-              <textarea v-model="form.cons" rows="2" placeholder="請輸入競品設計缺點，可條列..." ></textarea>
+              <textarea v-model="form.cons" rows="2" required placeholder="請輸入競品設計缺點，可條列..." ></textarea>
             </div>
             <div class="form-group full-width">
               <label>值得參考與借鏡之處</label>
-              <textarea v-model="form.takeaways" rows="3" placeholder="我們如何參考此競品的優點、避免其缺點？" ></textarea>
+              <textarea v-model="form.takeaways" rows="3" required placeholder="我們如何參考此競品的優點、避免其缺點？" ></textarea>
             </div>
           </div>
 
@@ -130,7 +130,7 @@
               <ImagePathInput v-model="form.cover" required />
             </div>
             <div class="form-group full-width">
-              <label>使用情境 <span class="required">*</span></label>
+              <label>工具簡介 <span class="required">*</span></label>
               <textarea v-model="form.useCase" rows="4" placeholder="例如：概念插畫生成、配色風格探索..." required></textarea>
             </div>
             <div class="form-group full-width">
@@ -147,7 +147,7 @@
           <div v-else-if="type === 'RESOURCES'" class="form-grid">
             <div class="form-group">
               <label>資源分類 <span class="required">*</span></label>
-              <CategoryInput v-model="form.category" :options="historyCategories" placeholder="例如：設計靈感, Icon, Font, UI元件" />
+              <CategoryInput v-model="form.category" :options="historyCategories" placeholder="例如：設計靈感, Icon, Font, UI元件" required />
             </div>
             <div class="form-group">
               <label>網站名稱 <span class="required">*</span></label>
@@ -284,7 +284,11 @@ const historyCategories = computed(() => {
   ];
   const set = new Set();
   // 先加入系統常用內建優質分類
-  ['Layout', 'User Flow', 'Visual Style', 'AI', 'Micro-interaction', 'Loading State', 'Drag & Drop', '3D / Dynamic'].forEach(c => set.add(c));
+  [
+    'Layout', 'User Flow', 'Visual Style', 'AI', 'Micro-interaction',
+    'Loading State', 'Drag & Drop', '3D / Dynamic', '設計靈感', 'Icon',
+    'Font', 'Motion', 'UI 元件', '素材網站', 'Design System', '配色'
+  ].forEach(c => set.add(c));
   
   allStores.forEach(item => {
     const val = item.category || item.motionType;
@@ -347,6 +351,7 @@ watch(() => [props.isOpen, props.item, props.type], () => {
         toolsInput: '',
         cover: '',
         source: '',
+        sourceUrl: '',
         takeaways: '',
         videoUrl: '',
         motionType: '',
@@ -374,27 +379,47 @@ const close = () => {
 };
 
 const handleSubmit = () => {
-  if (props.type === 'AI_CENTER') {
-    const requiredFields = [
-      ['name', 'AI 工具名稱'],
-      ['category', '工具分類'],
-      ['url', 'AI 工具網址'],
-      ['cover', '工具封面'],
-      ['useCase', '使用情境'],
-      ['prompt', '提示詞'],
-      ['workflow', '工作流程']
-    ];
-    const missingField = requiredFields.find(([field]) => !String(form.value[field] || '').trim());
-    if (missingField) {
-      alert(`請填寫「${missingField[1]}」後再儲存。`);
-      return;
-    }
+  const requiredByType = {
+    UI_RESEARCH: [
+      ['title', '標題'], ['category', '分類'], ['sourceUrl', '來源網址'],
+      ['cover', '圖片'], ['takeaways', '研究心得／可借鏡重點']
+    ],
+    MOTION_RESEARCH: [
+      ['title', '標題'], ['motionType', '動畫類型'], ['sourceUrl', '來源網址'],
+      ['tools', '製作工具'], ['takeaways', '動畫特色／研究心得']
+    ],
+    COMPETITORS: [
+      ['name', '競品名稱'], ['category', '競品分類'], ['url', '競品網址'],
+      ['screenshot', 'Screenshot'], ['pros', '優點'], ['cons', '缺點'], ['takeaways', '值得參考之處']
+    ],
+    AI_CENTER: [
+      ['name', 'AI 工具名稱'], ['category', '工具分類'], ['url', 'AI 工具網址'],
+      ['cover', '工具封面'], ['useCase', '工具簡介'], ['prompt', '提示詞'], ['workflow', '工作流程']
+    ],
+    RESOURCES: [
+      ['name', '網站名稱'], ['category', '資源分類'], ['url', '網站 URL']
+    ]
+  };
+
+  const missingField = (requiredByType[props.type] || []).find(([field]) => {
+    const value = form.value[field];
+    return Array.isArray(value) ? value.length === 0 : !String(value || '').trim();
+  });
+
+  if (missingField) {
+    alert(`請填寫「${missingField[1]}」後再儲存。`);
+    return;
+  }
+
+  if (props.type === 'MOTION_RESEARCH' && !form.value.videoUrl && !form.value.cover) {
+    alert('請提供影片網址或封面圖至少一項。');
+    return;
   }
 
   const formattedItem = { ...form.value };
   
   // 自動補齊所有網址欄位的 https:// 協定
-  if (formattedItem.source) formattedItem.source = ensureProtocol(formattedItem.source);
+  if (formattedItem.sourceUrl) formattedItem.sourceUrl = ensureProtocol(formattedItem.sourceUrl);
   if (formattedItem.url) formattedItem.url = ensureProtocol(formattedItem.url);
   if (formattedItem.link) formattedItem.link = ensureProtocol(formattedItem.link);
   if (formattedItem.website) formattedItem.website = ensureProtocol(formattedItem.website);
@@ -576,13 +601,25 @@ textarea {
 
 .modal-fade-enter-active,
 .modal-fade-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity 0.22s ease;
+}
+
+.modal-fade-enter-active .modal-container,
+.modal-fade-leave-active .modal-container {
+  transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .modal-fade-enter-from,
 .modal-fade-leave-to {
   opacity: 0;
+}
+
+.modal-fade-enter-from .modal-container {
   transform: scale(0.95);
+}
+
+.modal-fade-leave-to .modal-container {
+  transform: scale(0.97);
 }
 
 @media (max-width: 640px) {

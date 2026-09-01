@@ -19,6 +19,22 @@ const KEYS = {
   PROPOSALS:       'design_lab_proposals'
 };
 
+// Keep the persisted schema predictable while accepting records created by
+// older versions of the app.
+function normalizeItem(key, item) {
+  const normalized = { ...item };
+
+  if (key === 'UI_RESEARCH' || key === 'MOTION_RESEARCH') {
+    normalized.sourceUrl = normalized.sourceUrl || normalized.source || normalized.link || '';
+  }
+
+  if (key === 'AI_CENTER' && !normalized.url && normalized.link) {
+    normalized.url = normalized.link;
+  }
+
+  return normalized;
+}
+
 export function resetToMockData() {
   localStorage.setItem(KEYS.UI_RESEARCH, JSON.stringify(initialUIResearch));
   localStorage.setItem(KEYS.MOTION_RESEARCH, JSON.stringify(initialMotionResearch));
@@ -67,7 +83,7 @@ export function initializeStorage() {
 export function getStorageData(key) {
   initializeStorage();
   const data = localStorage.getItem(KEYS[key]);
-  return data ? JSON.parse(data) : [];
+  return data ? JSON.parse(data).map(item => normalizeItem(key, item)) : [];
 }
 
 export function setStorageData(key, data) {
@@ -127,6 +143,7 @@ import { formatStandardDateTime } from './formatters';
 
 export function addOrUpdateItem(key, item) {
   const list = getStorageData(key);
+  const normalizedItem = normalizeItem(key, item);
   let savedItem = null;
   let isNewItem = false;
   
@@ -134,14 +151,14 @@ export function addOrUpdateItem(key, item) {
   const currentUserStr = getCurrentUserString();
   const nowStr = formatStandardDateTime(new Date());
 
-  if (item.id) {
+  if (normalizedItem.id) {
     // 更新現有項目
     const index = list.findIndex(i => i.id === item.id);
     if (index !== -1) {
       const originalAuthor = list[index].createdBy || list[index].updatedBy || currentUserStr;
       list[index] = { 
         ...list[index], 
-        ...item,
+        ...normalizedItem,
         createdAt: formatStandardDateTime(list[index].createdAt || nowStr),
         updatedAt: nowStr,
         updatedBy: currentUserStr,
@@ -159,7 +176,7 @@ export function addOrUpdateItem(key, item) {
       // ID 存在但找不到，視為新增
       isNewItem = true;
       savedItem = { 
-        ...item,
+        ...normalizedItem,
         createdAt: formatStandardDateTime(item.createdAt || nowStr),
         updatedAt: nowStr,
         updatedBy: currentUserStr,
@@ -174,7 +191,7 @@ export function addOrUpdateItem(key, item) {
     // 新增項目 (完整紀錄是誰發佈的)
     isNewItem = true;
     savedItem = {
-      ...item,
+      ...normalizedItem,
       id: `${key.toLowerCase().replace(/_/g, '-')}-${Date.now()}`,
       createdAt: nowStr,
       updatedAt: nowStr,

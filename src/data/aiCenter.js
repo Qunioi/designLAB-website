@@ -2,7 +2,7 @@ export const initialAICenter = [
   {
     id: "ai-1",
     name: "Midjourney v6 (介面風格探索)",
-    link: "https://midjourney.com",
+    url: "https://midjourney.com",
     useCase: "在專案初期快速探索插畫風格、色彩搭配與 UI 概念圖",
     prompt: "App UI screen, fintech dashboard, premium dark mode, neon violet and blue glow, futuristic glassmorphism charts, high fidelity, UX, UI, Figma, clean design --ar 16:9 --v 6.0",
     workflow: [
@@ -19,7 +19,7 @@ export const initialAICenter = [
   {
     id: "ai-2",
     name: "ChatGPT GPT-4o (使用者研究訪談生成)",
-    link: "https://chatgpt.com",
+    url: "https://chatgpt.com",
     useCase: "快速生成用戶訪談問卷、可用性測試腳本與競品分析框架",
     prompt: "我們正在設計一款給設計師使用的內部知識管理平台，目標用戶為 3-10 人的設計小組。請生成一份包含 10 個問題的半結構式用戶訪談腳本，重點了解：1) 現有設計資料的管理痛點 2) 搜尋靈感的習慣流程 3) 對知識沉澱的態度。問題需開放式，避免引導性措辭。",
     workflow: [
@@ -36,7 +36,7 @@ export const initialAICenter = [
   {
     id: "ai-3",
     name: "Claude Sonnet (設計評審與 UX 文案優化)",
-    link: "https://claude.ai",
+    url: "https://claude.ai",
     useCase: "對設計稿進行批判性 UX 審查、生成 UI 文案與 Error Message",
     prompt: "你是位資深 UX 設計師，請對以下設計截圖進行批判性審查：從資訊架構、可用性、視覺層次三個面向提出具體改進建議，並提供替代方案。請用繁體中文回答，條列式呈現，每點附上理由。",
     workflow: [
@@ -53,7 +53,7 @@ export const initialAICenter = [
   {
     id: "ai-4",
     name: "Galileo AI (設計稿自動生成)",
-    link: "https://usegalileo.ai",
+    url: "https://usegalileo.ai",
     useCase: "輸入文字描述，自動生成完整的 Figma 設計稿初稿",
     prompt: "A SaaS analytics dashboard for a design team. Include: left sidebar navigation with icons, a header with search bar and user avatar, a 3-column bento grid with metrics cards, a line chart for weekly activity, and a recent items list. Dark mode, purple accent color.",
     workflow: [

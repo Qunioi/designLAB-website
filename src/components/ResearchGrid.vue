@@ -45,7 +45,7 @@
 
     <!-- 卡片列表 -->
     <div v-else class="cards-grid">
-      <div v-for="item in filteredList" :key="item.id" class="research-card glass-panel" :class="{ highlighted: highlightedId === item.id, 'is-mine': isMyCreatedItem(item) }" :id="`item-${item.id}`">
+      <div v-for="item in filteredList" :key="item.id" class="research-card glass-panel" :class="[`card-type-${crudType.toLowerCase()}`, { highlighted: highlightedId === item.id, 'is-mine': isMyCreatedItem(item) }]" :id="`item-${item.id}`">
         <div
           class="card-media-wrapper"
           role="button"
@@ -116,9 +116,9 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
           <div class="lightbox-scroll-area">
-            <div class="lightbox-media-box" :class="{ 'image-lightbox-media': !getLightboxVideo(lightbox.item) }" v-if="!hideLightboxMedia && (getLightboxVideo(lightbox.item) || getLightboxCover(lightbox.item))">
+            <div class="lightbox-media-box" :class="{ 'image-lightbox-media': !isVideoSource(getLightboxVideo(lightbox.item)) }" v-if="!hideLightboxMedia && (isVideoSource(getLightboxVideo(lightbox.item)) || getLightboxImage(lightbox.item))">
               <div
-                v-if="getLightboxVideo(lightbox.item)"
+                v-if="isVideoSource(getLightboxVideo(lightbox.item))"
                 class="clickable-media-box video-media-container"
               >
                 <video
@@ -143,12 +143,12 @@
                 role="button"
                 tabindex="0"
                 :aria-label="`放大檢視《${getTitle(lightbox.item)}》圖片`"
-                @click="openFullscreenMedia(getLightboxCover(lightbox.item), false)"
-                @keydown.enter.prevent="openFullscreenMedia(getLightboxCover(lightbox.item), false)"
-                @keydown.space.prevent="openFullscreenMedia(getLightboxCover(lightbox.item), false)"
+                @click="openFullscreenMedia(getLightboxImage(lightbox.item), false)"
+                @keydown.enter.prevent="openFullscreenMedia(getLightboxImage(lightbox.item), false)"
+                @keydown.space.prevent="openFullscreenMedia(getLightboxImage(lightbox.item), false)"
                 title="點擊全螢幕放大檢視圖片"
               >
-                <img v-if="getLightboxCover(lightbox.item)" :src="getLightboxCover(lightbox.item)" class="lightbox-img" alt="點擊放大" />
+                <img v-if="getLightboxImage(lightbox.item)" :src="getLightboxImage(lightbox.item)" class="lightbox-img" alt="點擊放大" />
                 <div v-else class="lightbox-media-placeholder" aria-hidden="true">{{ getTitle(lightbox.item) }}</div>
                 <div class="media-zoom-overlay">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
@@ -171,6 +171,7 @@
                 :selected-tags="selectedTags"
                 :toggle-single-filter="toggleSingleFilter"
                 :is-single-filter-selected="isSingleFilterSelected"
+                :open-fullscreen-media="openFullscreenMedia"
               />
               </div>
               <div class="lightbox-footer">
@@ -432,6 +433,13 @@ const getLink   = (item) => {
 };
 const getLightboxCover = (item) => { if (!item) return ''; return item[props.lightboxCoverField || props.coverField] || getCover(item); };
 const getLightboxVideo = (item) => { if (!item) return ''; return item.videoUrl || item.video || ''; };
+const isVideoSource = (url) => Boolean(url && (String(url).startsWith('data:video/') || /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(String(url))));
+const getLightboxImage = (item) => {
+  if (!item) return '';
+  const cover = getLightboxCover(item);
+  const mediaUrl = getLightboxVideo(item);
+  return cover || (!isVideoSource(mediaUrl) ? mediaUrl : '');
+};
 const getLightboxLink  = (item) => { if (!item) return ''; return item[props.lightboxLinkField  || props.linkField]  || getLink(item); };
 const getBadgeText = (item) => { if (props.badgeLabel) return props.badgeLabel; if (props.badgeField && item) return item[props.badgeField] || ''; return ''; };
 
@@ -840,7 +848,7 @@ const handleDelete = (item) => {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
   gap: 1rem;
 }
 
@@ -863,6 +871,20 @@ const handleDelete = (item) => {
   border-color: var(--color-primary);
   box-shadow: var(--shadow-md);
   animation: pulse-border 2s infinite;
+}
+
+/* Same card shell, with a small content cue per module. The cue uses the
+   existing theme tokens so themes remain responsible for the actual colour. */
+.research-card.card-type-motion_research .card-media-wrapper {
+  background: color-mix(in srgb, var(--color-secondary) 12%, var(--bg-hover));
+}
+
+.research-card.card-type-ai_center .card-media-wrapper {
+  background: color-mix(in srgb, var(--color-accent) 10%, var(--bg-hover));
+}
+
+.research-card.card-type-competitors .card-media-wrapper {
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-hover));
 }
 
 @keyframes pulse-border {
@@ -1349,7 +1371,6 @@ const handleDelete = (item) => {
 .lightbox-date {
   font-size: var(--fs-meta);
   color: var(--text-muted);
-  padding-right: 2rem;
 }
 .lightbox-title {
   font-size: 1.288rem;
@@ -1438,6 +1459,10 @@ const handleDelete = (item) => {
   }
 }
 @media (max-width: 640px) {
+  .cards-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .filter-select { flex: 1; }
   .lightbox-backdrop { padding: 0.75rem; }
   .lightbox-container { max-height: calc(100dvh - 1.5rem); border-radius: 16px; }

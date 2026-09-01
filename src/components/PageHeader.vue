@@ -110,7 +110,7 @@ const isGuest = computed(() => {
 
 /* Navigation owns the notification entry on every mobile layout. Keep the
    page-level action for desktop only so tablet widths do not duplicate it. */
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .page-header-bell {
     display: none;
   }

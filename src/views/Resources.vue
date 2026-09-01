@@ -16,7 +16,7 @@
     deleteConfirmPrefix="確定要刪除《"
     deleteConfirmSuffix="》這筆資源嗎？"
     :filters="filters"
-    :searchFields="['name', 'desc', 'category']"
+    :searchFields="['name', 'desc', 'category', 'url']"
     :highlightedId="highlightedId"
     @trigger-crud="$emit('trigger-crud', $event)"
     @delete-done="$emit('delete-done')"

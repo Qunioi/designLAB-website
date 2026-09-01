@@ -42,32 +42,38 @@
         </div>
       </div>
 
-      <!-- 3. Recent Updates -->
-      <div class="bento-card recent-card glass-panel">
+      <!-- 3. Latest research cards -->
+      <section class="dashboard-latest">
         <div class="card-header">
-          <h3>最新研究案例</h3>
-          <button class="card-action-link" type="button" @click="$emit('change-view', 'UIResearch')">查看全部 →</button>
+          <h3>最新更新</h3>
+          <!-- <button class="card-action-link" type="button" @click="$emit('open-search')">搜尋全部 →</button> -->
         </div>
-        <div class="recent-list">
-          <div 
+        <div class="dashboard-latest-grid">
+          <article 
             v-for="item in recentItems" 
             :key="item.id" 
-            class="recent-item-row"
+            class="dashboard-research-card"
+            tabindex="0"
             @click="handleRecentClick(item)"
+            @keydown.enter.prevent="handleRecentClick(item)"
+            @keydown.space.prevent="handleRecentClick(item)"
           >
-            <img :src="item.cover" class="recent-img" alt="" />
-            <div class="recent-text">
-              <div class="recent-row-title">{{ item.title }}</div>
-              <div class="recent-row-meta">
-                <span class="type-badge" :class="item.type">{{ item.typeLabel }}</span>
-                <span class="date">{{ item.createdAt || '剛剛' }}</span>
-              </div>
+            <div class="dashboard-card-media">
+              <img v-if="item.cover || item.screenshot || item.logo" :src="item.cover || item.screenshot || item.logo" :alt="item.title || item.name" loading="lazy" />
+              <span v-else aria-hidden="true">{{ (item.title || item.name || '?').charAt(0) }}</span>
             </div>
-          </div>
+            <div class="dashboard-card-info">
+              <div class="dashboard-card-meta">
+                <span class="type-badge" :class="item.type">{{ item.typeLabel }}</span>
+              </div>
+              <h4>{{ item.title || item.name }}</h4>
+            </div>
+          </article>
         </div>
-      </div>
+      </section>
 
-      <!-- 4. Proposal Stats -->
+      <!-- Removed from Dashboard: proposal progress is managed in Proposals. -->
+      <!--
       <div class="bento-card proposal-card glass-panel" @click="$emit('change-view', 'Proposals')">
         <div class="card-header">
           <h3>優化提案進度</h3>
@@ -92,12 +98,13 @@
           </div>
         </div>
       </div>
+      -->
 
       <!-- 5. AI Quick Prompt -->
-      <div class="bento-card ai-prompt-card glass-panel">
+      <div v-if="false" class="bento-card ai-prompt-card glass-panel">
         <div class="card-header">
           <div class="header-title-group">
-            <h3>熱門 AI Prompt</h3>
+            <h3>熱門 AI 工具</h3>
             <!-- <span v-if="currentPrompt?.toolName" class="ai-tool-pill">{{ currentPrompt.toolName }}</span> -->
           </div>
           <div class="header-actions">
@@ -207,8 +214,13 @@ const recentItems = computed(() => {
   const _ = refreshTrigger.value;
   const ui = getStorageData('UI_RESEARCH').map(i => ({ ...i, type: 'ui', typeLabel: 'UI 設計研究' }));
   const motion = getStorageData('MOTION_RESEARCH').map(i => ({ ...i, type: 'motion', typeLabel: '動態研究' }));
-  
-  return [...ui, ...motion].slice(0, 3);
+  const competitors = getStorageData('COMPETITORS').map(i => ({ ...i, type: 'competitor', typeLabel: '競品分析' }));
+  const ai = getStorageData('AI_CENTER').map(i => ({ ...i, type: 'ai', typeLabel: 'AI 工具' }));
+  const resources = getStorageData('RESOURCES').map(i => ({ ...i, type: 'resource', typeLabel: '設計資源' }));
+
+  return [...ui, ...motion, ...competitors, ...ai, ...resources]
+    .sort((a, b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0))
+    .slice(0, 8);
 });
 
 import { copyToClipboard } from '../utils/clipboard';
@@ -266,7 +278,15 @@ const copyPrompt = async () => {
 };
 
 const handleRecentClick = (item) => {
-  const targetView = item.type === 'ui' ? 'UIResearch' : 'MotionResearch';
+  const targetViewMap = {
+    ui: 'UIResearch',
+    motion: 'MotionResearch',
+    competitor: 'Competitor',
+    ai: 'AICenter',
+    resource: 'Resources'
+  };
+  const targetView = targetViewMap[item.type];
+  if (!targetView) return;
   emit('navigate-detail', { view: targetView, id: item.id });
 };
 </script>
@@ -298,7 +318,7 @@ const handleRecentClick = (item) => {
   padding: 2.25rem;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
+  /* box-shadow: var(--shadow-sm); */
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -409,6 +429,99 @@ const handleRecentClick = (item) => {
 .recent-card {
   grid-column: span 2;
   grid-row: span 2;
+}
+
+.dashboard-latest {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.dashboard-latest-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.dashboard-research-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--border-color) 62%, transparent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--bg-card) 84%, transparent);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-research-card:hover,
+.dashboard-research-card:focus-visible {
+  border-color: var(--border-color-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.dashboard-research-card:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.dashboard-card-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
+  color: var(--text-secondary);
+  font-family: var(--font-title);
+  font-size: var(--fs-h2);
+  font-weight: 700;
+}
+
+.dashboard-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.dashboard-research-card:hover .dashboard-card-media img {
+  transform: scale(1.04);
+}
+
+.dashboard-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.85rem;
+}
+
+.dashboard-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.dashboard-card-meta .date {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-card-info h4 {
+  min-width: 0;
+  color: var(--text-primary);
+  font-family: var(--font-title);
+  font-size: var(--fs-body-lg);
+  font-weight: 700;
+  line-height: 1.35;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
 }
 
 .card-header {
@@ -559,7 +672,7 @@ const handleRecentClick = (item) => {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 0.75rem;
+  /* gap: 0.75rem; */
 }
 
 .header-title-group {
@@ -723,7 +836,13 @@ const handleRecentClick = (item) => {
   }
   .search-trigger {
     width: 100%;
-    max-width: 280px;
+    /* max-width: 280px; */
+  }
+}
+
+@media (max-width: 1200px) {
+  .dashboard-latest-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -739,6 +858,9 @@ const handleRecentClick = (item) => {
   }
   .recent-card {
     grid-column: span 2;
+  }
+  .dashboard-latest-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -758,6 +880,9 @@ const handleRecentClick = (item) => {
 
   .bento-card {
     padding: var(--space-5);
+  }
+  .dashboard-latest-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

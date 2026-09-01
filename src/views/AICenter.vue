@@ -18,7 +18,7 @@
     deleteConfirmPrefix="確定要刪除《"
     deleteConfirmSuffix="》這筆 AI 工具嗎？"
     :filters="filters"
-    :searchFields="['name', 'category', 'useCase', 'prompt', 'workflow', 'url', 'link']"
+    :searchFields="['name', 'category', 'useCase', 'prompt', 'workflow', 'url', 'tags']"
     :highlightedId="highlightedId"
     @trigger-crud="$emit('trigger-crud', $event)"
     @delete-done="$emit('delete-done')"
@@ -33,13 +33,32 @@
       </div>
     </template>
 
-    <template #lightbox-content="{ item }">
+    <template #lightbox-content="{ item, openFullscreenMedia }">
       <div v-if="item.cover || item.useCase" class="ai-usecase-row">
-        <div v-if="item.cover" class="ai-usecase-image">
+        <div
+          v-if="item.cover"
+          class="ai-usecase-image"
+          role="button"
+          tabindex="0"
+          :aria-label="`放大檢視《${item.name}》圖片`"
+          title="點擊放大圖片"
+          @click="openFullscreenMedia(item.cover, false)"
+          @keydown.enter.prevent="openFullscreenMedia(item.cover, false)"
+          @keydown.space.prevent="openFullscreenMedia(item.cover, false)"
+        >
           <img :src="item.cover" :alt="item.name" />
+          <span class="ai-image-zoom-hint" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <polyline points="9 21 3 21 3 15"></polyline>
+              <line x1="21" y1="3" x2="14" y2="10"></line>
+              <line x1="3" y1="21" x2="10" y2="14"></line>
+            </svg>
+            <span>點擊全螢幕檢視</span>
+          </span>
         </div>
         <div v-if="item.useCase" class="lightbox-section ai-usecase">
-          <h4 class="section-title">使用情境</h4>
+          <h4 class="section-title">工具簡介 Description</h4>
           <p class="section-desc">{{ item.useCase }}</p>
         </div>
       </div>
@@ -115,12 +134,45 @@ const copyPrompt = async (prompt, id) => {
 }
 
 .ai-usecase-image {
+  position: relative;
   width: 42%;
-  height: 300px;
+  /* height: 300px; */
   min-width: 0;
   overflow: hidden;
   border-radius: var(--radius-sm);
   background: var(--bg-input);
+  cursor: zoom-in;
+  outline: none;
+}
+
+.ai-usecase-image:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.ai-image-zoom-hint {
+  position: absolute;
+  right: 0.6rem;
+  bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.68);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 0.7175rem;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.ai-usecase-image:hover .ai-image-zoom-hint,
+.ai-usecase-image:focus-visible .ai-image-zoom-hint {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .ai-usecase-image img {

@@ -397,13 +397,25 @@ const handleSelect = (item) => {
 /* Transition */
 .modal-fade-enter-active,
 .modal-fade-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.2s ease;
 }
 
 .modal-fade-enter-from,
 .modal-fade-leave-to {
   opacity: 0;
+}
+
+.modal-fade-enter-active .search-modal-container,
+.modal-fade-leave-active .search-modal-container {
+  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.modal-fade-enter-from .search-modal-container {
   transform: scale(0.95);
+}
+
+.modal-fade-leave-to .search-modal-container {
+  transform: scale(0.97);
 }
 
 @media (max-width: 640px) {

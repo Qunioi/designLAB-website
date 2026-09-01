@@ -5,13 +5,15 @@
 
 .glass-panel {
   background: color-mix(in srgb, var(--bg-card) 82%, transparent);
-  border: 1px solid color-mix(in srgb, var(--border-color) 62%, transparent);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
   transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
 }
 
-.glass-panel:hover { border-color: var(--border-color-hover); }
+.glass-panel:hover {
+  border-color: var(--border-color-hover);
+  box-shadow: var(--shadow-md);
+}
 
 .card-actions { display: flex; gap: 0.35rem; }
 

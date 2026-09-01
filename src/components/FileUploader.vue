@@ -4,7 +4,7 @@
     <div v-if="modelValue" class="media-preview-card glass-panel">
       <div class="media-url-editor">
         <label for="media-url-input">目前素材網址</label>
-        <input id="media-url-input" type="url" :value="modelValue" @input="handleUrlInput" @blur="handleUrlBlur" placeholder="貼上可公開開啟的 .mp4 或 .webm 網址" class="solid-url-input" />
+        <input id="media-url-input" type="url" :value="modelValue" @input="handleUrlInput" @blur="handleUrlBlur" placeholder="貼上可公開開啟的 .mp4、.webm 或 .gif 網址" class="solid-url-input" />
       </div>
       <div class="media-preview-content">
         <div class="preview-media-wrapper clickable-preview" @click="openFullscreenModal" title="點擊全螢幕放大預覽檔案">
@@ -107,7 +107,7 @@ const props = defineProps({
   },
   accept: {
     type: String,
-    default: 'image/*,video/*'
+  default: 'image/*,video/*'
   },
   placeholder: {
     type: String,
