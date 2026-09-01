@@ -15,13 +15,13 @@ const ADMIN_UNLOCKED_KEY = 'design_lab_admin_unlocked';
 const IMPERSONATOR_KEY = 'design_lab_impersonator_original';
 
 const DEFAULT_PROFILES = [
-  { id: 'u-1', username: '@quni_jhuang', nickname: 'Quni', role: 'Super Admin', password: '123456' },
-  { id: 'u-2', username: '@ray_zhao', nickname: 'Ray', role: 'Admin', password: '123456' },
-  { id: 'u-3', username: '@rita_chen', nickname: 'Rita', role: 'User', password: '123456' },
-  { id: 'u-4', username: '@adosa_chang', nickname: 'Adosa', role: 'User', password: '123456' },
-  { id: 'u-5', username: '@clare_chen', nickname: 'Clare', role: 'User', password: '123456' },
-  { id: 'u-6', username: '@yu-na', nickname: 'Yu-na', role: 'User', password: '123456' },
-  { id: 'u-7', username: '@jason_hong', nickname: 'Jason', role: 'User', password: '123456' }
+  { id: 'u-1', username: '@quni_jhuang', nickname: 'Quni', role: 'Super Admin', password: '123456', themeClass: 'theme-cloud-canvas' },
+  { id: 'u-2', username: '@ray_zhao', nickname: 'Ray', role: 'Admin', password: '123456', themeClass: 'theme-cloud-canvas' },
+  { id: 'u-3', username: '@rita_chen', nickname: 'Rita', role: 'User', password: '123456', themeClass: 'theme-cloud-canvas' },
+  { id: 'u-4', username: '@adosa_chang', nickname: 'Adosa', role: 'User', password: '123456', themeClass: 'theme-cloud-canvas' },
+  { id: 'u-5', username: '@clare_chen', nickname: 'Clare', role: 'User', password: '123456', themeClass: 'theme-cloud-canvas' },
+  { id: 'u-6', username: '@yu-na', nickname: 'Yu-na', role: 'User', password: '123456', themeClass: 'theme-cloud-canvas' },
+  { id: 'u-7', username: '@jason_hong', nickname: 'Jason', role: 'User', password: '123456', themeClass: 'theme-cloud-canvas' }
 ];
 
 /** 修改指定使用者的密碼 */
@@ -97,7 +97,8 @@ export function getUserProfiles() {
     }
     const cleanList = deduplicateProfiles(list).map(p => ({
       ...p,
-      password: p.password || '123456'
+      password: p.password || '123456',
+      themeClass: p.themeClass || 'theme-cloud-canvas'
     }));
     localStorage.setItem(PROFILES_KEY, JSON.stringify(cleanList));
     return cleanList;
@@ -127,6 +128,7 @@ export function addUserProfile({ nickname, username, role = 'USER' }) {
     nickname: cleanNick,
     role: role,
     password: '123456',
+    themeClass: 'theme-cloud-canvas',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -262,9 +264,9 @@ export function getCurrentUserString() {
   return `${nickname} (${username})`;
 }
 
-/** 依據輸入的 ID 切換身分 (嚴格比對：僅允許管理員建立之帳號登入) */
-export function loginByAccountID(inputID) {
-  let cleanUser = inputID.trim();
+/** 依據輸入的 ID 與密碼切換身分 (嚴格比對：僅允許管理員建立之帳號與正確密碼登入) */
+export function loginByAccountID(inputID, inputPassword = '') {
+  let cleanUser = (inputID || '').trim();
   if (!cleanUser) return { requiresPassword: false, user: getCurrentUser() };
 
   if (!cleanUser.startsWith('@')) {
@@ -281,6 +283,25 @@ export function loginByAccountID(inputID) {
       requiresPassword: false, 
       user: null, 
       error: `帳號 ID "${cleanUser}" 不存在！請聯繫管理員建立帳號。` 
+    };
+  }
+
+  const expectedPassword = (matched && matched.password) ? matched.password : '123456';
+  const cleanPass = (inputPassword || '').trim();
+
+  if (!cleanPass) {
+    return {
+      requiresPassword: true,
+      user: null,
+      error: '請輸入登入密碼！'
+    };
+  }
+
+  if (cleanPass !== expectedPassword) {
+    return {
+      requiresPassword: true,
+      user: null,
+      error: '登入密碼不正確！請重新輸入。'
     };
   }
 
@@ -340,7 +361,6 @@ export function setCurrentUser(nickname, username, role = 'USER') {
 /** 儲存使用者的佈景主題偏好 (同時備份至 LocalStorage 與 Google Sheets 資料庫) */
 export function saveUserTheme(themeClass) {
   if (!themeClass) return;
-  localStorage.setItem('design_lab_theme', themeClass);
 
   const currentUser = getCurrentUser();
   const profiles = getUserProfiles();
@@ -348,6 +368,7 @@ export function saveUserTheme(themeClass) {
 
   if (matchedIndex !== -1) {
     profiles[matchedIndex].themeClass = themeClass;
+    localStorage.setItem(`design_lab_theme_${currentUser.username.toLowerCase()}`, themeClass);
     profiles[matchedIndex].updatedAt = new Date().toISOString();
     localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
 
@@ -359,13 +380,11 @@ export function saveUserTheme(themeClass) {
 
 /** 取得當前使用者的主題設定 */
 export function getUserTheme() {
-  const savedTheme = localStorage.getItem('design_lab_theme');
-  if (savedTheme) return savedTheme;
-
   const currentUser = getCurrentUser();
   const profiles = getUserProfiles();
   const matched = profiles.find(p => p.username.toLowerCase() === currentUser.username.toLowerCase());
-  return matched?.themeClass || 'theme-midnight-slate';
+  const userTheme = localStorage.getItem(`design_lab_theme_${currentUser.username.toLowerCase()}`);
+  return matched?.themeClass || userTheme || 'theme-cloud-canvas';
 }
 
 /** 檢查當前是否處於開發者模擬帳號狀態 */

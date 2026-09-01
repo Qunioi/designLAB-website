@@ -144,7 +144,7 @@ const nickname = ref('訪客');
 const username = ref('@account');
 
 // 主題切換狀態
-const currentTheme = ref('theme-midnight-slate');
+const currentTheme = ref('theme-cloud-canvas');
 
 // 背景同步狀態
 const isSyncing = ref(false);
@@ -261,6 +261,7 @@ const handleUserUpdate = (u) => {
   if (u) {
     nickname.value = u.nickname;
     username.value = u.username;
+    currentTheme.value = getUserTheme();
   }
 };
 

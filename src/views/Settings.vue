@@ -48,22 +48,46 @@
 
         <div class="profile-separator"></div>
 
-        <!-- 未登入狀態：顯示 ACCOUNT ID 登入輸入框與登入按鈕 -->
+        <!-- 未登入狀態：顯示 ACCOUNT ID 與密碼登入輸入框與登入按鈕 -->
         <form v-if="!isLoggedIn" @submit.prevent="handleQuickIDLogin" class="profile-form">
           <div class="field-group">
-            <label class="field-label">ACCOUNT ID (帳號 ID 登入)</label>
-            <p class="field-hint">輸入您的 Account ID 進行登入。</p>
+            <label class="field-label">ACCOUNT ID</label>
             <div class="field-input-wrap">
               <input 
                 v-model="quickInputID" 
                 type="text" 
-                placeholder="@account" 
+                placeholder="account" 
                 class="field-input" 
+                autocomplete="username"
               />
             </div>
           </div>
 
-          <button type="submit" class="save-btn" :disabled="!quickInputID.trim()">
+          <div class="field-group">
+            <label class="field-label">PASSWORD</label>
+            <div class="field-input-wrap password-wrap">
+              <input 
+                v-model="quickInputPassword" 
+                :type="showLoginPassword ? 'text' : 'password'" 
+                placeholder="password" 
+                class="field-input" 
+                autocomplete="current-password"
+              />
+              <button 
+                type="button" 
+                class="password-toggle-btn" 
+                @click="showLoginPassword = !showLoginPassword"
+                :title="showLoginPassword ? '隱藏密碼' : '顯示密碼'"
+              >
+                <svg v-if="showLoginPassword" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="23" x2="23" y2="1"></line></svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
+          </div>
+
+          <p v-if="loginErrorMsg" class="auth-error-msg" style="margin-top: 0.25rem;">⚠️ {{ loginErrorMsg }}</p>
+
+          <button type="submit" class="save-btn" :disabled="!quickInputID.trim() || !quickInputPassword.trim()">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
             登入帳號
           </button>
@@ -717,6 +741,9 @@ const handleLogout = () => {
   localNickname.value = u.nickname;
   localUsername.value = u.username;
   quickInputID.value = '';
+  quickInputPassword.value = '';
+  showLoginPassword.value = false;
+  loginErrorMsg.value = '';
   refreshProfiles();
   emit('update-user', u);
   emit('update-nickname', u.nickname);
@@ -733,29 +760,43 @@ watch(() => props.username, (v) => { localUsername.value = v; });
 
 
 const quickInputID = ref('');
+const quickInputPassword = ref('');
+const showLoginPassword = ref(false);
+const loginErrorMsg = ref('');
+
+watch([quickInputID, quickInputPassword], () => {
+  if (loginErrorMsg.value) loginErrorMsg.value = '';
+});
 
 const handleQuickIDLogin = () => {
+  loginErrorMsg.value = '';
   const input = quickInputID.value.trim();
-  if (input !== '') {
-    const res = loginByAccountID(input);
-    if (res.requiresPassword) {
-      showAuthModal.value = true;
-      authError.value = false;
-      inputPasscode.value = '';
-      return;
-    }
-    if (res.error) {
-      alert(res.error);
-      return;
-    }
-    if (res.user) {
-      localNickname.value = res.user.nickname;
-      localUsername.value = res.user.username;
-      refreshProfiles();
-      emit('update-user', res.user);
-      emit('update-nickname', res.user.nickname);
-      quickInputID.value = '';
-    }
+  const pass = quickInputPassword.value.trim();
+
+  if (!input) {
+    loginErrorMsg.value = '請輸入帳號 ID！';
+    return;
+  }
+  if (!pass) {
+    loginErrorMsg.value = '請輸入登入密碼！';
+    return;
+  }
+
+  const res = loginByAccountID(input, pass);
+  if (res.error) {
+    loginErrorMsg.value = res.error;
+    return;
+  }
+  if (res.user) {
+    localNickname.value = res.user.nickname;
+    localUsername.value = res.user.username;
+    refreshProfiles();
+    emit('update-user', res.user);
+    emit('update-nickname', res.user.nickname);
+    quickInputID.value = '';
+    quickInputPassword.value = '';
+    showLoginPassword.value = false;
+    loginErrorMsg.value = '';
   }
 };
 
@@ -1362,6 +1403,15 @@ const lightThemes = [
   gap: 0.75rem;
 }
 
+/* Light themes first, dark themes second. */
+.theme-panel .theme-group:nth-child(2) {
+  order: 3;
+}
+
+.theme-panel .theme-group:nth-child(3) {
+  order: 2;
+}
+
 .theme-group-label {
   font-size: var(--fs-caption);
   font-weight: var(--fw-semibold);
@@ -1715,13 +1765,15 @@ const lightThemes = [
   color: #10b981;
 }
 
-.locked-wrap {
+.locked-wrap,
+.password-wrap {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.lock-toggle-btn {
+.lock-toggle-btn,
+.password-toggle-btn {
   position: absolute;
   right: 0.75rem;
   top: 50%;
@@ -1739,12 +1791,15 @@ const lightThemes = [
   z-index: 2;
 }
 
-.lock-toggle-btn:hover:not(:disabled) {
+.lock-toggle-btn:hover:not(:disabled),
+.password-toggle-btn:hover:not(:disabled) {
   color: var(--text-primary);
 }
 
 .lock-toggle-btn:disabled,
-.lock-toggle-btn.disabled {
+.lock-toggle-btn.disabled,
+.password-toggle-btn:disabled,
+.password-toggle-btn.disabled {
   opacity: 0.25;
   pointer-events: none !important;
 }

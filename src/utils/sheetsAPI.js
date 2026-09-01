@@ -156,9 +156,10 @@ export async function syncAllFromSheets(onProgress) {
           localData = [];
         }
         const localById = new Map(localData.map(item => [item.id, item]));
+        const localByUsername = new Map(localData.filter(item => item.username).map(item => [String(item.username).toLowerCase(), item]));
         const mediaFields = ['screenshot', 'cover', 'videoUrl', 'videoUrl2'];
         const mergedData = data.map(remoteItem => {
-          const localItem = localById.get(remoteItem.id);
+          const localItem = localById.get(remoteItem.id) || localByUsername.get(String(remoteItem.username || '').toLowerCase());
           if (!localItem) return remoteItem;
 
           const preservedMedia = {};
@@ -167,6 +168,9 @@ export async function syncAllFromSheets(onProgress) {
               preservedMedia[field] = localItem[field];
             }
           });
+          if (key === 'USERS' && !remoteItem.themeClass && localItem.themeClass) {
+            preservedMedia.themeClass = localItem.themeClass;
+          }
           return { ...remoteItem, ...preservedMedia };
         });
         localStorage.setItem(STORAGE_KEY_MAP[key], JSON.stringify(mergedData));
