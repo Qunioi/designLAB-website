@@ -1069,7 +1069,7 @@ const lightThemes = [
 .dev-badge {
   background: var(--color-primary);
   color: #ffffff;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   padding: 0.2rem 0.6rem;
   border-radius: 99px;
@@ -1084,7 +1084,7 @@ const lightThemes = [
 
 .dev-select {
   flex: 1;
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   padding: 0.55rem 0.85rem;
 }
 
@@ -1094,7 +1094,7 @@ const lightThemes = [
   border: none;
   padding: 0.55rem 1.1rem;
   border-radius: 10px;
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
@@ -1126,7 +1126,7 @@ const lightThemes = [
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   color: var(--text-primary);
 }
 
@@ -1160,7 +1160,7 @@ const lightThemes = [
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 8px;
-  font-size: 0.825rem;
+  font-size: 0.7625rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1194,7 +1194,7 @@ const lightThemes = [
   background: rgba(239, 68, 68, 0.1);
   /* border: 1px solid rgba(239, 68, 68, 0.25); */
   color: var(--color-danger);
-  font-size: 0.8rem;
+  font-size: 0.7375rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1469,7 +1469,7 @@ const lightThemes = [
 }
 
 .theme-name-wrap h4 {
-  font-size: 0.92rem;
+  font-size: 0.8575rem;
   font-weight: 700;
   color: var(--text-primary);
   white-space: nowrap;
@@ -1491,7 +1491,7 @@ const lightThemes = [
 }
 
 .theme-card-desc {
-  font-size: 0.76rem;
+  font-size: 0.6975rem;
   color: var(--text-muted);
   line-height: 1.35;
   display: -webkit-box;
@@ -1584,7 +1584,7 @@ const lightThemes = [
 
 .sheets-url-input {
   width: 100%;
-  font-size: 0.8rem;
+  font-size: 0.7375rem;
   font-family: monospace;
 }
 
@@ -1594,7 +1594,7 @@ const lightThemes = [
   border: 1px solid var(--border-color);
   padding: 0.6rem 1rem;
   border-radius: 10px;
-  font-size: 0.82rem;
+  font-size: 0.7575rem;
   font-weight: 600;
   white-space: nowrap;
   transition: all 0.2s ease;
@@ -1638,7 +1638,7 @@ const lightThemes = [
   gap: 0.5rem;
   padding: 0.6rem 1.1rem;
   border-radius: 10px;
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   font-weight: 600;
   transition: all 0.2s ease;
 }
@@ -1669,7 +1669,7 @@ const lightThemes = [
 .sync-message {
   padding: 0.75rem 1rem;
   border-radius: 8px;
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   line-height: 1.5;
 }
 .id-login-form {
@@ -1691,7 +1691,7 @@ const lightThemes = [
   border-radius: var(--radius-sm);
   background: var(--color-primary);
   color: white !important;
-  font-size: 0.82rem;
+  font-size: 0.7575rem;
   font-weight: 600;
   white-space: nowrap;
   transition: all 0.2s ease;
@@ -1729,7 +1729,7 @@ const lightThemes = [
   background: transparent;
   border: none;
   color: var(--text-muted);
-  font-size: 0.8rem;
+  font-size: 0.7375rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1765,7 +1765,7 @@ const lightThemes = [
   border: 1px solid var(--border-color-hover);
   border-radius: 10px;
   color: var(--text-primary);
-  font-size: 0.88rem;
+  font-size: 0.8175rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1780,29 +1780,11 @@ const lightThemes = [
 .user-count-badge {
   background: var(--glow-primary);
   color: var(--color-primary);
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   padding: 0.1rem 0.5rem;
   border-radius: 999px;
   border: 1px solid var(--border-color);
-}
-
-/* 彈窗全幕遮罩 (100% 垂直水平置中，動態高質感背景) */
-.modal-backdrop {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  background: rgba(0, 0, 0, 0.55) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  z-index: 99999 !important;
 }
 
 /* Auth Modal & User Management Modal (100% 連動當前 Appearance 主題色) */
@@ -1827,7 +1809,7 @@ const lightThemes = [
 
 .auth-modal .modal-header h3,
 .user-mgmt-modal .modal-header h3 {
-  font-size: 1.1rem;
+  font-size: 1.038rem;
   font-weight: 700;
   color: var(--text-primary) !important;
   display: flex;
@@ -1839,7 +1821,7 @@ const lightThemes = [
 .user-mgmt-modal .close-btn {
   background: transparent;
   border: none;
-  font-size: 1.25rem;
+  font-size: 1.188rem;
   color: var(--text-muted);
   cursor: pointer;
   padding: 0.2rem;
@@ -1893,7 +1875,7 @@ const lightThemes = [
 }
 
 .um-section-label {
-  font-size: 0.82rem;
+  font-size: 0.7575rem;
   font-weight: 700;
   color: var(--text-secondary);
   letter-spacing: 0.5px;
@@ -1911,7 +1893,7 @@ const lightThemes = [
 .add-user-modal-form .role-select {
   border-radius: 8px;
   padding: 0.6rem 0.85rem;
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   transition: all 0.2s ease;
 }
 
@@ -1940,7 +1922,7 @@ const lightThemes = [
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   border: none;
   color: #ffffff !important;
-  font-size: 0.82rem;
+  font-size: 0.7575rem;
   font-weight: 600;
   border-radius: 8px;
   cursor: pointer;
@@ -2018,7 +2000,7 @@ const lightThemes = [
   background: var(--glow-primary);
   color: var(--color-primary);
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2033,13 +2015,13 @@ const lightThemes = [
 }
 
 .user-modal-name {
-  font-size: 0.88rem;
+  font-size: 0.8175rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .user-modal-handle {
-  font-size: 0.76rem;
+  font-size: 0.6975rem;
   color: var(--text-muted);
   font-family: monospace;
 }
@@ -2135,13 +2117,13 @@ const lightThemes = [
 }
 
 .um-title {
-  font-size: 0.92rem;
+  font-size: 0.8575rem;
   font-weight: 700;
   color: var(--color-primary);
 }
 
 .um-count {
-  font-size: 0.78rem;
+  font-size: 0.7175rem;
   color: var(--text-muted);
 }
 
@@ -2159,7 +2141,7 @@ const lightThemes = [
 
 .field-input.sm {
   padding: 0.45rem 0.75rem;
-  font-size: 0.82rem;
+  font-size: 0.7575rem;
 }
 
 .add-user-btn {
@@ -2168,7 +2150,7 @@ const lightThemes = [
   border: 1px solid var(--color-primary);
   color: var(--color-primary);
   border-radius: 8px;
-  font-size: 0.8rem;
+  font-size: 0.7375rem;
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
@@ -2205,19 +2187,19 @@ const lightThemes = [
 }
 
 .user-name {
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .user-id {
-  font-size: 0.78rem;
+  font-size: 0.7175rem;
   color: var(--text-muted);
   font-family: monospace;
 }
 
 .user-role-tag {
-  font-size: 0.68rem;
+  font-size: 0.6175rem;
   font-weight: 600;
   padding: 0.1rem 0.4rem;
   border-radius: 4px;
@@ -2234,7 +2216,7 @@ const lightThemes = [
 .del-user-btn {
   background: transparent;
   border: none;
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   cursor: pointer;
   opacity: 0.6;
   transition: opacity 0.2s ease;
@@ -2254,7 +2236,7 @@ const lightThemes = [
 
 
 .role-badge {
-  font-size: 0.7rem;
+  font-size: 0.6375rem;
   font-weight: 700;
   padding: 0.15rem 0.5rem;
   border-radius: 6px;
@@ -2285,7 +2267,7 @@ const lightThemes = [
 }
 
 .admin-hint {
-  font-size: 0.8rem;
+  font-size: 0.7375rem;
   color: var(--text-secondary);
   line-height: 1.4;
 }
@@ -2300,7 +2282,7 @@ const lightThemes = [
   color: var(--color-primary);
   padding: 0.6rem 1rem;
   border-radius: 8px;
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -2328,35 +2310,18 @@ const lightThemes = [
 }
 
 .unlocked-title {
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   font-weight: 700;
   color: var(--color-primary);
 }
 
 .lock-btn {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   color: var(--text-muted);
   background: transparent;
   border: none;
   cursor: pointer;
   text-decoration: underline;
-}
-
-.modal-backdrop {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  background: rgba(0, 0, 0, 0.65) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  z-index: 99999 !important;
 }
 
 /* Auth Modal (管理者驗證彈窗) */
@@ -2383,7 +2348,7 @@ const lightThemes = [
 }
 
 .auth-modal .modal-header h3 {
-  font-size: 1.1rem;
+  font-size: 1.038rem;
   font-weight: 700;
   color: var(--text-primary);
   display: flex;
@@ -2394,7 +2359,7 @@ const lightThemes = [
 .auth-modal .close-btn {
   background: transparent;
   border: none;
-  font-size: 1.25rem;
+  font-size: 1.188rem;
   color: var(--text-muted);
   cursor: pointer;
   padding: 0.2rem;
@@ -2413,7 +2378,7 @@ const lightThemes = [
 }
 
 .auth-desc {
-  font-size: 0.88rem;
+  font-size: 0.8175rem;
   color: var(--text-secondary);
   line-height: 1.55;
 }
@@ -2430,7 +2395,7 @@ const lightThemes = [
   border: 1px solid var(--border-color);
   border-radius: 10px;
   color: var(--text-primary);
-  font-size: 0.95rem;
+  font-size: 0.8875rem;
   transition: all 0.2s ease;
 }
 
@@ -2441,7 +2406,7 @@ const lightThemes = [
 
 .auth-error-msg {
   color: #ef4444;
-  font-size: 0.82rem;
+  font-size: 0.7575rem;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -2464,7 +2429,7 @@ const lightThemes = [
   background: var(--bg-hover);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -2481,7 +2446,7 @@ const lightThemes = [
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   border: none;
   color: #ffffff !important;
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   font-weight: 600;
   box-shadow: 0 4px 15px var(--glow-primary);
   cursor: pointer;
@@ -2526,4 +2491,3 @@ const lightThemes = [
   }
 }
 </style>
-

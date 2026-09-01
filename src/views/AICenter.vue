@@ -1,25 +1,26 @@
 <template>
   <div class="ai-center-container">
     <PageHeader
-      title="AI Center"
+      title="AI 工具中心"
       subtitle="整理 AI 設計工具與 Prompts，優化日常設計工作流"
       add-btn-label="+ 新增AI工具"
       @add-click="$emit('trigger-crud', { type: 'AI_CENTER' })"
     />
 
-    <div class="filter-toolbar glass-panel">
-      <div class="search-box">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        <input 
-          v-model="searchQuery" 
-          type="text" 
-          placeholder="搜尋 AI 工具、情境、Prompt..."
-        />
-      </div>
-    </div>
+    <FilterToolbar
+      v-model:searchQuery="searchQuery"
+      search-placeholder="搜尋 AI 工具、情境、Prompt..."
+      :show-advanced="false"
+    />
 
     <div v-if="filteredList.length === 0" class="empty-state">
-      <p>無相符的 AI 工具。點選右上角新增一筆！</p>
+      <p>{{ searchQuery ? '找不到符合搜尋條件的 AI 工具。' : '目前還沒有 AI 工具。' }}</p>
+      <button v-if="searchQuery" type="button" class="empty-secondary-btn" @click="searchQuery = ''">
+        清除搜尋
+      </button>
+      <button v-else-if="!isGuest" type="button" class="empty-primary-btn" @click="$emit('trigger-crud', { type: 'AI_CENTER' })">
+        + 新增 AI 工具
+      </button>
     </div>
 
     <div v-else class="ai-grid">
@@ -40,11 +41,11 @@
           <div class="ai-section">
             <h4 class="section-title">
               <span>
-                ♦︎ 使用情境
+                <div class="dot"></div>使用情境
               </span>
-              <div class="card-actions">
-                <button class="action-icon-btn edit" @click="$emit('trigger-crud', { type: 'AI_CENTER', item })" title="編輯"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></button>
-                <button v-if="canDelete(item)" class="action-icon-btn delete" @click="handleDelete(item)" title="刪除"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+              <div class="card-actions card-actions-reveal" v-if="!isGuest">
+                <ActionIconButton variant="edit" :aria-label="`編輯《${item.name}》`" title="編輯" @click="$emit('trigger-crud', { type: 'AI_CENTER', item })"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></ActionIconButton>
+                <ActionIconButton v-if="canDelete(item)" variant="delete" :aria-label="`刪除《${item.name}》`" title="刪除" @click="handleDelete(item)"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></ActionIconButton>
               </div>
             </h4>
             <p class="section-desc">{{ item.useCase }}</p>
@@ -52,7 +53,7 @@
 
           <div class="ai-section prompt-section" v-if="item.prompt">
             <div class="prompt-header">
-              <h4 class="section-title">♦︎ 提示詞</h4>
+              <h4 class="section-title"><span><div class="dot"></div>提示詞</span></h4>
               <!-- <button 
                 class="copy-btn" 
                 :class="{ copied: copyStates[item.id] }"
@@ -62,21 +63,11 @@
                 {{ copyStates[item.id] ? '已複製！' : '複製 Prompt' }}
               </button> -->
             </div>
-            <div 
-              class="prompt-code-box" 
-              :class="{ copied: copyStates[item.id] }"
-              @click="copyPrompt(item.prompt, item.id)"
-              title="點擊可直接複製 Prompt"
-            >
-              <code>{{ item.prompt }}</code>
-              <div class="click-copy-hint">
-                {{ copyStates[item.id] ? '已複製到剪貼簿' : '點擊複製 Prompt' }}
-              </div>
-            </div>
+            <PromptCodeBox :prompt="item.prompt" :copied="copyStates[item.id]" @copy="copyPrompt(item.prompt, item.id)" />
           </div>
 
           <div class="ai-section" v-if="item.workflow">
-            <h4 class="section-title">♦︎ 工作流程</h4>
+            <h4 class="section-title"><span><div class="dot"></div>工作流程</span></h4>
             <div class="workflow-steps">
               <div v-for="(step, idx) in parseWorkflow(item.workflow)" :key="idx" class="workflow-step-item">
                 <span class="step-num">{{ idx + 1 }}</span>
@@ -102,7 +93,11 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue';
 import PageHeader from '../components/PageHeader.vue';
+import FilterToolbar from '../components/FilterToolbar.vue';
+import ActionIconButton from '../components/ActionIconButton.vue';
+import PromptCodeBox from '../components/PromptCodeBox.vue';
 import { getStorageData, deleteItem, checkDeletePermission } from '../utils/storage';
+import { getCurrentUser } from '../utils/userStore';
 import NotificationBell from '../components/NotificationBell.vue';
 import { copyToClipboard } from '../utils/clipboard';
 
@@ -121,6 +116,12 @@ const copyStates = ref({});
 const toastMessage = ref('');
 const toastVisible = ref(false);
 let toastTimer = null;
+
+const isGuest = computed(() => {
+  const user = getCurrentUser();
+  const username = (user.username || '').toLowerCase();
+  return !username || username === '@guest' || username === '@account' || user.nickname === '訪客';
+});
 
 const showToast = (msg) => {
   toastMessage.value = msg;
@@ -178,7 +179,19 @@ const copyPrompt = async (promptText, id) => {
 
 const parseWorkflow = (wfStr) => {
   if (!wfStr) return [];
-  return wfStr.split('->').map(s => s.trim());
+  if (Array.isArray(wfStr)) {
+    return wfStr.map(s => String(s).trim()).filter(Boolean);
+  }
+  if (typeof wfStr === 'string') {
+    if (wfStr.includes('->')) {
+      return wfStr.split('->').map(s => s.trim()).filter(Boolean);
+    }
+    if (wfStr.includes('\n')) {
+      return wfStr.split(/[\r\n]+/).map(s => s.trim()).filter(Boolean);
+    }
+    return [wfStr.trim()].filter(Boolean);
+  }
+  return [];
 };
 
 const handleDelete = (item) => {
@@ -213,7 +226,7 @@ const handleDelete = (item) => {
   display: flex;
   flex-direction: column;
   /* gap: 1.25rem; */
-  background: var(--glass-bg);
+  background: var(--bg-card);
 }
 
 .ai-card.highlighted {
@@ -222,9 +235,10 @@ const handleDelete = (item) => {
 }
 
 .ai-card-header {
-  /* display: flex;
+  position: relative;
+  display: flex;
   justify-content: space-between;
-  align-items: flex-start; */
+  align-items: flex-start;
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 0.75rem;
 }
@@ -236,12 +250,12 @@ const handleDelete = (item) => {
 }
 
 .ai-name {
-  font-size: 1.25rem;
+  font-size: 1.188rem;
   font-weight: 700;
 }
 
 .ai-link {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   color: var(--color-secondary);
 }
 
@@ -249,67 +263,23 @@ const handleDelete = (item) => {
   text-decoration: underline;
 }
 
-.card-actions {
-  display: flex;
-  gap: 0.35rem;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  transform: translateY(-2px);
-  position: absolute;
-  right: 0;
-  top: -4px;
-}
-
-.ai-card:hover .card-actions {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0);
-}
-
-.action-icon-btn {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.8rem;
-  background: var(--bg-hover);
-  border: 1px solid var(--border-color);
-  transition: all 0.2s ease;
-}
-
-.action-icon-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.action-icon-btn.edit:hover {
-  color: var(--color-warning);
-  border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
-}
-
-.action-icon-btn.delete:hover {
-  color: var(--color-error);
-  border-color: color-mix(in srgb, var(--color-error) 40%, transparent);
-}
-
 .ai-section {
   display: flex;
   flex-direction: column;
 }
 
-.section-title {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--text-primary);
+.ai-section:first-child .section-title {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 26px;
 }
 
-.section-desc {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
+.ai-card .card-actions-reveal {
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 .prompt-header {
@@ -318,94 +288,8 @@ const handleDelete = (item) => {
   align-items: center;
 }
 
-.copy-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.35rem 0.65rem;
-  border-radius: 8px;
-  background: var(--bg-hover);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.copy-btn:hover {
-  background: var(--color-primary);
-  color: white;
-  border-color: var(--color-primary);
-  transform: translateY(-1px);
-}
-
-.copy-btn.copied {
-  background: var(--color-primary) !important;
-  color: #ffffff !important;
-  border-color: var(--color-primary) !important;
-  box-shadow: 0 0 12px var(--glow-primary);
-}
-
 .btn-icon {
   flex-shrink: 0;
-}
-
-.prompt-code-box {
-  position: relative;
-  background: var(--bg-input);
-  padding: 0.85rem 1rem;
-  padding-bottom: 1.8rem;
-  border-radius: 10px;
-  border: 1px solid var(--border-color);
-  font-family: 'Fira Code', 'Roboto Mono', Monaco, Consolas, monospace;
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: var(--text-primary);
-  max-height: 140px;
-  overflow-y: auto;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  cursor: pointer;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.prompt-code-box:hover {
-  border-color: var(--color-primary);
-}
-
-.prompt-code-box.copied {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 10px var(--glow-primary);
-}
-
-.click-copy-hint {
-  position: absolute;
-  bottom: 0.35rem;
-  right: 0.5rem;
-  font-size: 0.68rem;
-  padding: 0.2rem 0.5rem;
-  border-radius: 6px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  box-shadow: var(--shadow-sm);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
-
-.prompt-code-box:hover .click-copy-hint {
-  opacity: 1;
-}
-
-.prompt-code-box.copied .click-copy-hint {
-  opacity: 1;
-  background: var(--color-primary);
-  color: #ffffff;
-  border-color: var(--color-primary);
-  font-weight: 600;
-  box-shadow: 0 2px 8px var(--glow-primary);
 }
 
 /* Toast 浮動提示視窗 */
@@ -424,7 +308,7 @@ const handleDelete = (item) => {
   padding: 0.8rem 1.4rem;
   background: var(--color-primary);
   color: #ffffff;
-  font-size: 0.9rem;
+  font-size: 0.8375rem;
   font-weight: 600;
   border-radius: 12px;
   box-shadow: 0 10px 25px -5px var(--glow-primary), var(--shadow-md);
@@ -467,7 +351,7 @@ const handleDelete = (item) => {
   background: var(--glow-primary);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -475,26 +359,46 @@ const handleDelete = (item) => {
 }
 
 .step-text {
-  font-size: 0.8rem;
+  font-size: 0.7375rem;
   color: var(--text-secondary);
 }
 
 .empty-state {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 5rem;
+  gap: 0.75rem;
   color: var(--text-secondary);
+  font-size: 0.8875rem;
 }
+
+.empty-primary-btn {
+  min-height: 40px;
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  background: var(--color-primary);
+  color: #ffffff;
+  font-size: 0.7875rem;
+  font-weight: 700;
+}
+
+.empty-secondary-btn {
+  min-height: 40px;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-size: 0.7875rem;
+  font-weight: 600;
+}
+
+
 
 @media (hover: none), (max-width: 768px) {
   .ai-grid {
     grid-template-columns: 1fr;
-  }
-  .card-actions {
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    transform: none !important;
   }
 }
 </style>

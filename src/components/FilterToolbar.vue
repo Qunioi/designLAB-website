@@ -12,7 +12,7 @@
         />
       </div>
 
-      <div class="filter-options">
+      <div v-if="showAdvanced" class="filter-options">
         <!-- 分類/標籤多選選單 -->
         <div
           v-for="f in filters"
@@ -23,6 +23,8 @@
             type="button"
             class="filter-dropdown-btn"
             :class="{ active: activeDropdown === f.field || getSelectedCount(f.field) > 0 }"
+            :aria-expanded="activeDropdown === f.field ? 'true' : 'false'"
+            :aria-label="`篩選${getFilterZhTitle(f)}`"
             @click.stop="$emit('toggle-dropdown', f.field)"
           >
             <svg v-if="f.field === 'tags'" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
@@ -62,6 +64,8 @@
             type="button"
             class="filter-dropdown-btn adv-filter-btn"
             :class="{ active: activeDropdown === 'adv_filter' || isAdvActive }"
+            :aria-expanded="activeDropdown === 'adv_filter' ? 'true' : 'false'"
+            aria-label="更多篩選與排序"
             @click.stop="$emit('toggle-dropdown', 'adv_filter')"
           >
             <!-- 控制器 Sliders SVG Icon -->
@@ -166,7 +170,8 @@ const props = defineProps({
   creatorOptions: { type: Array, default: () => [] },
   selectedCreators: { type: Array, default: () => [] },
   sortOption: { type: String, default: 'newest' },
-  totalSelectedChipsCount: { type: Number, default: 0 }
+  totalSelectedChipsCount: { type: Number, default: 0 },
+  showAdvanced: { type: Boolean, default: true }
 });
 
 defineEmits([
@@ -241,7 +246,7 @@ const getFilterButtonLabel = (f) => {
 .filter-toolbar-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 0.75rem;
   width: 100%;
 }
 
@@ -251,24 +256,30 @@ const getFilterButtonLabel = (f) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1.25rem;
+  padding: 0.65rem 0.85rem;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 14px;
-  flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.75rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
+/* 搜尋框：固定合適寬度，不無限擴張擠壓篩選按鈕 */
 .search-box {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.6rem;
   background: var(--bg-input);
   border: 1px solid var(--border-color);
-  padding: 0.5rem 1rem;
+  height: 36px;
+  padding: 0.35rem 0.75rem;
   border-radius: 10px;
-  width: 300px;
+  width: 260px;
+  flex: 0 1 260px;
+  min-width: 140px;
   transition: border-color 0.2s;
+  box-sizing: border-box;
 }
 
 .search-box:focus-within {
@@ -276,10 +287,13 @@ const getFilterButtonLabel = (f) => {
 }
 
 .search-box input {
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   width: 100%;
+  min-height: 0;
   background: transparent;
   color: var(--text-primary);
+  border: none;
+  outline: none;
 }
 
 .search-box svg {
@@ -287,29 +301,45 @@ const getFilterButtonLabel = (f) => {
   flex-shrink: 0;
 }
 
+/* 篩選按鈕區塊 */
 .filter-options {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.45rem;
+  align-items: center;
   flex-wrap: wrap;
+  justify-content: flex-end;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .custom-tag-dropdown {
   position: relative;
+  flex-shrink: 0;
 }
 
 .filter-dropdown-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.1rem;
   background: var(--bg-input);
   border: 1px solid var(--border-color);
-  padding: 0.5rem 1rem;
-  border-radius: 10px;
-  font-size: 0.85rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 9px;
+  font-size: 12px;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: var(--font-body);
+  height: 36px;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.filter-dropdown-btn svg {
+  width: 10px;
+  height: 10px;
+  position: relative;
+  top: 1.5px;
 }
 
 .filter-dropdown-btn:hover,
@@ -327,11 +357,13 @@ const getFilterButtonLabel = (f) => {
   transform: rotate(180deg);
 }
 
+/* 下拉選單：安全定位，不跑出螢幕 */
 .tag-dropdown-menu {
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
   width: 240px;
+  max-width: min(280px, 90vw);
   max-height: 320px;
   background: var(--bg-elevated);
   border: 1px solid var(--border-color);
@@ -342,23 +374,28 @@ const getFilterButtonLabel = (f) => {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  box-sizing: border-box;
 }
 
 .tag-dropdown-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.78rem;
+  font-size: 0.7175rem;
   color: var(--text-muted);
   font-weight: 600;
   padding-bottom: 0.4rem;
+  white-space: nowrap;
   border-bottom: 1px solid var(--border-color);
 }
 
 .clear-btn {
   color: var(--color-primary);
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
 }
 
 .clear-btn:hover {
@@ -369,7 +406,7 @@ const getFilterButtonLabel = (f) => {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.1rem;
   max-height: 240px;
 }
 
@@ -377,9 +414,10 @@ const getFilterButtonLabel = (f) => {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.4rem 0.6rem;
+  min-height: 32px;
+  padding: 0.2rem 0.5rem;
   border-radius: 6px;
-  font-size: 0.825rem;
+  font-size: 0.7625rem;
   color: var(--text-primary);
   cursor: pointer;
   transition: background 0.15s ease;
@@ -397,10 +435,15 @@ const getFilterButtonLabel = (f) => {
 .tag-option-item input[type="checkbox"] {
   accent-color: var(--color-primary);
   cursor: pointer;
+  min-height: 0;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
 }
 
 .adv-filter-panel {
-  min-width: 280px;
+  width: 280px;
+  max-width: min(300px, 90vw);
   padding: 0.85rem;
 }
 
@@ -414,7 +457,7 @@ const getFilterButtonLabel = (f) => {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.78rem;
+  font-size: 0.7175rem;
   font-weight: 700;
   color: var(--text-muted);
   letter-spacing: 0.02em;
@@ -438,7 +481,7 @@ const getFilterButtonLabel = (f) => {
 
 .sort-chip-btn {
   padding: 0.45rem 0.6rem;
-  font-size: 0.78rem;
+  font-size: 0.7175rem;
   font-weight: 500;
   color: var(--text-secondary);
   background: var(--bg-hover);
@@ -478,12 +521,11 @@ const getFilterButtonLabel = (f) => {
   padding: 0 4px;
   background: var(--color-primary);
   color: #ffffff;
-  font-size: 0.7rem;
+  font-size: 0.6375rem;
   font-weight: 700;
   border-radius: 99px;
 }
 
-/* 已選條件 Chip 膠囊條 */
 .selected-tags-chips {
   display: flex;
   align-items: center;
@@ -496,7 +538,7 @@ const getFilterButtonLabel = (f) => {
 }
 
 .chips-label {
-  font-size: 0.8rem;
+  font-size: 0.7875rem;
   font-weight: 600;
   color: var(--text-muted);
 }
@@ -515,7 +557,7 @@ const getFilterButtonLabel = (f) => {
   color: #ffffff !important;
   border: 1px solid var(--color-primary) !important;
   box-shadow: 0 3px 12px var(--glow-primary);
-  font-size: 0.75rem;
+  font-size: 0.7375rem;
   font-weight: 600;
   padding: 0.22rem 0.65rem;
   border-radius: 99px;
@@ -535,11 +577,12 @@ const getFilterButtonLabel = (f) => {
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  font-size: 0.65rem;
+  font-size: 0.5875rem;
   color: #ffffff !important;
   background: rgba(255, 255, 255, 0.25);
   cursor: pointer;
   transition: all 0.15s ease;
+  border: none;
 }
 
 .chip-remove-btn:hover {
@@ -548,10 +591,12 @@ const getFilterButtonLabel = (f) => {
 }
 
 .reset-all-tags-btn {
-  font-size: 0.78rem;
-  color: var(--text-muted);
+  font-size: 0.7375rem;
+  color: var(--text-secondary);
   cursor: pointer;
   margin-left: auto;
+  background: none;
+  border: none;
 }
 
 .reset-all-tags-btn:hover {
@@ -559,27 +604,56 @@ const getFilterButtonLabel = (f) => {
   text-decoration: underline;
 }
 
-@media (max-width: 768px) {
+/* 響應式斷點：平板與中螢幕 (<= 960px) */
+@media (max-width: 960px) {
   .filter-toolbar {
     flex-direction: column;
     align-items: stretch;
-    padding: 0.75rem 1rem;
+    gap: 0.6rem;
+    padding: 0.75rem;
   }
   .search-box {
     width: 100%;
+    flex: none;
+    max-width: 100%;
   }
   .filter-options {
     width: 100%;
+    margin-left: 0;
     justify-content: flex-start;
+    gap: 0.4rem;
   }
   .filter-dropdown-btn {
-    padding: 0.45rem 0.75rem;
-    font-size: 0.8rem;
+    font-size: 0.7375rem;
+    padding: 0.35rem 0.55rem;
   }
   .tag-dropdown-menu {
-    right: auto;
     left: 0;
-    max-width: calc(100vw - 2.5rem);
+    right: auto;
+    width: min(260px, calc(100vw - 2.5rem));
+  }
+  .custom-tag-dropdown:last-child .tag-dropdown-menu {
+    left: auto;
+    right: 0;
+  }
+}
+
+/* 手機極窄螢幕 (<= 480px) */
+@media (max-width: 480px) {
+  .filter-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.4rem;
+  }
+  .custom-tag-dropdown {
+    width: 100%;
+  }
+  .filter-dropdown-btn {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .tag-dropdown-menu {
+    width: min(280px, calc(100vw - 1.5rem));
   }
 }
 </style>

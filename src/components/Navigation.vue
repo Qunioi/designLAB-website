@@ -14,6 +14,8 @@
         class="menu-item"
         :class="{ active: currentView === item.view }"
         :aria-current="currentView === item.view ? 'page' : undefined"
+        :aria-label="item.labelZh"
+        :title="item.labelZh"
         @click="handleChangeView(item.view)"
       >
         <span class="menu-icon" v-html="item.icon"></span>
@@ -21,6 +23,7 @@
           <span class="menu-title-zh">{{ item.labelZh }}</span>
           <span class="menu-subtitle-en">{{ item.labelEn }}</span>
         </div>
+        <span class="compact-tooltip" aria-hidden="true">{{ item.labelZh }}</span>
       </button>
     </div>
 
@@ -90,6 +93,7 @@
               class="mobile-menu-item"
               :class="{ active: currentView === item.view }"
               :aria-current="currentView === item.view ? 'page' : undefined"
+              :aria-label="item.labelZh"
               @click="handleChangeView(item.view)"
             >
               <span class="menu-icon" v-html="item.icon"></span>
@@ -119,54 +123,6 @@
       </div>
     </Transition>
 
-    <!-- Mobile Bottom Navigation Bar (固定於手機底部，方便單手切換) -->
-    <nav class="mobile-bottom-bar glass-panel" aria-label="行動版底部快速導向">
-      <button 
-        type="button" 
-        class="bottom-bar-item" 
-        :class="{ active: currentView === 'Dashboard' }"
-        @click="handleChangeView('Dashboard')"
-      >
-        <span class="bottom-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg></span>
-        <span class="bottom-label">總覽儀表</span>
-      </button>
-      <button 
-        type="button" 
-        class="bottom-bar-item" 
-        :class="{ active: currentView === 'UIResearch' }"
-        @click="handleChangeView('UIResearch')"
-      >
-        <span class="bottom-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></span>
-        <span class="bottom-label">UI研究</span>
-      </button>
-      <button 
-        type="button" 
-        class="bottom-bar-item" 
-        :class="{ active: currentView === 'MotionResearch' }"
-        @click="handleChangeView('MotionResearch')"
-      >
-        <span class="bottom-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></span>
-        <span class="bottom-label">動效靈感</span>
-      </button>
-      <button 
-        type="button" 
-        class="bottom-bar-item" 
-        :class="{ active: currentView === 'Settings' }"
-        @click="handleChangeView('Settings')"
-      >
-        <span class="bottom-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span>
-        <span class="bottom-label">系統設定</span>
-      </button>
-      <button 
-        type="button" 
-        class="bottom-bar-item" 
-        :class="{ active: isMobileMenuOpen }"
-        @click="isMobileMenuOpen = !isMobileMenuOpen"
-      >
-        <span class="bottom-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></span>
-        <span class="bottom-label">全部選單</span>
-      </button>
-    </nav>
   </div>
 </template>
 
@@ -202,7 +158,7 @@ const isMobileMenuOpen = ref(false);
 const menuItems = [
   { 
     view: 'Dashboard', 
-    labelZh: '首頁儀表板', 
+    labelZh: '首頁',
     labelEn: 'Dashboard', 
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>`
   },
@@ -214,13 +170,13 @@ const menuItems = [
   },
   { 
     view: 'MotionResearch', 
-    labelZh: '動態互動設計', 
+    labelZh: '動態設計研究',
     labelEn: 'Motion Research', 
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>`
   },
   { 
     view: 'Competitor', 
-    labelZh: '競品分析研究', 
+    labelZh: '競品分析',
     labelEn: 'Competitor Research', 
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 1 0 7.75"></path></svg>`
   },
@@ -232,7 +188,7 @@ const menuItems = [
   },
   { 
     view: 'Resources', 
-    labelZh: '設計資源總覽', 
+    labelZh: '設計資源',
     labelEn: 'Resources', 
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`
   },
@@ -303,7 +259,7 @@ watch(() => props.currentView, () => {
 
 .logo-text {
   font-family: var(--font-title);
-  font-size: 1.25rem;
+  font-size: 1.188rem;
   font-weight: 800;
   letter-spacing: -0.5px;
 }
@@ -317,6 +273,7 @@ watch(() => props.currentView, () => {
 }
 
 .menu-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.85rem;
@@ -336,7 +293,7 @@ watch(() => props.currentView, () => {
 
 .menu-item.active {
   color: var(--text-primary);
-  background: linear-gradient(90deg, var(--glow-primary) 0%, transparent 100%);
+  background: var(--bg-hover);
   border-left-color: var(--color-primary);
   border-radius: 0;
   padding-left: calc(1rem + 3px);
@@ -344,7 +301,10 @@ watch(() => props.currentView, () => {
 
 .menu-item.active .menu-icon {
   color: var(--color-primary);
-  filter: drop-shadow(0 0 6px var(--glow-primary));
+}
+
+.compact-tooltip {
+  display: none;
 }
 
 .menu-icon {
@@ -363,13 +323,13 @@ watch(() => props.currentView, () => {
 }
 
 .menu-title-zh {
-  font-size: 0.88rem;
+  font-size: 0.8175rem;
   font-weight: 500;
   color: var(--text-primary);
 }
 
 .menu-subtitle-en {
-  font-size: 0.68rem;
+  font-size: 0.6175rem;
   color: var(--text-muted);
   letter-spacing: 0.02em;
   margin-top: 0.1rem;
@@ -418,7 +378,7 @@ watch(() => props.currentView, () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.15rem;
+  font-size: 1.087rem;
   transition: all 0.25s ease;
   flex-shrink: 0;
 }
@@ -430,13 +390,13 @@ watch(() => props.currentView, () => {
 }
 
 .user-name {
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .user-role {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   color: var(--text-muted);
 }
 
@@ -465,6 +425,33 @@ watch(() => props.currentView, () => {
     display: none;
   }
 
+  .navigation-sidebar .compact-tooltip {
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    z-index: 300;
+    display: block;
+    padding: 0.45rem 0.65rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    font-size: 0.7375rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-4px, -50%);
+    box-shadow: var(--shadow-md);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+
+  .navigation-sidebar .menu-item:hover .compact-tooltip,
+  .navigation-sidebar .menu-item:focus-visible .compact-tooltip {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+
   .logo-area {
     padding: 0 0 1.5rem 0;
     justify-content: center;
@@ -476,7 +463,7 @@ watch(() => props.currentView, () => {
   .menu-item.active {
     padding-left: 0.75rem;
     border-left: none;
-    background: var(--glow-primary);
+    background: var(--bg-hover);
     border-radius: 12px;
   }
   .sidebar-footer {
@@ -488,7 +475,7 @@ watch(() => props.currentView, () => {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .navigation-sidebar {
     display: none;
   }
@@ -507,7 +494,7 @@ watch(() => props.currentView, () => {
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0.25rem .25rem 0.25rem 1rem;
+    padding: 0.25rem .5rem 0.25rem 1rem;
     background: var(--sidebar-bg);
     border: 1px solid var(--border-color);
     border-radius: 16px;
@@ -529,13 +516,13 @@ watch(() => props.currentView, () => {
   }
 
   .mobile-brand-text {
-    font-size: 1rem;
+    font-size: 0.9375rem;
     font-weight: 800;
     color: var(--text-primary);
   }
 
   .mobile-current-view {
-    font-size: 0.72rem;
+    font-size: 0.6575rem;
     color: var(--text-secondary);
     white-space: nowrap;
     overflow: hidden;
@@ -554,11 +541,11 @@ watch(() => props.currentView, () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
+    width: 38px;
+    height: 38px;
     border-radius: 10px;
-    background: var(--bg-subtle);
-    border: 1px solid var(--border-color);
+    /* background: var(--bg-subtle); */
+    /* border: 1px solid var(--border-color); */
     color: var(--text-primary);
     cursor: pointer;
     transition: all 0.2s ease;
@@ -611,13 +598,13 @@ watch(() => props.currentView, () => {
   }
 
   .mobile-drawer-title {
-    font-size: 0.95rem;
+    font-size: 0.8875rem;
     font-weight: 700;
     color: var(--text-primary);
   }
 
   .mobile-drawer-subtitle {
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     color: var(--text-muted);
     margin-top: 0.2rem;
   }
@@ -731,7 +718,7 @@ watch(() => props.currentView, () => {
   }
 
   .bottom-bar-item .bottom-label {
-    font-size: 0.68rem;
+    font-size: 0.6175rem;
     font-weight: 600;
   }
 }

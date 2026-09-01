@@ -27,8 +27,8 @@
               <TagInput v-model="form.tags" :suggested-tags="historyTags" placeholder="輸入標籤如：Bento Grid, SaaS..." />
             </div>
             <div class="form-group full-width">
-              <label>封面圖片</label>
-              <FileUploader v-model="form.cover" accept="image/*" placeholder="請貼上圖片網或點擊選擇檔案上傳" />
+              <label>圖片上傳</label>
+              <ImagePathInput v-model="form.cover" />
             </div>
             <div class="form-group full-width">
               <label>研究心得 / 可借鏡重點</label>
@@ -55,8 +55,8 @@
               <FileUploader v-model="form.videoUrl" accept="video/*" placeholder="請貼上影片網或點擊選擇檔案上傳" />
             </div>
             <div class="form-group full-width">
-              <label>靜態封面圖片 (可選)</label>
-              <FileUploader v-model="form.cover" accept="image/*" placeholder="請貼上封面圖片網或點擊選擇檔案上傳" />
+              <label>圖片上傳（可選）</label>
+              <ImagePathInput v-model="form.cover" />
             </div>
             <div class="form-group full-width">
               <label>製作工具 (按 Enter 新增標籤，可點選歷史製作工具)</label>
@@ -89,13 +89,13 @@
               <label>標籤 (按 Enter 新增標籤，可點選下方歷史建議標籤)</label>
               <TagInput v-model="form.tags" :suggested-tags="historyTags" placeholder="輸入標籤如：Mobile UX, Fintech..." />
             </div>
-            <div class="form-group">
+            <div class="form-group full-width">
               <label>官方網址</label>
               <input v-model="form.url" type="text" @blur="form.url = ensureProtocol(form.url)" placeholder="例如：https://figma.com" />
             </div>
             <div class="form-group full-width">
-              <label>介面截圖網址 (封面)</label>
-              <FileUploader v-model="form.screenshot" accept="image/*" placeholder="請輸入截圖 URL 或點擊上傳..." />
+              <label>圖片上傳</label>
+              <ImagePathInput v-model="form.screenshot" />
             </div>
             <div class="form-group full-width">
               <label>優點 (Pros)</label>
@@ -144,6 +144,10 @@
             <div class="form-group full-width">
               <label>網站 URL <span class="required">*</span></label>
               <input v-model="form.url" type="text" @blur="form.url = ensureProtocol(form.url)" placeholder="例如：https://awwwards.com" required />
+            </div>
+            <div class="form-group full-width">
+              <label>圖片上傳</label>
+              <ImagePathInput v-model="form.screenshot" />
             </div>
             <div class="form-group full-width">
               <label>網站簡短說明</label>
@@ -195,6 +199,7 @@ import { ref, computed, watch } from 'vue';
 import TagInput from './TagInput.vue';
 import CategoryInput from './CategoryInput.vue';
 import FileUploader from './FileUploader.vue';
+import ImagePathInput from './ImagePathInput.vue';
 import { getStorageData } from '../utils/storage';
 import { ensureProtocol } from '../utils/formatters';
 
@@ -390,22 +395,6 @@ const handleSubmit = () => {
 </script>
 
 <style scoped>
-.modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 1.5rem;
-}
-
 .modal-container {
   width: 100%;
   max-width: 600px;
@@ -428,7 +417,7 @@ const handleSubmit = () => {
 }
 
 .modal-header h2 {
-  font-size: 1.15rem;
+  font-size: 1.087rem;
   font-weight: 700;
 }
 
@@ -475,7 +464,7 @@ const handleSubmit = () => {
 }
 
 label {
-  font-size: 0.8rem;
+  font-size: 0.7375rem;
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -489,7 +478,7 @@ input, select, textarea {
   border: 1px solid transparent;
   padding: 0.6rem 0.85rem;
   border-radius: 8px;
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   color: var(--text-primary);
   transition: all 0.2s ease;
 }
@@ -514,7 +503,6 @@ textarea {
 }
 
 .status-select {
-  background: var(--bg-secondary);
   color: var(--text-primary);
   cursor: pointer;
 }
@@ -534,7 +522,7 @@ textarea {
   background: var(--bg-hover);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   font-weight: 600;
   transition: all 0.2s ease;
 }

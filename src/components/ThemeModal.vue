@@ -131,12 +131,12 @@ const selectTheme = (themeClass) => {
 }
 
 .theme-modal-header h2 {
-  font-size: 1.15rem;
+  font-size: 1.087rem;
   font-weight: 700;
 }
 
 .close-btn {
-  font-size: 1.25rem;
+  font-size: 1.188rem;
   color: var(--text-muted);
   transition: color 0.2s ease;
 }
@@ -153,7 +153,7 @@ const selectTheme = (themeClass) => {
 }
 
 .theme-intro {
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   color: var(--text-secondary);
   line-height: 1.5;
 }
@@ -244,13 +244,13 @@ const selectTheme = (themeClass) => {
 }
 
 .theme-name-row h4 {
-  font-size: 0.9rem;
+  font-size: 0.8375rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .active-badge {
-  font-size: 0.65rem;
+  font-size: 0.5875rem;
   font-weight: 700;
   color: white;
   background: var(--color-primary);
@@ -259,7 +259,7 @@ const selectTheme = (themeClass) => {
 }
 
 .theme-desc {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   color: var(--text-secondary);
   line-height: 1.4;
 }

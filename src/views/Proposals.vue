@@ -1,14 +1,21 @@
 <template>
   <div class="proposals-container">
     <PageHeader
-      title="Proposals & Prototypes"
+      title="產品優化提案"
       subtitle="將研究發現轉化為具體的產品優化提案，並透過 Prototype 進行概念驗證與進度追蹤"
       add-btn-label="+ 新增優化提案"
       @add-click="$emit('trigger-crud', { type: 'PROPOSALS' })"
     />
 
     <div class="kanban-board">
-      <div v-for="column in columns" :key="column.status" class="kanban-column glass-panel">
+      <div
+        v-for="column in columns"
+        :key="column.status"
+        class="kanban-column glass-panel"
+        :class="{ 'is-drag-over': dragOverStatus === column.status }"
+        @dragover.prevent="handleDragOver(column.status)"
+        @drop.prevent="handleDrop(column.status)"
+      >
         <div class="column-header">
           <span class="column-dot" :class="column.status.toLowerCase()"></span>
           <h3>{{ column.label }}</h3>
@@ -20,12 +27,15 @@
             v-for="item in getColumnItems(column.status)" 
             :key="item.id" 
             class="proposal-kanban-card"
+            draggable="true"
+            @dragstart="handleDragStart(item, $event)"
+            @dragend="handleDragEnd"
           >
             <div class="prop-card-actions">
               <span class="prop-date">{{ item.createdAt }}</span>
-              <div class="card-actions">
-                <button class="action-icon-btn edit" @click="$emit('trigger-crud', { type: 'PROPOSALS', item })" title="編輯"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></button>
-                <button class="action-icon-btn delete" @click="handleDelete(item)" title="刪除"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+              <div class="card-actions card-actions-reveal">
+                <ActionIconButton variant="edit" @click="$emit('trigger-crud', { type: 'PROPOSALS', item })" title="編輯"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></ActionIconButton>
+                <ActionIconButton variant="delete" @click="handleDelete(item)" title="刪除"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></ActionIconButton>
               </div>
             </div>
 
@@ -44,21 +54,18 @@
             </div>
 
             <div class="prop-move-bar">
-              <button 
-                class="move-btn prev" 
-                v-if="column.status !== 'Idea'"
-                @click="moveStatus(item, -1)"
+              <label class="status-change-label" :for="`proposal-status-${item.id}`">提案狀態</label>
+              <select
+                :id="`proposal-status-${item.id}`"
+                class="proposal-status-select"
+                :value="item.status"
+                :aria-label="`變更《${item.title}》的提案狀態`"
+                @change="changeStatus(item, $event.target.value)"
               >
-                ◀ 往左移
-              </button>
-              <span class="spacer" v-else></span>
-              <button 
-                class="move-btn next" 
-                v-if="column.status !== 'Approved'"
-                @click="moveStatus(item, 1)"
-              >
-                往右移 ▶
-              </button>
+                <option v-for="status in statusOptions" :key="status.value" :value="status.value">
+                  {{ status.label }}
+                </option>
+              </select>
             </div>
           </div>
           
@@ -74,6 +81,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import PageHeader from '../components/PageHeader.vue';
+import ActionIconButton from '../components/ActionIconButton.vue';
 import { getStorageData, addOrUpdateItem, deleteItem } from '../utils/storage';
 import { checkDeletePermission } from '../utils/notifications';
 import NotificationBell from '../components/NotificationBell.vue';
@@ -81,6 +89,8 @@ import NotificationBell from '../components/NotificationBell.vue';
 const emit = defineEmits(['trigger-crud', 'delete-done', 'navigate-to-view']);
 
 const items = ref([]);
+const draggedItemId = ref('');
+const dragOverStatus = ref('');
 
 const columns = [
   { status: 'Idea', label: '提案想法' },
@@ -101,19 +111,42 @@ const getColumnItems = (status) => {
   return items.value.filter(i => i.status === status);
 };
 
-const statusOrder = ['Idea', 'Evaluating', 'Prototype', 'Approved'];
-const moveStatus = (item, direction) => {
-  const currentIndex = statusOrder.indexOf(item.status);
-  const newIndex = currentIndex + direction;
-  
-  if (newIndex >= 0 && newIndex < statusOrder.length) {
-    const updatedItem = { ...item, status: statusOrder[newIndex] };
-    addOrUpdateItem('PROPOSALS', updatedItem);
-    loadData();
-  }
+const statusOptions = [
+  { value: 'Idea', label: '提案想法' },
+  { value: 'Evaluating', label: '評估中' },
+  { value: 'Prototype', label: '驗證中' },
+  { value: 'Approved', label: '已採納' }
+];
+
+const changeStatus = (item, status) => {
+  if (!status || status === item.status) return;
+  addOrUpdateItem('PROPOSALS', { ...item, status });
+  loadData();
+};
+
+const handleDragStart = (item, event) => {
+  draggedItemId.value = String(item.id);
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', String(item.id));
+};
+
+const handleDragOver = (status) => {
+  dragOverStatus.value = status;
+};
+
+const handleDrop = (status) => {
+  const item = items.value.find(candidate => String(candidate.id) === draggedItemId.value);
+  if (item) changeStatus(item, status);
+  handleDragEnd();
+};
+
+const handleDragEnd = () => {
+  draggedItemId.value = '';
+  dragOverStatus.value = '';
 };
 
 const navigateToResearch = (researchName) => {
+  if (!researchName || typeof researchName !== 'string') return;
   let view = 'UIResearch';
   if (researchName.includes('Motion') || researchName.includes('動態')) {
     view = 'MotionResearch';
@@ -160,14 +193,16 @@ const handleDelete = (item) => {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  min-width: 0;
 }
 
 
 .kanban-board {
   display: grid;
-  grid-template-columns: repeat(4, minmax(260px, 1fr));
+  grid-template-columns: repeat(4, minmax(360px, 1fr));
   gap: 1rem;
   align-items: start;
+  min-width: 0;
   overflow-x: auto;
   padding-bottom: 1rem;
   /* Smooth scroll on touch */
@@ -178,10 +213,14 @@ const handleDelete = (item) => {
 }
 
 .kanban-board::-webkit-scrollbar {
-  height: 5px;
+  height: 8px;
 }
 .kanban-board::-webkit-scrollbar-thumb {
   background: var(--border-color-hover);
+  border-radius: 4px;
+}
+.kanban-board::-webkit-scrollbar-track {
+  background: var(--bg-subtle);
   border-radius: 4px;
 }
 
@@ -193,6 +232,12 @@ const handleDelete = (item) => {
   gap: 1rem;
   min-height: 60vh;
   min-width: 220px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.kanban-column.is-drag-over {
+  border-color: var(--color-primary);
+  background: var(--bg-card-hover);
 }
 
 .column-header {
@@ -206,7 +251,7 @@ const handleDelete = (item) => {
 }
 
 .column-header h3 {
-  font-size: 0.9rem;
+  font-size: 0.8375rem;
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
@@ -221,13 +266,13 @@ const handleDelete = (item) => {
   border-radius: 50%;
 }
 .column-dot.idea { background-color: var(--text-muted); }
-.column-dot.evaluating { background-color: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
-.column-dot.prototype { background-color: var(--color-secondary); box-shadow: 0 0 8px var(--color-secondary); }
-.column-dot.approved { background-color: var(--color-accent); box-shadow: 0 0 8px var(--color-accent); }
+.column-dot.evaluating { background-color: var(--color-warning); }
+.column-dot.prototype { background-color: var(--color-info); }
+.column-dot.approved { background-color: var(--color-success); }
 
 .column-count {
   margin-left: auto;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   background: var(--bg-hover);
   padding: 0.15rem 0.4rem;
   border-radius: 999px;
@@ -249,6 +294,11 @@ const handleDelete = (item) => {
   flex-direction: column;
   gap: 0.75rem;
   transition: all 0.2s ease;
+  cursor: grab;
+}
+
+.proposal-kanban-card:active {
+  cursor: grabbing;
 }
 
 .proposal-kanban-card:hover {
@@ -265,68 +315,18 @@ const handleDelete = (item) => {
 }
 
 .prop-date {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-}
-
-.card-actions {
-  display: flex;
-  gap: 0.25rem;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-2px);
-  transition: opacity 0.25s ease, transform 0.25s ease;
-}
-
-.proposal-kanban-card:hover .card-actions {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0);
-}
-
-@media (hover: none), (max-width: 768px) {
-  .card-actions {
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    transform: none !important;
-  }
-}
-
-.action-icon-btn {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-color);
-  transition: all 0.2s ease;
-}
-
-.action-icon-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.action-icon-btn.edit:hover {
-  color: var(--color-warning);
-  border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
-}
-
-.action-icon-btn.delete:hover {
-  color: var(--color-error);
-  border-color: color-mix(in srgb, var(--color-error) 40%, transparent);
+  font-size: 0.7375rem;
+  color: var(--text-secondary);
 }
 
 .prop-title {
-  font-size: 0.95rem;
+  font-size: 0.8875rem;
   font-weight: 700;
   line-height: 1.4;
 }
 
 .prop-impact {
-  font-size: 0.8rem;
+  font-size: 0.7875rem;
   color: var(--text-secondary);
   line-height: 1.4;
   background: var(--bg-subtle);
@@ -336,7 +336,7 @@ const handleDelete = (item) => {
 }
 
 .related-research-badge {
-  font-size: 0.75rem;
+  font-size: 0.7375rem;
   color: var(--color-primary);
   background: var(--glow-primary);
   padding: 0.35rem 0.5rem;
@@ -359,7 +359,7 @@ const handleDelete = (item) => {
 .figma-btn {
   display: block;
   text-align: center;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   padding: 0.4rem;
   border-radius: 8px;
@@ -383,8 +383,26 @@ const handleDelete = (item) => {
   padding-top: 0.5rem;
 }
 
+.status-change-label {
+  color: var(--text-secondary);
+  font-size: 0.7175rem;
+  font-weight: 600;
+}
+
+.proposal-status-select {
+  min-height: 34px;
+  padding: 0.35rem 2rem 0.35rem 0.6rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.7375rem;
+  cursor: pointer;
+}
+
 .move-btn {
-  font-size: 0.7rem;
+  font-size: 0.6375rem;
   color: var(--text-muted);
 }
 
@@ -394,8 +412,8 @@ const handleDelete = (item) => {
 
 .column-empty-state {
   text-align: center;
-  font-size: 0.75rem;
-  color: var(--text-muted);
+  font-size: 0.7875rem;
+  color: var(--text-secondary);
   border: 1px dashed var(--border-color);
   border-radius: 8px;
   padding: 2rem 1rem;
@@ -403,13 +421,13 @@ const handleDelete = (item) => {
 
 @media (max-width: 1024px) {
   .kanban-board {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(360px, 1fr));
   }
 }
 
 @media (max-width: 640px) {
   .kanban-board {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(4, minmax(360px, 1fr));
   }
   .kanban-column {
     min-height: auto;

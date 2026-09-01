@@ -1,6 +1,6 @@
 <template>
   <ResearchGrid
-    pageTitle="Resources"
+    pageTitle="設計資源"
     pageSubtitle="整理設計與工程開發常用網站，建立部門公共資源庫"
     addBtnLabel="+ 新增資源網站"
     storageKey="RESOURCES"
@@ -59,7 +59,7 @@ const filters = computed(() => [
 
 <style scoped>
 .resource-desc-text {
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   color: var(--text-secondary);
   line-height: 1.55;
   margin-top: 0.4rem;
@@ -76,39 +76,13 @@ const filters = computed(() => [
   border-radius: 10px;
   border: 1px solid var(--border-color);
 }
-.section-title {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 0.5rem;
-}
-.section-desc {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  white-space: pre-line;
-}
-
 .category-badge {
-  font-size: 0.65rem;
+  font-size: 0.5875rem;
   font-weight: 600;
   color: var(--color-accent);
   background: color-mix(in srgb, var(--color-success) 12%, transparent);
   padding: 0.15rem 0.4rem;
   border-radius: 4px;
-}
-
-.action-icon-btn {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-color);
-  transition: all 0.2s ease;
 }
 
 @media (max-width: 1024px) {

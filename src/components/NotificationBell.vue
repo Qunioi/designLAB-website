@@ -136,7 +136,7 @@ const handleMarkAllRead = () => {
   right: -4px;
   background: #ef4444;
   color: white;
-  font-size: 0.68rem;
+  font-size: 0.6175rem;
   font-weight: 800;
   padding: 0.15rem 0.4rem;
   border-radius: 10px;
@@ -172,14 +172,14 @@ const handleMarkAllRead = () => {
 
 /* 標題字大、清楚清晰 */
 .notif-header-title {
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -0.2px;
 }
 
 .mark-read-btn {
-  font-size: 0.78rem;
+  font-size: 0.7175rem;
   color: var(--color-primary);
   background: transparent;
   cursor: pointer;
@@ -226,20 +226,20 @@ const handleMarkAllRead = () => {
 
 /* 每條通知大字標題 */
 .notif-title {
-  font-size: 0.92rem;
+  font-size: 0.8575rem;
   font-weight: 800;
   color: var(--color-primary);
 }
 
 .notif-time {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   color: var(--text-muted);
   font-weight: 500;
 }
 
 /* 描述文字：深色背景下高亮純白，淺色背景下純黑 */
 .notif-msg {
-  font-size: 0.9rem;
+  font-size: 0.8375rem;
   font-weight: 500;
   color: var(--text-primary); /* 在深色主題自動為白色，淺色主題自動為黑色 */
   line-height: 1.5;
@@ -247,7 +247,7 @@ const handleMarkAllRead = () => {
 }
 
 :deep(.notif-handle) {
-  font-size: 0.78em;
+  font-size: 0.7175em;
   opacity: 0.65;
   font-weight: normal;
   margin: 0 1px;
@@ -256,7 +256,7 @@ const handleMarkAllRead = () => {
 .notif-empty {
   padding: 2.2rem;
   text-align: center;
-  font-size: 0.9rem;
+  font-size: 0.8375rem;
   color: var(--text-muted);
   background: var(--bg-card);
 }
@@ -271,5 +271,12 @@ const handleMarkAllRead = () => {
 .fade-leave-to {
   opacity: 0;
   transform: translateY(-6px);
+}
+
+@media (max-width: 900px) {
+  .bell-btn {
+    background: transparent;
+    border: none;
+  }
 }
 </style>

@@ -170,7 +170,7 @@ onUnmounted(() => {
   border: 1px solid transparent;
   padding: 0.6rem 2.2rem 0.6rem 0.85rem;
   border-radius: 8px;
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   color: var(--text-primary);
   transition: all 0.2s ease;
   font-family: var(--font-body);
@@ -234,7 +234,7 @@ onUnmounted(() => {
 .dropdown-header {
   padding: 0.55rem 0.85rem;
   border-bottom: 1px solid var(--border-color);
-  font-size: 0.725rem;
+  font-size: 0.6625rem;
   font-weight: 700;
   color: var(--text-muted);
 }
@@ -255,7 +255,7 @@ onUnmounted(() => {
   width: 100%;
   padding: 0.5rem 0.85rem;
   border-radius: 6px;
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   color: var(--text-secondary);
   background: transparent;
   border: none;
@@ -285,7 +285,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  font-size: 0.8rem;
+  font-size: 0.7375rem;
   color: var(--text-muted);
 }
 
@@ -295,7 +295,7 @@ onUnmounted(() => {
   border: 1px solid var(--color-primary);
   padding: 0.4rem 0.75rem;
   border-radius: 6px;
-  font-size: 0.8rem;
+  font-size: 0.7375rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;

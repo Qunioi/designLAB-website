@@ -85,50 +85,6 @@ const isGuest = computed(() => {
   min-width: 0;
 }
 
-.page-title {
-  font-size: var(--fs-h1);
-  font-weight: 800;
-  color: var(--text-primary);
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.page-subtitle {
-  color: var(--text-secondary);
-  font-size: 0.88rem;
-  line-height: 1.5;
-  margin-top: 0.15rem;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-shrink: 0;
-}
-
-.add-btn {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  color: #ffffff !important;
-  padding: 0.55rem 1.15rem;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 0.88rem;
-  box-shadow: 0 4px 15px var(--glow-primary);
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  cursor: pointer;
-  border: none;
-  flex-shrink: 0;
-}
-
-.add-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px var(--glow-primary);
-}
-
 @media (max-width: 768px) {
   .page-header-bell {
     display: none !important;
@@ -137,15 +93,15 @@ const isGuest = computed(() => {
 
 @media (max-width: 640px) {
   .page-title {
-    font-size: 1.5rem;
+    font-size: 1.438rem;
   }
   .add-btn {
     padding: 0.45rem 0.85rem;
-    font-size: 0.82rem;
+    font-size: 0.7575rem;
     border-radius: 10px;
   }
   .page-subtitle {
-    font-size: 0.82rem;
+    font-size: 0.7575rem;
   }
 }
 </style>

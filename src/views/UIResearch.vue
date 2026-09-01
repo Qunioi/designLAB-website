@@ -1,6 +1,6 @@
 <template>
   <ResearchGrid
-    pageTitle="UI Research"
+    pageTitle="UI 研究案例"
     pageSubtitle="建立與整理介面設計案例，做為日常設計靈感與優化依據"
     addBtnLabel="+ 新增 UI 研究"
     storageKey="UI_RESEARCH"
@@ -10,6 +10,7 @@
     badgeField="category"
     coverField="cover"
     linkField="link"
+    researchContext="UI 研究案例"
     emptyText="無相符的 UI 研究案例。點選右上角新增一筆！"
     deleteConfirmPrefix="確定要刪除《"
     deleteConfirmSuffix="》這筆 UI 研究案嗎？"

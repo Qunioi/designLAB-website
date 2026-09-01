@@ -31,8 +31,16 @@
     <!-- 列表為空提示 -->
     <div v-if="filteredList.length === 0" class="empty-state">
       <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-      <p>{{ emptyText }}</p>
+      <p>{{ totalSelectedChipsCount > 0 || searchQuery ? '找不到符合目前搜尋與篩選條件的內容。' : emptyText }}</p>
       <button class="reset-filter-btn" v-if="totalSelectedChipsCount > 0 || searchQuery" @click="resetAllFilters">重置所有搜尋與篩選</button>
+      <button
+        v-else-if="!isGuest"
+        type="button"
+        class="empty-primary-btn"
+        @click="$emit('trigger-crud', { type: crudType })"
+      >
+        {{ addBtnLabel }}
+      </button>
     </div>
 
     <!-- 卡片列表 -->
@@ -68,13 +76,13 @@
             <div class="card-meta-left">
               <span :class="badgeClass" class="clickable-badge" @click="handleBadgeClick(item)" title="點擊切換分類篩選">{{ getBadgeText(item) }}</span>
             </div>
-            <div class="card-actions" v-if="!isGuest">
-              <button type="button" class="action-icon-btn edit" :aria-label="`編輯《${getTitle(item)}》`" @click="$emit('trigger-crud', { type: crudType, item })" title="編輯">
+            <div class="card-actions card-actions-reveal" v-if="!isGuest">
+              <ActionIconButton variant="edit" :aria-label="`編輯《${getTitle(item)}》`" @click="$emit('trigger-crud', { type: crudType, item })" title="編輯">
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
-              </button>
-              <button v-if="canDeleteCardItem(item)" type="button" class="action-icon-btn delete" :aria-label="`刪除《${getTitle(item)}》`" @click="handleDelete(item)" title="刪除">
+              </ActionIconButton>
+              <ActionIconButton v-if="canDeleteCardItem(item)" variant="delete" :aria-label="`刪除《${getTitle(item)}》`" @click="handleDelete(item)" title="刪除">
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              </button>
+              </ActionIconButton>
             </div>
           </div>
           <h3 class="card-title">{{ getTitle(item) }}</h3>
@@ -150,6 +158,13 @@
               />
               <div class="lightbox-footer">
                 <div class="lightbox-actions-group" v-if="!isGuest">
+                  <button
+                    type="button"
+                    class="create-proposal-btn"
+                    @click="$emit('trigger-crud', { type: 'PROPOSALS', item: { title: `優化 ${getTitle(lightbox.item)}`, relatedResearch: `${getTitle(lightbox.item)} (${researchContext})` } }); closeLightbox();"
+                  >
+                    建立優化提案
+                  </button>
                   <button type="button" class="lightbox-icon-btn edit" @click="$emit('trigger-crud', { type: crudType, item: lightbox.item }); closeLightbox();" :aria-label="`編輯`" title="編輯">
                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                   </button>
@@ -186,6 +201,7 @@
 import { ref, computed, reactive, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import PageHeader from './PageHeader.vue';
 import FilterToolbar from './FilterToolbar.vue';
+import ActionIconButton from './ActionIconButton.vue';
 import FullscreenMediaOverlay from './FullscreenMediaOverlay.vue';
 import { getStorageData, deleteItem, isMyCreatedItem, checkDeletePermission } from '../utils/storage';
 import { getCurrentUser, isAdminUser } from '../utils/userStore';
@@ -210,6 +226,7 @@ const props = defineProps({
   lightboxCoverField: { type: String, default: '' },
   lightboxLinkField:  { type: String, default: '' },
   linkBtnLabel: { type: String, default: '參考網址' },
+  researchContext: { type: String, default: '研究案例' },
   emptyText:    { type: String, default: '無相符資料。點選右上角新增一筆！' },
   deleteConfirmPrefix: { type: String, default: '確定要刪除《' },
   deleteConfirmSuffix: { type: String, default: '》嗎？' },
@@ -610,7 +627,7 @@ const handleDelete = (item) => {
   border: 1px solid var(--border-color);
   padding: 0.5rem 0.9rem;
   border-radius: 8px;
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -647,13 +664,13 @@ const handleDelete = (item) => {
   align-items: center;
   padding: 0.6rem 0.85rem;
   border-bottom: 1px solid var(--border-color);
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   color: var(--text-muted);
 }
 .clear-btn {
   color: var(--color-primary);
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   cursor: pointer;
 }
@@ -675,7 +692,7 @@ const handleDelete = (item) => {
   gap: 0.5rem;
   padding: 0.4rem 0.6rem;
   border-radius: 6px;
-  font-size: 0.8rem;
+  font-size: 0.7375rem;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.15s ease;
@@ -706,7 +723,7 @@ const handleDelete = (item) => {
 }
 
 .chips-label {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   color: var(--text-muted);
   font-weight: 600;
 }
@@ -719,7 +736,7 @@ const handleDelete = (item) => {
 }
 
 .chip-category-prefix {
-  font-size: 0.65rem;
+  font-size: 0.5875rem;
   opacity: 0.75;
   margin-right: 0.15rem;
   font-weight: 500;
@@ -732,7 +749,7 @@ const handleDelete = (item) => {
   color: #ffffff !important;
   border: 1px solid var(--color-primary) !important;
   box-shadow: 0 3px 12px var(--glow-primary);
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   padding: 0.22rem 0.65rem;
   border-radius: 99px;
@@ -752,7 +769,7 @@ const handleDelete = (item) => {
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  font-size: 0.65rem;
+  font-size: 0.5875rem;
   color: #ffffff !important;
   background: rgba(255, 255, 255, 0.25);
   cursor: pointer;
@@ -765,7 +782,7 @@ const handleDelete = (item) => {
 
 .reset-all-tags-btn,
 .reset-filter-btn {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   color: var(--text-muted);
   text-decoration: underline;
   cursor: pointer;
@@ -784,7 +801,29 @@ const handleDelete = (item) => {
   gap: 0.75rem;
   padding: 4rem 2rem;
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: 0.8875rem;
+}
+
+.empty-primary-btn,
+.create-proposal-btn {
+  min-height: 40px;
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  background: var(--color-primary);
+  color: #ffffff;
+  font-size: 0.7875rem;
+  font-weight: 700;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.empty-primary-btn:hover,
+.create-proposal-btn:hover {
+  background: var(--color-secondary);
+  transform: translateY(-1px);
+}
+
+.create-proposal-btn {
+  margin-right: 0.5rem;
 }
 
 /* ── Cards Grid (恢復原始卡片樣式) ─────── */
@@ -848,7 +887,7 @@ const handleDelete = (item) => {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.72rem;
+  font-size: 0.6575rem;
   font-weight: 600;
   color: var(--color-primary);
   opacity: 0.85;
@@ -922,7 +961,7 @@ const handleDelete = (item) => {
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   gap: 0.5rem;
   transition: opacity 0.22s ease;
 }
@@ -932,7 +971,7 @@ const handleDelete = (item) => {
 
 /* ── Card Body & Info (恢復原始內邊距與純粹底色) ── */
 .card-info {
-  padding: 1.25rem;
+  padding: .75rem 1rem 1rem;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -953,51 +992,17 @@ const handleDelete = (item) => {
 }
 
 .card-time-text {
-  font-size: 0.72rem;
-  color: var(--text-muted);
+  font-size: 0.7375rem;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
-.card-actions,
-.ext-link-wrapper {
-  display: flex;
-  gap: 0.25rem;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-2px);
-  transition: opacity 0.22s ease, transform 0.22s ease;
-}
-.research-card:hover .card-actions,
-.research-card:hover .ext-link-wrapper {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0);
-}
-.research-card:focus-within .card-actions {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0);
-}
-
-.action-icon-btn {
-  width: 26px; height: 26px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--bg-hover);
-  border: 1px solid var(--border-color);
-  transition: all 0.2s ease;
-}
-.action-icon-btn:hover {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: #fff;
-}
-
 .card-title {
-  font-size: 1.05rem;
+  font-size: 0.9875rem;
   font-weight: 700;
   line-height: 1.35;
   color: var(--text-primary);
+  margin-bottom: 0.2rem;
 }
 
 .card-footer {
@@ -1016,7 +1021,7 @@ const handleDelete = (item) => {
   background: var(--bg-hover);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
-  font-size: 0.82rem;
+  font-size: 0.7575rem;
   font-weight: 700;
   transition: all 0.2s ease;
 }
@@ -1119,7 +1124,7 @@ const handleDelete = (item) => {
   color: #ffffff;
   padding: 0.4rem 0.85rem;
   border-radius: 8px;
-  font-size: 0.78rem;
+  font-size: 0.7175rem;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -1233,11 +1238,11 @@ const handleDelete = (item) => {
   align-items: center;
 }
 .lightbox-date {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   color: var(--text-muted);
 }
 .lightbox-title {
-  font-size: 1.35rem;
+  font-size: 1.288rem;
   font-weight: 800;
   line-height: 1.3;
   color: var(--text-primary);
@@ -1296,7 +1301,7 @@ const handleDelete = (item) => {
   padding: 0.55rem 1.1rem;
   border-radius: 10px;
   font-weight: 600;
-  font-size: 0.82rem;
+  font-size: 0.7575rem;
   transition: all 0.2s ease;
   text-decoration: none;
   flex-shrink: 0;
@@ -1315,26 +1320,11 @@ const handleDelete = (item) => {
 @media (max-width: 1280px) { .cards-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 768px)  { 
   .cards-grid { grid-template-columns: 1fr; }
-  .card-actions {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(0);
-  }
   .media-ext-link {
     opacity: 1;
   }
 }
-@media (hover: none) {
-  .card-actions {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(0);
-  }
-}
 @media (max-width: 640px) {
-  .search-box { width: 100%; }
-  .filter-toolbar { flex-direction: column; align-items: flex-start; }
-  .filter-options { width: 100%; }
   .filter-select { flex: 1; }
   .lightbox-backdrop { padding: 0.75rem; }
   .lightbox-container { max-height: 94vh; border-radius: 16px; }

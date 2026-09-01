@@ -9,9 +9,18 @@
             v-model="query" 
             type="text" 
             placeholder="搜尋案例、競品、AI 工具、資源或標籤..."
-            @keydown.esc="close"
+            @keydown.esc.stop.prevent="handleEscape"
           />
-          <span class="esc-badge">ESC</span>
+          <button
+            v-if="query"
+            type="button"
+            class="esc-badge esc-clear-btn"
+            aria-label="清除搜尋內容"
+            @click="clearQuery"
+          >
+            清除
+          </button>
+          <span v-else class="esc-badge">ESC</span>
         </div>
 
         <div class="search-body">
@@ -93,9 +102,9 @@ const handleGlobalKeyDown = (e) => {
       emit('open');
     }
   }
-  // ESC 也可以關閉
+  // 有搜尋內容時，ESC 先清除欄位；欄位已空才關閉彈窗
   if (e.key === 'Escape' && props.isOpen) {
-    emit('close');
+    handleEscape();
   }
 };
 
@@ -109,6 +118,19 @@ onUnmounted(() => {
 
 const close = () => {
   emit('close');
+};
+
+const handleEscape = () => {
+  if (query.value.length > 0) {
+    clearQuery();
+    return;
+  }
+  close();
+};
+
+const clearQuery = () => {
+  query.value = '';
+  nextTick(() => searchInput.value?.focus());
 };
 
 const allData = computed(() => {
@@ -201,8 +223,9 @@ const handleSelect = (item) => {
 
 .search-header input {
   flex: 1;
-  font-size: 1.1rem;
+  font-size: 1.038rem;
   font-weight: 500;
+  outline: 0;
 }
 
 .search-header input::placeholder {
@@ -210,12 +233,22 @@ const handleSelect = (item) => {
 }
 
 .esc-badge {
-  font-size: 0.7rem;
+  font-size: 0.6375rem;
   padding: 0.25rem 0.5rem;
   background: var(--bg-hover);
   border: 1px solid var(--border-color);
   border-radius: 4px;
   color: var(--text-muted);
+}
+
+.esc-clear-btn {
+  cursor: pointer;
+  color: var(--color-primary);
+}
+
+.esc-clear-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--color-primary);
 }
 
 .search-body {
@@ -231,7 +264,7 @@ const handleSelect = (item) => {
 }
 
 .placeholder-title {
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   color: var(--text-secondary);
 }
 
@@ -254,7 +287,7 @@ const handleSelect = (item) => {
 
 .shortcut-tip {
   margin-top: 2rem;
-  font-size: 0.8rem;
+  font-size: 0.7375rem;
   color: var(--text-muted);
   border-top: 1px solid var(--border-color);
   padding-top: 1rem;
@@ -311,26 +344,26 @@ const handleSelect = (item) => {
 }
 
 .result-type-badge {
-  font-size: 0.7rem;
+  font-size: 0.6375rem;
   font-weight: 600;
   padding: 0.15rem 0.5rem;
   border-radius: 4px;
 }
 
 .result-category {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   color: var(--text-muted);
 }
 
 .result-title {
-  font-size: 0.95rem;
+  font-size: 0.8875rem;
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 0.25rem;
 }
 
 .result-snippet {
-  font-size: 0.8rem;
+  font-size: 0.7375rem;
   color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;

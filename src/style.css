@@ -33,13 +33,16 @@
 
 :root {
   /* Typography scale */
-  --fs-display: 2.5rem;
-  --fs-h1: 1.75rem;
-  --fs-h2: 1.25rem;
-  --fs-h3: 1rem;
-  --fs-body: 0.875rem;
-  --fs-caption: 0.75rem;
-  --fs-tiny: 0.65rem;
+  --fs-display: 2.4375rem;
+  --fs-h1: 1.6875rem;
+  --fs-h2: 1.1875rem;
+  --fs-h3: 0.9375rem;
+  --fs-body: 0.8125rem;
+  --fs-body-lg: 0.9375rem;
+  --fs-label: 0.75rem;
+  --fs-meta: 0.6875rem;
+  --fs-caption: 0.6875rem;
+  --fs-tiny: 0.6875rem;
 
   /* Weight scale */
   --fw-light: 300;
@@ -76,6 +79,9 @@
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 20px;
+  --control-height-sm: 36px;
+  --control-height-md: 40px;
+  --control-height-lg: 44px;
 
   /* Default palette (Midnight Slate) */
   --bg-primary: #0f1117;
@@ -491,11 +497,16 @@ button {
 
 button:focus-visible,
 a:focus-visible,
-input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+input,
+input:focus,
+input:focus-visible {
+  outline: 0;
 }
 
 /* 全域按鈕統一樣式 (固定高對比白色文字 + 各主題動態光暈 shadow) */
@@ -506,11 +517,12 @@ select:focus-visible {
   padding: 0.6rem 1.2rem;
   border-radius: 12px;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.8375rem;
   box-shadow: 0 4px 15px var(--glow-primary);
   transition: all 0.2s ease;
   border: none;
   cursor: pointer;
+  min-height: var(--control-height-md);
 }
 
 .add-btn:hover,
@@ -529,6 +541,15 @@ select {
   border: none;
   outline: none;
   color: inherit;
+}
+
+input,
+textarea,
+select,
+.filter-select,
+.detail-btn,
+.source-btn {
+  min-height: var(--control-height-md);
 }
 
 /* ============================================================
@@ -620,6 +641,7 @@ input[list]::-webkit-list-button {
 
 .main-content {
   flex: 1;
+  min-width: 0;
   margin-left: var(--sidebar-width);
   padding: var(--space-8);
   min-height: 100vh;
@@ -632,9 +654,10 @@ input[list]::-webkit-list-button {
    GLASS PANEL — universal card/container
    ============================================================ */
 .glass-panel {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
+  background: var(--bg-card);
+  /* 僅保留實體表面，避免所有容器都產生玻璃模糊層 */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
@@ -647,12 +670,12 @@ input[list]::-webkit-list-button {
 }
 
 .glow-purple:hover {
-  box-shadow: 0 0 30px var(--glow-primary);
+  box-shadow: var(--shadow-md);
   border-color: var(--color-primary);
 }
 
 .glow-blue:hover {
-  box-shadow: 0 0 30px var(--glow-secondary);
+  box-shadow: var(--shadow-md);
   border-color: var(--color-secondary);
 }
 
@@ -690,67 +713,41 @@ input[list]::-webkit-list-button {
   display: flex;
   align-items: center;
   gap: 0.85rem;
+  flex-shrink: 0;
+}
+
+.card-actions { display: flex; gap: 0.35rem; }
+.card-actions-reveal {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-2px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+:where(.ai-card, .proposal-kanban-card, .research-card):hover .card-actions-reveal,
+:where(.research-card):focus-within .card-actions-reveal {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+@media (hover: none), (max-width: 768px) {
+  .card-actions-reveal { opacity: 1; pointer-events: auto; transform: none; }
 }
 
 .page-title {
   font-size: var(--fs-h1);
   font-weight: 800;
   color: var(--text-primary);
-  letter-spacing: -0.02em;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .page-subtitle {
   color: var(--text-secondary);
   font-size: var(--fs-body);
-  margin-top: 0.2rem;
-}
-
-.filter-toolbar {
-  position: relative;
-  z-index: 100;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-3) var(--space-5);
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 14px;
-  flex-wrap: wrap;
-  gap: var(--space-4);
-}
-
-.search-box {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  padding: var(--space-2) var(--space-4);
-  border-radius: 10px;
-  width: 320px;
-  transition: border-color 0.2s;
-}
-
-.search-box:focus-within {
-  border-color: var(--color-primary);
-}
-
-.search-box input {
-  font-size: 0.85rem;
-  width: 100%;
-  background: transparent;
-  color: var(--text-primary);
-}
-
-.search-box svg {
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
-
-.filter-options {
-  display: flex;
-  gap: var(--space-3);
-  flex-wrap: wrap;
+  line-height: 1.5;
+  margin-top: 0.15rem;
 }
 
 .filter-select {
@@ -758,7 +755,7 @@ input[list]::-webkit-list-button {
   border: 1px solid var(--border-color);
   padding: var(--space-2) var(--space-4);
   border-radius: 10px;
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -783,7 +780,7 @@ input[list]::-webkit-list-button {
   align-items: center;
   padding: 0.22rem 0.75rem;
   border-radius: 99px;
-  font-size: 0.72rem;
+  font-size: 0.6875rem;
   line-height: 1.2;
   background: var(--glow-primary);
   color: var(--color-primary);
@@ -798,7 +795,7 @@ input[list]::-webkit-list-button {
 }
 
 .tool-tag {
-  font-size: 0.7rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   color: var(--text-muted);
   background: var(--sidebar-bg);
@@ -838,7 +835,7 @@ input[list]::-webkit-list-button {
 }
 
 .tag {
-  font-size: 0.7rem;
+  font-size: 0.6875rem;
   font-weight: 500;
   color: var(--text-muted);
   background: transparent;
@@ -897,19 +894,34 @@ input[list]::-webkit-list-button {
 }
 
 .section-title {
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-bold);
   color: var(--text-primary);
-  margin-top: var(--space-4);
+  margin-top: var(--space-2);
   margin-bottom: var(--space-2);
 }
 
+.section-title span {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+.section-title .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  position: relative;
+  top: 1px;
+}
+
 .section-desc {
-  font-size: 0.9rem;
+  font-size: var(--fs-body);
   color: var(--text-secondary);
   line-height: 1.65;
   white-space: pre-line;
 }
+
 
 
 /* ============================================================
@@ -929,6 +941,7 @@ input[list]::-webkit-list-button {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  padding: var(--space-6) !important;
   z-index: 99999 !important;
 }
 
@@ -946,6 +959,17 @@ input[list]::-webkit-list-button {
   opacity: 0;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 
 /* ============================================================
    RESPONSIVE
@@ -960,7 +984,7 @@ input[list]::-webkit-list-button {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   :root {
     --sidebar-width: 0px;
     --fs-display: 2rem;
@@ -970,7 +994,7 @@ input[list]::-webkit-list-button {
 
   .main-content {
     margin-left: 0;
-    padding: calc(env(safe-area-inset-top, 0px) + 5.75rem) var(--space-5) calc(env(safe-area-inset-bottom, 0px) + 4.8rem);
+    padding: calc(env(safe-area-inset-top, 0px) + 5.75rem) var(--space-5) calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
   }
 
   .bento-grid {

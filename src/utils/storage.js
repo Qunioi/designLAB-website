@@ -8,7 +8,7 @@ import {
 } from '../data/mockData';
 
 import { hasSheetsIntegration, pushToSheet, deleteFromSheet } from './sheetsAPI';
-import { notifyItemEdit, notifyItemAdd } from './notifications';
+import { notifyItemEdit, notifyItemAdd, notifyItemDelete } from './notifications';
 
 const KEYS = {
   UI_RESEARCH:     'design_lab_ui_research',
@@ -208,8 +208,19 @@ export function addOrUpdateItem(key, item) {
 
 export function deleteItem(key, id) {
   const list = getStorageData(key);
+  const targetItem = list.find(i => i.id === id);
   const filtered = list.filter(i => i.id !== id);
   setStorageData(key, filtered);
+
+  // 觸發案例刪除通知（非訪客時才發送）
+  if (targetItem) {
+    const currentUserStr = getCurrentUserString();
+    notifyItemDelete({
+      itemTitle: targetItem.title || targetItem.name || '案例',
+      originalAuthor: targetItem.createdBy || targetItem.updatedBy || currentUserStr,
+      deleterName: currentUserStr
+    });
+  }
 
   // 背景同步刪除到 Google Sheets
   if (hasSheetsIntegration()) {

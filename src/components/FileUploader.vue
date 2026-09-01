@@ -237,7 +237,7 @@ onUnmounted(() => {
   background: transparent;
   border: none;
   padding: 0.65rem 0.85rem;
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   color: var(--text-primary);
   outline: none;
   font-family: var(--font-body);
@@ -257,7 +257,7 @@ onUnmounted(() => {
   border-left: 1px solid var(--border-color);
   color: var(--text-primary);
   padding: 0.65rem 1rem;
-  font-size: 0.825rem;
+  font-size: 0.7625rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
@@ -289,7 +289,7 @@ onUnmounted(() => {
   border-radius: 8px;
   background: var(--bg-subtle);
   padding: 0.5rem 0.85rem;
-  font-size: 0.78rem;
+  font-size: 0.7175rem;
   color: var(--text-muted);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -348,7 +348,7 @@ onUnmounted(() => {
   justify-content: center;
   gap: 0.2rem;
   color: #ffffff;
-  font-size: 0.7rem;
+  font-size: 0.6375rem;
   font-weight: 600;
   opacity: 0;
   transition: opacity 0.2s ease;
@@ -371,7 +371,7 @@ onUnmounted(() => {
 }
 
 .preview-url-text {
-  font-size: 0.78rem;
+  font-size: 0.7175rem;
   color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -391,7 +391,7 @@ onUnmounted(() => {
   background: var(--bg-hover);
   border: 1px solid var(--border-color);
   color: var(--color-primary);
-  font-size: 0.78rem;
+  font-size: 0.7175rem;
   font-weight: 600;
   padding: 0.3rem 0.65rem;
   border-radius: 6px;
@@ -411,7 +411,7 @@ onUnmounted(() => {
   background: var(--bg-hover);
   border: 1px solid var(--border-color);
   color: var(--color-danger);
-  font-size: 0.78rem;
+  font-size: 0.7175rem;
   font-weight: 600;
   padding: 0.3rem 0.65rem;
   border-radius: 6px;

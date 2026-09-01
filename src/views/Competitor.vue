@@ -1,6 +1,6 @@
 <template>
   <ResearchGrid
-    pageTitle="Competitor Research"
+    pageTitle="競品分析"
     pageSubtitle="分析競品優缺點與介面流程，找出可落地之優化提案切入點"
     addBtnLabel="+ 新增競品分析"
     storageKey="COMPETITORS"
@@ -11,6 +11,7 @@
     titleField="name"
     coverField="logo"
     linkField="url"
+    researchContext="競品分析"
     lightboxCoverField="screenshot"
     linkBtnLabel="訪問官網 ↗"
     emptyText="無相符的競品分析。點選右上角新增一筆！"

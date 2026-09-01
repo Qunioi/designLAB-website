@@ -146,7 +146,30 @@ export async function syncAllFromSheets(onProgress) {
     try {
       const data = await fetchSheetData(key);
       if (data && data.length > 0) {
-        localStorage.setItem(STORAGE_KEY_MAP[key], JSON.stringify(data));
+        // 雲端資料可能尚未包含本地上傳的 Base64 圖片／影片欄位。
+        // 同步時保留同 ID 本地已有的媒體，避免重整後封面消失。
+        const localRaw = localStorage.getItem(STORAGE_KEY_MAP[key]);
+        let localData = [];
+        try {
+          localData = localRaw ? JSON.parse(localRaw) : [];
+        } catch (e) {
+          localData = [];
+        }
+        const localById = new Map(localData.map(item => [item.id, item]));
+        const mediaFields = ['screenshot', 'cover', 'videoUrl', 'videoUrl2'];
+        const mergedData = data.map(remoteItem => {
+          const localItem = localById.get(remoteItem.id);
+          if (!localItem) return remoteItem;
+
+          const preservedMedia = {};
+          mediaFields.forEach(field => {
+            if (!remoteItem[field] && localItem[field]) {
+              preservedMedia[field] = localItem[field];
+            }
+          });
+          return { ...remoteItem, ...preservedMedia };
+        });
+        localStorage.setItem(STORAGE_KEY_MAP[key], JSON.stringify(mergedData));
         counts[key] = data.length;
         totalCount += data.length;
       }
@@ -202,4 +225,3 @@ export async function pushAllToSheets() {
     }
   }
 }
-

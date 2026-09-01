@@ -22,7 +22,15 @@ export function getCurrentUser() {
   };
 }
 
-/** 取得所有有效通知（自動針對一般使用者過濾「僅與自己相關」的訊息，且過濾已讀超過 3 天的訊息） */
+/** 判斷是否為訪客身分 */
+export function isGuestUser(user) {
+  const u = user || getCurrentUser();
+  const uname = (u.username || '').toLowerCase();
+  const nick = (u.nickname || '').toLowerCase();
+  return uname === '@guest' || uname === 'guest' || nick === '訪客' || u.role === 'GUEST';
+}
+
+/** 取得所有有效通知（自動針對一般使用者過濾「僅與自己相關」的訊息，且過濾已讀超過 3 天的訊息，徹底排除訪客記錄） */
 export function getNotifications() {
   let list = [];
   try {
@@ -31,6 +39,13 @@ export function getNotifications() {
   } catch (e) {
     list = getInitialNotifications();
   }
+
+  // 篩選 0：徹底過濾訪客 (@guest / 訪客) 所產生的任何異動記錄
+  list = list.filter(n => {
+    const trig = String(n.triggeredBy || '').toLowerCase();
+    const msg = String(n.message || '').toLowerCase();
+    return !trig.includes('@guest') && !trig.includes('訪客') && !msg.includes('訪客 (@guest)');
+  });
 
   const now = Date.now();
   // 篩選 1：未讀訊息永久保留；已讀訊息若超過 3 天則自動清除隱藏
@@ -109,8 +124,16 @@ function getInitialNotifications() {
 }
 
 
-/** 新增一筆通知並自動同步至 Google Sheets NOTIFICATIONS 表單 */
+/** 新增一筆通知並自動同步至 Google Sheets NOTIFICATIONS 表單 (訪客身分不記錄) */
 export function addNotification({ title, message, triggeredBy, type = 'edit', originalAuthor = '', targetUser = '' }) {
+  const currentUser = getCurrentUser();
+  const trig = triggeredBy || currentUser.fullName;
+
+  // ⚠️ 訪客操作不產生任何通知
+  if (isGuestUser(currentUser) || String(trig).includes('@guest') || String(trig).includes('訪客')) {
+    return null;
+  }
+
   const notifications = getNotifications();
   const now = new Date();
   const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
@@ -120,7 +143,7 @@ export function addNotification({ title, message, triggeredBy, type = 'edit', or
     type: type,
     title: title || '團隊訊息通知',
     message: message,
-    triggeredBy: triggeredBy || getCurrentUser().fullName,
+    triggeredBy: trig,
     originalAuthor: originalAuthor,
     targetUser: targetUser,
     createdAt: now.toISOString(),
@@ -159,11 +182,13 @@ export function formatNotificationMessage(n, currentUser) {
 
   let resultStr = '';
   if (isAdmin) {
-    // 【管理員視角】：需明確看到是「誰」建立成功或「誰」調整了什麼，但 ID 文字小一點！
+    // 【管理員視角】：明確呈現「誰」建立、「誰」編輯、「誰」刪除
     if (n.type === 'add') {
       resultStr = `${triggered} 建立了全新案例 ${titlePart}`;
     } else if (n.type === 'edit') {
       resultStr = `${triggered} 編輯調整了 ${titlePart}`;
+    } else if (n.type === 'delete') {
+      resultStr = `${triggered} 刪除了案例 ${titlePart}`;
     } else if (rawMsg.startsWith('管理者已成功建立') || rawMsg.startsWith('管理員已成功建立')) {
       resultStr = rawMsg.replace(/管理[者員]已成功建立/, `管理員 ${triggered} 已成功建立`);
     } else {
@@ -173,11 +198,13 @@ export function formatNotificationMessage(n, currentUser) {
     resultStr = stripEmoji(resultStr);
     return resultStr.replace(/\s*(\(@[\w.-]+\))/g, ' <span class="notif-handle">$1</span>');
   } else {
-    // 【一般使用者視角】：都不要顯示 id！
+    // 【一般使用者視角】
     if (n.type === 'add') {
       resultStr = `您已成功建立了全新案例 ${titlePart}`;
     } else if (n.type === 'edit') {
       resultStr = `您的案例 ${titlePart} 已被編輯更新`;
+    } else if (n.type === 'delete') {
+      resultStr = `您的案例 ${titlePart} 已被移除刪除`;
     } else if (rawMsg.includes('已成功建立新成員帳號')) {
       resultStr = `管理團隊已成功建立新成員帳號${rawMsg.split('已成功建立新成員帳號')[1] || ''}`;
     } else {
@@ -198,6 +225,8 @@ function extractTitle(msg) {
 /** 新增全新案例/提案發布通知 */
 export function notifyItemAdd({ itemTitle, creatorName, creatorUsername }) {
   const currentUser = getCurrentUser();
+  if (isGuestUser(currentUser)) return null;
+
   const creator = creatorName || currentUser.fullName;
   const authorUser = creatorUsername || currentUser.username;
 
@@ -213,13 +242,35 @@ export function notifyItemAdd({ itemTitle, creatorName, creatorUsername }) {
 
 /** 新增案例/提案被編輯通知 */
 export function notifyItemEdit({ itemTitle, originalAuthor, editorName }) {
+  const currentUser = getCurrentUser();
+  if (isGuestUser(currentUser)) return null;
+
+  const editor = editorName || currentUser.fullName;
+
   return addNotification({
     title: '案例異動通知',
-    message: `${editorName} 編輯了《${itemTitle}》`,
-    triggeredBy: editorName,
+    message: `${editor} 編輯了《${itemTitle}》`,
+    triggeredBy: editor,
     originalAuthor: originalAuthor,
     targetUser: originalAuthor,
     type: 'edit'
+  });
+}
+
+/** 新增案例/提案被刪除通知 */
+export function notifyItemDelete({ itemTitle, originalAuthor, deleterName }) {
+  const currentUser = getCurrentUser();
+  if (isGuestUser(currentUser)) return null;
+
+  const deleter = deleterName || currentUser.fullName;
+
+  return addNotification({
+    title: '案例刪除通知',
+    message: `${deleter} 刪除了案例《${itemTitle}》`,
+    triggeredBy: deleter,
+    originalAuthor: originalAuthor,
+    targetUser: originalAuthor,
+    type: 'delete'
   });
 }
 

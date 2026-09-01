@@ -173,7 +173,7 @@ const filteredSuggestions = computed(() => {
   color: var(--text-secondary);
   border: 1px solid var(--border-color);
   
-  font-size: 0.78rem;
+  font-size: 0.7175rem;
   font-weight: 600;
   padding: 0.2rem 0.55rem;
   border-radius: 16px;
@@ -193,7 +193,7 @@ const filteredSuggestions = computed(() => {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  font-size: 0.65rem;
+  font-size: 0.5875rem;
   color: var(--text-muted);
   cursor: pointer;
   transition: all 0.15s ease;
@@ -209,7 +209,7 @@ const filteredSuggestions = computed(() => {
   background: transparent;
   border: none;
   outline: none;
-  font-size: 0.85rem;
+  font-size: 0.7875rem;
   color: var(--text-primary);
   padding: 0.1rem 0.2rem;
 }
@@ -237,7 +237,7 @@ const filteredSuggestions = computed(() => {
 .dropdown-header {
   padding: 0.5rem 0.75rem;
   border-bottom: 1px solid var(--border-color);
-  font-size: 0.725rem;
+  font-size: 0.6625rem;
   font-weight: 700;
   color: var(--text-muted);
 }
@@ -258,7 +258,7 @@ const filteredSuggestions = computed(() => {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
-  font-size: 0.775rem;
+  font-size: 0.7125rem;
   font-weight: 500;
   padding: 0.25rem 0.6rem;
   border-radius: 16px;
