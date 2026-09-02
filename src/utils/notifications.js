@@ -290,5 +290,11 @@ export function markAllNotificationsAsRead() {
     readAt: n.readAt || nowStr
   }));
   localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(updated));
+
+  // 已讀狀態也要同步回 Google Sheets，否則重新整理時會被雲端的未讀資料覆蓋。
+  if (hasSheetsIntegration()) {
+    updated.forEach(notification => pushToSheet('NOTIFICATIONS', notification));
+  }
+
   return updated;
 }

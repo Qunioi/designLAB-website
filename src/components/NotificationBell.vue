@@ -159,11 +159,28 @@ const handleMarkAllRead = () => {
   background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-surface, rgba(0, 0, 0, 0.1) 0px 4px 12px);
   z-index: 1000;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* 深色主題提高面板與背景的層次；淺色主題沿用較輕的陰影。 */
+:global(.theme-midnight-indigo) .notif-panel.solid-panel,
+:global(.theme-midnight-slate) .notif-panel.solid-panel,
+:global(.theme-charcoal-ember) .notif-panel.solid-panel,
+:global(.theme-github-dark) .notif-panel.solid-panel,
+:global(.theme-obsidian-neon) .notif-panel.solid-panel,
+:global(.theme-nord-dark) .notif-panel.solid-panel {
+  box-shadow: rgba(0, 0, 0, 0.5) 0px 4px 12px;
+}
+
+:global(.theme-cloud-canvas) .notif-panel.solid-panel,
+:global(.theme-material-light) .notif-panel.solid-panel,
+:global(.theme-office-access) .notif-panel.solid-panel,
+:global(.theme-nord-light) .notif-panel.solid-panel {
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 12px;
 }
 
 .notif-header {

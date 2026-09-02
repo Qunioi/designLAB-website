@@ -59,6 +59,22 @@
 
 ## 快速開始
 
+### R2 媒體上傳環境變數
+
+圖片與影片會先由前端向 `/api/r2-upload-url` 取得短效預簽名網址，再直接上傳到 Cloudflare R2；R2 金鑰只存在後端環境變數，不會進入前端 bundle。請將 `.env.example` 複製為部署平台的環境變數（不要使用 `VITE_` 前綴）：
+
+| 變數 | 值 |
+| :--- | :--- |
+| `R2_ACCOUNT_ID` | Cloudflare Account ID |
+| `R2_ACCESS_KEY_ID` | R2 API Token 的 Access Key ID |
+| `R2_SECRET_ACCESS_KEY` | R2 API Token 的 Secret Access Key |
+| `R2_BUCKET_NAME` | `designlab-website` |
+| `R2_PUBLIC_URL` | `https://pub-cfdfde59ceb44b798935e3dc4a29de0d.r2.dev` |
+
+請在 Cloudflare R2 建立具備該 bucket 物件讀寫權限的 API Token，並在部署平台同時部署 `api/r2-upload-url.js`（此檔案採 Vercel Functions handler 格式）。若使用 Apache／Nginx 提供靜態 `dist`，需另外將 `/api/*` 反向代理到 Node／Serverless 執行環境；只部署 `dist` 不會提供安全上傳 API。
+
+另外請在 R2 Bucket 的 CORS 設定允許網站來源對 S3 API endpoint 執行 `PUT`，至少允許 `Content-Type` request header；刪除由後端執行，不需要開放 R2 的 `DELETE` CORS。正式環境請將 `AllowedOrigins` 限定為實際網站網域。若要本機測試，可暫時加入 `http://localhost:5173` 與區網開發網址。
+
 ### 1. 安裝依賴套件
 
 ```bash

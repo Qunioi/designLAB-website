@@ -46,37 +46,37 @@ export function resetToMockData() {
 
 export function initializeStorage() {
   if (!localStorage.getItem(KEYS.UI_RESEARCH)) {
-    localStorage.setItem(KEYS.UI_RESEARCH, JSON.stringify(initialUIResearch));
+    localStorage.setItem(KEYS.UI_RESEARCH, JSON.stringify([]));
   }
   if (!localStorage.getItem(KEYS.MOTION_RESEARCH)) {
-    localStorage.setItem(KEYS.MOTION_RESEARCH, JSON.stringify(initialMotionResearch));
+    localStorage.setItem(KEYS.MOTION_RESEARCH, JSON.stringify([]));
   }
 
   // 檢測是否為舊版 COMPETITORS 資料（若包含舊分類或不存在，即靜默覆蓋升級）
   const compDataRaw = localStorage.getItem(KEYS.COMPETITORS);
   if (!compDataRaw) {
-    localStorage.setItem(KEYS.COMPETITORS, JSON.stringify(initialCompetitors));
+    localStorage.setItem(KEYS.COMPETITORS, JSON.stringify([]));
   } else {
     try {
       const parsed = JSON.parse(compDataRaw);
       // 只要包含舊的 Knowledge Base 分類，即代表是舊資料，覆蓋為最新資料
       const hasOldData = parsed.some(item => item.category !== 'Web' && item.category !== '行動裝置');
       if (hasOldData) {
-        localStorage.setItem(KEYS.COMPETITORS, JSON.stringify(initialCompetitors));
+        localStorage.setItem(KEYS.COMPETITORS, JSON.stringify([]));
       }
     } catch (e) {
-      localStorage.setItem(KEYS.COMPETITORS, JSON.stringify(initialCompetitors));
+      localStorage.setItem(KEYS.COMPETITORS, JSON.stringify([]));
     }
   }
 
   if (!localStorage.getItem(KEYS.AI_CENTER)) {
-    localStorage.setItem(KEYS.AI_CENTER, JSON.stringify(initialAICenter));
+    localStorage.setItem(KEYS.AI_CENTER, JSON.stringify([]));
   }
   if (!localStorage.getItem(KEYS.RESOURCES)) {
-    localStorage.setItem(KEYS.RESOURCES, JSON.stringify(initialResources));
+    localStorage.setItem(KEYS.RESOURCES, JSON.stringify([]));
   }
   if (!localStorage.getItem(KEYS.PROPOSALS)) {
-    localStorage.setItem(KEYS.PROPOSALS, JSON.stringify(initialProposals));
+    localStorage.setItem(KEYS.PROPOSALS, JSON.stringify([]));
   }
 }
 

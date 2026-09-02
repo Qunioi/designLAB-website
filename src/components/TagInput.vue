@@ -228,7 +228,7 @@ const filteredSuggestions = computed(() => {
   background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-surface);
   z-index: 100;
   overflow: hidden;
 }

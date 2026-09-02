@@ -338,8 +338,6 @@ const getFilterButtonLabel = (f) => {
 .filter-dropdown-btn svg {
   width: 10px;
   height: 10px;
-  position: relative;
-  top: 1.5px;
 }
 
 .filter-dropdown-btn:hover,

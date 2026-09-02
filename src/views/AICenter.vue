@@ -14,6 +14,7 @@
     linkBtnLabel="開啟工具網站 ↗"
     researchContext="AI 工具中心"
     hideLightboxMedia
+    lightboxMetaClass="ai-lightbox-meta-row"
     emptyText="目前還沒有 AI 工具。點選右上角新增一筆！"
     deleteConfirmPrefix="確定要刪除《"
     deleteConfirmSuffix="》這筆 AI 工具嗎？"
@@ -125,6 +126,10 @@ const copyPrompt = async (prompt, id) => {
   white-space: pre-line;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+:deep(.ai-lightbox-meta-row .lightbox-date) {
+  padding-right: 2rem;
 }
 
 .ai-usecase-row {

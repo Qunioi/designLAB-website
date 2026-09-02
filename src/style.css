@@ -118,7 +118,7 @@
   --modal-max-height: 90vh;
   --modal-backdrop: rgba(3, 7, 18, 0.68);
   --modal-padding: 1.25rem;
-  --modal-header-padding: 1rem 1.25rem;
+  --modal-header-padding: 0.5rem 1.25rem;
   --modal-control-size: 40px;
 
   /* Default Surface Colors (Midnight Slate) */
@@ -164,6 +164,8 @@
   --shadow-md: 0 4px 12px color-mix(in srgb, var(--shadow-color) 22%, transparent);
   --shadow-lg: 0 12px 28px color-mix(in srgb, var(--shadow-color) 30%, transparent);
   --shadow-media: 0 20px 50px color-mix(in srgb, var(--shadow-color) 42%, transparent);
+  /* 共用於通知面板與全螢幕媒體的主題陰影 */
+  --shadow-surface: rgba(0, 0, 0, 0.1) 0px 4px 12px;
   --shadow-up: 0 -4px 20px color-mix(in srgb, var(--shadow-color) 24%, transparent);
   --shadow-inset: inset 0 0 10px color-mix(in srgb, var(--shadow-color) 10%, transparent);
 
@@ -197,6 +199,7 @@
   --bg-input: rgba(201, 203, 234, 0.055);
   --sidebar-bg: #171926;
   --shadow-color: #8b5cc7;
+  --shadow-surface: rgba(0, 0, 0, 0.36) 0px 4px 12px;
 }
 
 /* DARK 2 — GitHub Dark / Graphite Workshop */
@@ -221,6 +224,7 @@
   --bg-input: rgba(226, 232, 240, 0.05);
   --sidebar-bg: #14161c;
   --shadow-color: #78a9ff;
+  --shadow-surface: rgba(0, 0, 0, 0.36) 0px 4px 12px;
 }
 
 /* DARK 3 — Obsidian Neon (Warm Ink + Copper) */
@@ -244,6 +248,7 @@
   --bg-input: rgba(255, 237, 213, 0.05);
   --sidebar-bg: #12100f;
   --shadow-color: #e5a86b;
+  --shadow-surface: rgba(0, 0, 0, 0.36) 0px 4px 12px;
 }
 
 /* DARK 4 — Nord Polar Night */
@@ -266,6 +271,7 @@
   --bg-input: rgba(236, 239, 244, 0.04);
   --sidebar-bg: #111620;
   --shadow-color: #88c0d0;
+  --shadow-surface: rgba(0, 0, 0, 0.36) 0px 4px 12px;
 }
 
 /* LIGHT 1 — Cloud Canvas (Airy Crisp Pure White + Royal Azure) */
@@ -275,7 +281,7 @@
   --bg-card: #fbfcfe;
   --bg-card-hover: #f4f7fb;
   --bg-elevated: #f7f9fc;
-  --border-color: rgba(15, 23, 42, 0.045);
+  --border-color: rgba(15, 23, 42, 0.05);
   --border-color-hover: rgba(37, 99, 235, 0.35);
   --text-primary: #0f172a;
   --text-secondary: #475569;
@@ -288,6 +294,7 @@
   --bg-input: rgba(15, 23, 42, 0.03);;
   --sidebar-bg: #f1f5fa;
   --shadow-color: #2563eb;
+  --shadow-surface: rgba(0, 0, 0, 0.1) 0px 4px 12px;
 }
 
 /* LIGHT 2 — Material Light (Subtle Cool Grey + Electric Azure) */
@@ -310,6 +317,7 @@
   --bg-input: rgba(30, 41, 59, 0.035);
   --sidebar-bg: #f1f5fa;
   --shadow-color: hsl(174 42% 50%);
+  --shadow-surface: rgba(0, 0, 0, 0.1) 0px 4px 12px;
 }
 
 /* LIGHT 3 — Office Access (Office Red + Paper White) */
@@ -319,7 +327,7 @@
   --bg-card: #ffffff;
   --bg-card-hover: #f8f8f8;
   --bg-elevated: #ffffff;
-  --border-color: rgba(50, 49, 48, 0.12);
+  --border-color: rgba(50, 49, 48, 0.05);
   --border-color-hover: rgba(178, 58, 63, 0.5);
   --text-primary: #323130;
   --text-secondary: #605e5c;
@@ -332,6 +340,7 @@
   --bg-input: rgba(50, 49, 48, 0.045);
   --sidebar-bg: #faf9f8;
   --shadow-color: #b23a3f;
+  --shadow-surface: rgba(0, 0, 0, 0.1) 0px 4px 12px;
 }
 
 /* LIGHT 4 — Nord Snow (Arctic Crisp Ice Canvas) */
@@ -341,7 +350,7 @@
   --bg-card: #fbfcfe;
   --bg-card-hover: #f4f7fb;
   --bg-elevated: #f7f9fc;
-  --border-color: rgba(76, 86, 106, 0.06);
+  --border-color: rgba(76, 86, 106, 0.05);
   --border-color-hover: #5e81ac;
   --text-primary: #2e3440;
   --text-secondary: #4c566a;
@@ -354,6 +363,7 @@
   --bg-input: rgba(46, 52, 64, 0.035);
   --sidebar-bg: #e5ebf3;
   --shadow-color: #5e81ac;
+  --shadow-surface: rgba(0, 0, 0, 0.1) 0px 4px 12px;
 }
 
 /* Recalculate depth tokens on the themed element itself.
@@ -652,9 +662,7 @@ select {
   .bento-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-}
 
-@media (max-width: 1024px) {
   :root {
     --sidebar-width: 0px;
     --fs-display: 2rem;
@@ -664,7 +672,7 @@ select {
 
   .main-content {
     margin-left: 0;
-    padding: calc(env(safe-area-inset-top, 0px) + 5.5rem) var(--space-4) calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+    padding: calc(env(safe-area-inset-top, 0px) + 5.5rem) var(--space-8) calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
   }
 
   .page-title {
@@ -673,5 +681,11 @@ select {
 
   .bento-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .main-content {
+    padding: calc(env(safe-area-inset-top, 0px) + 5.5rem) var(--space-5) calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
   }
 }

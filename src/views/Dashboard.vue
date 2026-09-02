@@ -303,7 +303,7 @@ const handleRecentClick = (item) => {
 .dashboard-container {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1rem;
 }
 
 .dashboard-header {
@@ -324,16 +324,16 @@ const handleRecentClick = (item) => {
 .dashboard-overview {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 400px);
   align-items: stretch;
   overflow: hidden;
-  background: color-mix(in srgb, var(--bg-card) 86%, transparent);
+  background: var(--sidebar-bg);
 }
 
 .dashboard-overview .welcome-card,
 .dashboard-overview .stats-card {
   grid-column: auto;
-  min-height: 250px;
+  min-height: 200px;
   background: transparent;
   border: 0;
   border-radius: 0;
@@ -355,7 +355,7 @@ const handleRecentClick = (item) => {
 
 .dashboard-overview .stats-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.55rem;
   flex: 0 1 auto;
 }
@@ -408,7 +408,7 @@ const handleRecentClick = (item) => {
   display: flex;
   align-items: center;
   gap: 0.85rem;
-  background: var(--bg-input);
+  background: var(--bg-card);
   border: 1px solid var(--border-color);
   padding: 0.65rem 1.25rem;
   border-radius: var(--radius-md);
@@ -417,7 +417,7 @@ const handleRecentClick = (item) => {
   max-width: 100%;
   justify-content: space-between;
   transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
-  box-shadow: var(--shadow-sm);
+  /* box-shadow: var(--shadow-sm); */
 }
 
 .search-trigger:hover {
@@ -455,7 +455,7 @@ const handleRecentClick = (item) => {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  background: var(--bg-subtle);
+  background: var(--bg-hover);
   border: 1px solid var(--border-color);
   padding: 0.55rem 0.85rem;
   border-radius: var(--radius-sm);
@@ -522,7 +522,7 @@ const handleRecentClick = (item) => {
   border: 1px solid color-mix(in srgb, var(--border-color) 62%, transparent);
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--bg-card) 84%, transparent);
-  box-shadow: var(--shadow-sm);
+  /* box-shadow: var(--shadow-sm); */
   cursor: pointer;
   outline: none;
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
@@ -915,6 +915,12 @@ const handleRecentClick = (item) => {
 }
 
 @media (max-width: 1040px) {
+  .dashboard-overview {
+        grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+  }
+  .dashboard-overview .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .dashboard-latest-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }

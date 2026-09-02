@@ -171,6 +171,16 @@ export async function syncAllFromSheets(onProgress) {
           if (key === 'USERS' && !remoteItem.themeClass && localItem.themeClass) {
             preservedMedia.themeClass = localItem.themeClass;
           }
+
+          // 已讀是使用者在本機操作後的狀態。同步時採單向累積，避免
+          // 尚未完成的背景回寫先被雲端舊資料覆蓋。
+          if (key === 'NOTIFICATIONS') {
+            const localRead = localItem.read === true || localItem.read === 'true' || localItem.read === 1 || localItem.read === '1';
+            const remoteRead = remoteItem.read === true || remoteItem.read === 'true' || remoteItem.read === 1 || remoteItem.read === '1';
+            preservedMedia.read = localRead || remoteRead;
+            preservedMedia.readAt = localItem.readAt || remoteItem.readAt || null;
+          }
+
           return { ...remoteItem, ...preservedMedia };
         });
         localStorage.setItem(STORAGE_KEY_MAP[key], JSON.stringify(mergedData));

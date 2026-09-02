@@ -7,7 +7,8 @@
           <button type="button" class="close-btn" aria-label="關閉表單" @click="close"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
         </div>
 
-        <form @submit.prevent="handleSubmit" class="modal-body">
+        <form @submit.prevent="handleSubmit" novalidate class="modal-form">
+          <div class="modal-body">
           <!-- UI Research Form -->
           <div v-if="type === 'UI_RESEARCH'" class="form-grid">
             <div class="form-group full-width">
@@ -47,15 +48,15 @@
               <CategoryInput v-model="form.motionType" :options="historyCategories" placeholder="例如：Micro-interaction, Drag & Drop" required />
             </div>
             <div class="form-group">
-              <label>來源網址</label>
+              <label>來源網址 <span class="required">*</span></label>
               <input v-model="form.sourceUrl" type="url" required @blur="form.sourceUrl = ensureProtocol(form.sourceUrl)" placeholder="請貼上來源網址" />
             </div>
             <div class="form-group full-width">
-              <label>影片檔案 (.mp4 / .webm) <span class="required">*</span></label>
-              <FileUploader v-model="form.videoUrl" accept="video/*,image/gif" placeholder="請貼上 MP4、WebM 或 GIF 網址" />
+              <label>影片檔案（MP4 / WEBM / MOV）<span class="required">*</span></label>
+              <FileUploader v-model="form.videoUrl" accept="video/mp4,video/webm,video/quicktime" placeholder="選擇影片檔案" />
             </div>
             <div class="form-group full-width">
-              <label>圖片上傳（可選）</label>
+              <label>圖片上傳（JPG / JPEG / PNG / GIF / WEBP）<span class="required">*</span></label>
               <ImagePathInput v-model="form.cover" />
             </div>
             <div class="form-group full-width">
@@ -196,6 +197,7 @@
             </div>
           </div>
 
+          </div>
           <div class="modal-footer">
             <button type="button" class="btn-cancel" @click="close">取消</button>
             <button type="submit" class="btn-save">儲存資料</button>
@@ -273,26 +275,22 @@ const historyTags = computed(() => {
   return [...set].sort();
 });
 
-// 自動收集歷史曾添加過的所有分類
+// 只收集目前表單模組曾使用過的分類，避免不同模組的分類混在一起。
 const historyCategories = computed(() => {
-  const allStores = [
-    ...getStorageData('UI_RESEARCH'),
-    ...getStorageData('MOTION_RESEARCH'),
-    ...getStorageData('COMPETITORS'),
-    ...getStorageData('RESOURCES'),
-    ...getStorageData('AI_CENTER')
-  ];
+  const sourceByType = {
+    UI_RESEARCH: ['UI_RESEARCH', 'category'],
+    MOTION_RESEARCH: ['MOTION_RESEARCH', 'motionType'],
+    COMPETITORS: ['COMPETITORS', 'category'],
+    AI_CENTER: ['AI_CENTER', 'category'],
+    RESOURCES: ['RESOURCES', 'category']
+  };
+  const [storageKey, field] = sourceByType[props.type] || [];
+  if (!storageKey) return [];
+
   const set = new Set();
-  // 先加入系統常用內建優質分類
-  [
-    'Layout', 'User Flow', 'Visual Style', 'AI', 'Micro-interaction',
-    'Loading State', 'Drag & Drop', '3D / Dynamic', '設計靈感', 'Icon',
-    'Font', 'Motion', 'UI 元件', '素材網站', 'Design System', '配色'
-  ].forEach(c => set.add(c));
-  
-  allStores.forEach(item => {
-    const val = item.category || item.motionType;
-    if (val) set.add(String(val).trim());
+  getStorageData(storageKey).forEach(item => {
+    const value = item[field];
+    if (value) set.add(String(value).trim());
   });
   return [...set].sort();
 });
@@ -463,7 +461,7 @@ const handleSubmit = () => {
   max-width: 720px;
   background: var(--bg-elevated);
   border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-lg);
+  box-shadow: none;
   border-radius: var(--modal-radius);
   overflow: hidden;
   display: flex;
@@ -509,10 +507,19 @@ const handleSubmit = () => {
   outline-offset: 3px;
 }
 
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .modal-body {
   padding: var(--modal-padding);
   overflow-y: auto;
   flex: 1;
+  min-height: 0;
 }
 
 .form-grid {
@@ -577,10 +584,14 @@ textarea {
 .modal-footer {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 0.75rem;
   border-top: 1px solid var(--border-color);
-  padding: 1rem var(--modal-padding);
-  margin-top: 1.25rem;
+  padding: 0.875rem var(--modal-padding);
+  background: var(--bg-elevated);
+  backdrop-filter: blur(12px);
+  flex-shrink: 0;
+  box-shadow: none;
 }
 
 .btn-cancel {

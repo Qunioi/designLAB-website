@@ -157,7 +157,7 @@
               </div>
             </div>
             <div class="lightbox-detail-content">
-              <div class="lightbox-meta-row">
+              <div :class="['lightbox-meta-row', lightboxMetaClass]">
                 <span :class="badgeClass" class="clickable-badge" @click="handleBadgeClick(lightbox.item); closeLightbox();" title="點擊切換分類篩選">{{ getBadgeText(lightbox.item) }}</span>
                 <span class="lightbox-date" v-if="lightbox.item.createdAt || lightbox.item.updatedAt">{{ formatDateTime(lightbox.item.createdAt || lightbox.item.updatedAt) }}</span>
               </div>
@@ -236,6 +236,7 @@ const props = defineProps({
   linkField:    { type: String, default: 'link' },
   lightboxCoverField: { type: String, default: '' },
   lightboxLinkField:  { type: String, default: '' },
+  lightboxMetaClass: { type: String, default: '' },
   linkBtnLabel: { type: String, default: '參考網址' },
   researchContext: { type: String, default: '研究案例' },
   hideLightboxMedia: { type: Boolean, default: false },
@@ -858,7 +859,7 @@ const handleDelete = (item) => {
   overflow: hidden;
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--bg-card) 84%, transparent);
-  border: 1px solid color-mix(in srgb, var(--border-color) 62%, transparent);
+  border: 1px solid var(--border-color);
   /* box-shadow: var(--shadow-sm); */
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -1260,7 +1261,7 @@ const handleDelete = (item) => {
   max-height: 85vh;
   border-radius: 12px;
   outline: none;
-  box-shadow: var(--shadow-media);
+  box-shadow: var(--shadow-surface);
 }
 
 .lightbox-img {
@@ -1300,7 +1301,7 @@ const handleDelete = (item) => {
   max-height: 95vh;
   object-fit: contain;
   border-radius: 12px;
-  box-shadow: var(--shadow-media);
+  box-shadow: var(--shadow-surface);
   cursor: default;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -1367,10 +1368,12 @@ const handleDelete = (item) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 0.75rem;
 }
 .lightbox-date {
   font-size: var(--fs-meta);
   color: var(--text-muted);
+  white-space: nowrap;
 }
 .lightbox-title {
   font-size: 1.288rem;
