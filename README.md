@@ -70,8 +70,11 @@
 | `R2_SECRET_ACCESS_KEY` | R2 API Token 的 Secret Access Key |
 | `R2_BUCKET_NAME` | `designlab-website` |
 | `R2_PUBLIC_URL` | `https://pub-cfdfde59ceb44b798935e3dc4a29de0d.r2.dev` |
+| `VITE_UPLOAD_API_URL` | 可選；API 不在網站同一個子目錄時，填入後端 API 基礎網址 |
 
 請在 Cloudflare R2 建立具備該 bucket 物件讀寫權限的 API Token，並在部署平台同時部署 `api/r2-upload-url.js`（此檔案採 Vercel Functions handler 格式）。若使用 Apache／Nginx 提供靜態 `dist`，需另外將 `/api/*` 反向代理到 Node／Serverless 執行環境；只部署 `dist` 不會提供安全上傳 API。
+
+若網站部署於 `/designLAB/` 子目錄，同源 API 應可從 `/designLAB/api/` 存取；否則請設定 `VITE_UPLOAD_API_URL`，例如 `https://api.example.com/api`。前端會自動依此網址呼叫上傳、清單與刪除 API。
 
 另外請在 R2 Bucket 的 CORS 設定允許網站來源對 S3 API endpoint 執行 `PUT`，至少允許 `Content-Type` request header；刪除由後端執行，不需要開放 R2 的 `DELETE` CORS。正式環境請將 `AllowedOrigins` 限定為實際網站網域。若要本機測試，可暫時加入 `http://localhost:5173` 與區網開發網址。
 

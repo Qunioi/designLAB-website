@@ -2,8 +2,10 @@ import crypto from 'node:crypto';
 
 const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif']);
 const VIDEO_EXTENSIONS = new Set(['mp4', 'webm', 'mov']);
-const IMAGE_MAX_SIZE = 10 * 1024 * 1024;
-const VIDEO_MAX_SIZE = 200 * 1024 * 1024;
+const IMAGE_MAX_SIZE = 5 * 1024 * 1024;
+const GIF_MAX_SIZE = 10 * 1024 * 1024;
+const VIDEO_MAX_SIZE = 50 * 1024 * 1024;
+const ALL_MEDIA_MAX_SIZE = 100 * 1024 * 1024;
 
 const encode = (value) => encodeURIComponent(value).replace(/[!'()*]/g, (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`);
 const hmac = (key, value) => crypto.createHmac('sha256', key).update(value).digest();
@@ -47,7 +49,8 @@ export default async function handler(request, response) {
     const isImage = IMAGE_EXTENSIONS.has(extension); const isVideo = VIDEO_EXTENSIONS.has(extension);
     const numericSize = Number(size);
     if ((!isImage && !isVideo) || !Number.isFinite(numericSize) || numericSize < 1) return response.status(400).json({ error: '不支援的檔案格式' });
-    if (numericSize > (isImage ? IMAGE_MAX_SIZE : VIDEO_MAX_SIZE)) return response.status(413).json({ error: `${isImage ? '圖片' : '影片'}大小超過限制` });
+    const maxSize = extension === 'gif' ? GIF_MAX_SIZE : (isImage ? IMAGE_MAX_SIZE : VIDEO_MAX_SIZE);
+    if (numericSize > maxSize || numericSize > ALL_MEDIA_MAX_SIZE) return response.status(413).json({ error: `${extension === 'gif' ? 'GIF' : isImage ? '圖片' : '影片'}大小超過限制` });
     const expectedPrefix = isImage ? 'image/' : 'video/';
     if (!String(contentType || '').startsWith(expectedPrefix)) return response.status(400).json({ error: '檔案類型與副檔名不一致' });
     const folder = isImage ? 'images' : 'videos';

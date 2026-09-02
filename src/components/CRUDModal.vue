@@ -52,11 +52,11 @@
               <input v-model="form.sourceUrl" type="url" required @blur="form.sourceUrl = ensureProtocol(form.sourceUrl)" placeholder="請貼上來源網址" />
             </div>
             <div class="form-group full-width">
-              <label>影片檔案（MP4 / WEBM / MOV）<span class="required">*</span></label>
+              <label>影片檔案（MP4 / WEBM / MOV）<span class="required">*</span><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></label>
               <FileUploader v-model="form.videoUrl" accept="video/mp4,video/webm,video/quicktime" placeholder="選擇影片檔案" />
             </div>
             <div class="form-group full-width">
-              <label>圖片上傳（JPG / JPEG / PNG / GIF / WEBP）<span class="required">*</span></label>
+              <label>圖片上傳（JPG / JPEG / PNG / GIF / WEBP）<span class="required">*</span><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></label>
               <ImagePathInput v-model="form.cover" />
             </div>
             <div class="form-group full-width">
@@ -546,6 +546,64 @@ label {
 
 .required {
   color: var(--color-danger);
+}
+
+.media-guideline-help {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-left: 0.35rem;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 0.68rem;
+  font-weight: 800;
+  cursor: help;
+  vertical-align: middle;
+}
+
+.media-guideline-help:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.media-guideline-tooltip {
+  position: absolute;
+  left: -10px;
+  top: 10px;
+  z-index: 30;
+  width: min(360px, 72vw);
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-surface);
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.55;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: opacity 0.16s ease, visibility 0.16s ease, transform 0.16s ease;
+  pointer-events: none;
+}
+.media-guideline-tooltip b {
+  display: block;
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.media-guideline-help:hover .media-guideline-tooltip,
+.media-guideline-help:focus-visible .media-guideline-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
 
 input, select, textarea {

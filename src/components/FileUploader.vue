@@ -532,12 +532,11 @@ const isVideo = computed(() => {
 });
 
 const formatHintText = computed(() => {
-  if (props.placeholder) return props.placeholder;
   const acceptsImage = props.accept.includes('image');
   const acceptsVideo = props.accept.includes('video');
-  if (acceptsImage && acceptsVideo) return '支援 JPG、PNG、WEBP (最大 10MB) 與 MP4、WEBM (最大 200MB)';
-  if (acceptsVideo) return '支援 MP4、WEBM、MOV 格式 · 檔案最大 200 MB';
-  return '支援 JPG、PNG、WEBP、GIF 格式 · 檔案最大 10 MB';
+  if (acceptsImage && acceptsVideo) return '圖片最大 10MB · 影片請控制在50mb以下（硬限制100MB）';
+  if (acceptsVideo) return '影片請控制在50mb以下';
+  return '支援 JPG、PNG、WEBP 格式 · 檔案最大 5 MB；GIF 最大 10 MB';
 });
 
 const imageFilesCount = computed(() => {
@@ -704,7 +703,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem 1.25rem;
+  padding: 0.6rem 0.85rem;
   background: var(--bg-input, rgba(15, 23, 42, 0.03));
   border: 1.5px dashed var(--border-color, rgba(15, 23, 42, 0.12));
   border-radius: var(--radius-lg, 12px);
@@ -724,7 +723,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.3rem;
   max-width: 380px;
 }
 
@@ -732,10 +731,10 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  background: var(--bg-card, #ffffff);
+  /* background: var(--bg-card, #ffffff); */
   color: var(--color-primary, #6366f1);
   box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.06));
   transition: transform 0.2s ease;
@@ -752,14 +751,14 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 }
 
 .dropzone-primary-text {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--text-primary, #0f172a);
   margin: 0;
 }
 
 .click-highlight {
-  color: var(--color-primary, #6366f1);
+  /* color: var(--color-primary, #6366f1); */
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -767,7 +766,8 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 
 .dropzone-sub-text {
   font-size: 0.72rem;
-  color: var(--text-muted, #64748b);
+  color: var(--text-secondary, #475569);
+  opacity: 0.95;
   margin: 0;
 }
 
@@ -777,6 +777,10 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   gap: 0.5rem;
   width: 100%;
   margin: 0.1rem 0;
+}
+
+.uploader-dropzone-box .dropzone-divider-row {
+  display: none;
 }
 
 .divider-line {
@@ -795,10 +799,10 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.45rem 0.85rem;
+  padding: 0.3rem 0.65rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--text-secondary, #475569);
+  color: var(--text-primary, #0f172a);
   background: var(--bg-card, #ffffff);
   border: 1px solid var(--border-color, rgba(15, 23, 42, 0.1));
   border-radius: var(--radius-sm, 6px);
@@ -807,11 +811,11 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   transition: all 0.15s ease;
 }
 
-.open-library-btn:hover {
+/* .open-library-btn:hover {
   color: var(--color-primary, #6366f1);
   border-color: var(--color-primary, #6366f1);
   background: var(--bg-hover, #f8fafc);
-}
+} */
 
 /* ============================================================
    上傳中進度卡片

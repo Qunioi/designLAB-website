@@ -233,7 +233,7 @@ onUnmounted(() => {
   background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-surface);
   overflow-y: auto;
   z-index: 20;
   overscroll-behavior: contain;

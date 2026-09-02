@@ -1,19 +1,26 @@
 const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
 const VIDEO_EXTENSIONS = ['mp4', 'webm', 'mov'];
 const MIME_TYPES = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif', mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime' };
-export const IMAGE_MAX_SIZE = 10 * 1024 * 1024;
-export const VIDEO_MAX_SIZE = 200 * 1024 * 1024;
+export const IMAGE_MAX_SIZE = 5 * 1024 * 1024;
+export const GIF_MAX_SIZE = 10 * 1024 * 1024;
+export const VIDEO_MAX_SIZE = 50 * 1024 * 1024;
+export const ALL_MEDIA_MAX_SIZE = 100 * 1024 * 1024;
 
 const extensionOf = (name) => name.toLowerCase().split('.').pop();
+const apiUrl = (path) => {
+  const configuredBase = import.meta.env.VITE_UPLOAD_API_URL;
+  const base = configuredBase ? `${configuredBase.replace(/\/$/, '')}/` : new URL('./api/', window.location.href).href;
+  return new URL(path, base).href;
+};
 
 export function validateMediaFile(file) {
   if (!file) throw new Error('未選擇任何檔案');
   const extension = extensionOf(file.name);
   const isImage = IMAGE_EXTENSIONS.includes(extension);
   const isVideo = VIDEO_EXTENSIONS.includes(extension);
-  const maxSize = isImage ? IMAGE_MAX_SIZE : VIDEO_MAX_SIZE;
+  const maxSize = extension === 'gif' ? GIF_MAX_SIZE : (isImage ? IMAGE_MAX_SIZE : VIDEO_MAX_SIZE);
   if (!isImage && !isVideo) throw new Error('不支援的檔案格式。圖片：JPG、JPEG、PNG、WEBP、GIF；影片：MP4、WEBM、MOV。');
-  if (file.size > maxSize) throw new Error(`${isImage ? '圖片' : '影片'}大小不可超過 ${isImage ? '10' : '200'} MB。`);
+  if (file.size > maxSize) throw new Error(`${extension === 'gif' ? 'GIF' : isImage ? '圖片' : '影片'}大小不可超過 ${maxSize / (1024 * 1024)} MB。`);
   return { isImage, isVideo, extension, contentType: MIME_TYPES[extension] };
 }
 
@@ -25,7 +32,7 @@ export function formatFileSize(bytes) {
 export async function uploadFile(file, onProgress = () => {}) {
   const { isImage, contentType } = validateMediaFile(file);
   const previewUrl = URL.createObjectURL(file);
-  const response = await fetch('/api/r2-upload-url', {
+  const response = await fetch(apiUrl('r2-upload-url'), {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ fileName: file.name, contentType, size: file.size })
   });
@@ -43,7 +50,7 @@ export async function uploadFile(file, onProgress = () => {}) {
 
 export async function deleteUploadedFile(publicUrl) {
   if (!publicUrl) return;
-  const response = await fetch('/api/r2-delete', {
+  const response = await fetch(apiUrl('r2-delete'), {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ publicUrl })
   });
   const payload = await response.json().catch(() => ({}));
@@ -52,7 +59,7 @@ export async function deleteUploadedFile(publicUrl) {
 }
 
 export async function listUploadedFiles(prefix = '') {
-  const response = await fetch('/api/r2-list', {
+  const response = await fetch(apiUrl('r2-list'), {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix })
   });
   const payload = await response.json().catch(() => ({}));
