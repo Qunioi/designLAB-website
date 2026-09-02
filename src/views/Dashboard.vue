@@ -313,11 +313,11 @@ const handleRecentClick = (item) => {
 }
 
 .bento-card {
-  padding: 1.75rem;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 190px;
+  min-height: 180px;
   border-radius: var(--radius-xl);
 }
 
@@ -376,7 +376,7 @@ const handleRecentClick = (item) => {
 
 .welcome-card {
   grid-column: span 3;
-  padding: 2.25rem;
+  /* padding: 2.25rem; */
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   /* box-shadow: var(--shadow-sm); */

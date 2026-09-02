@@ -69,7 +69,7 @@
           </div>
           <!-- 外連笭頭：wrapper 承接主題光暈，內層 <a> 保持清晰 -->
           <div v-if="getLink(item)" class="ext-link-wrapper">
-            <a :href="getLink(item)" target="_blank" rel="noopener noreferrer" class="media-ext-link" @click.stop :aria-label="`前往《${getTitle(item)}》參考網址`" title="前往參考網址">
+            <a :href="getLink(item)" target="_blank" rel="noopener noreferrer" class="media-ext-link" @click.stop :aria-label="`前往《${getTitle(item)}》`" title="前往">
               <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
             </a>
           </div>
@@ -237,7 +237,7 @@ const props = defineProps({
   lightboxCoverField: { type: String, default: '' },
   lightboxLinkField:  { type: String, default: '' },
   lightboxMetaClass: { type: String, default: '' },
-  linkBtnLabel: { type: String, default: '參考網址' },
+  linkBtnLabel: { type: String, default: '前往' },
   researchContext: { type: String, default: '研究案例' },
   hideLightboxMedia: { type: Boolean, default: false },
   emptyText:    { type: String, default: '無相符資料。點選右上角新增一筆！' },
