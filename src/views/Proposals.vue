@@ -34,8 +34,8 @@
             <div class="prop-card-actions">
               <span class="prop-date">{{ item.createdAt }}</span>
               <div class="card-actions card-actions-reveal">
-                <ActionIconButton variant="edit" @click="$emit('trigger-crud', { type: 'PROPOSALS', item })" title="編輯"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></ActionIconButton>
-                <ActionIconButton variant="delete" @click="handleDelete(item)" title="刪除"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></ActionIconButton>
+                <ActionIconButton v-if="canEditItem(item)" variant="edit" @click="$emit('trigger-crud', { type: 'PROPOSALS', item })" title="編輯"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></ActionIconButton>
+                <ActionIconButton v-if="canDeleteItem(item)" variant="delete" @click="handleDelete(item)" title="刪除"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></ActionIconButton>
               </div>
             </div>
 
@@ -83,7 +83,7 @@ import { ref, computed, onMounted } from 'vue';
 import PageHeader from '../components/PageHeader.vue';
 import ActionIconButton from '../components/ActionIconButton.vue';
 import { getStorageData, addOrUpdateItem, deleteItem } from '../utils/storage';
-import { checkDeletePermission } from '../utils/notifications';
+import { checkDeletePermission, isGuestUser } from '../utils/notifications';
 import NotificationBell from '../components/NotificationBell.vue';
 
 const emit = defineEmits(['trigger-crud', 'delete-done', 'navigate-to-view']);
@@ -172,6 +172,18 @@ const navigateToResearch = (researchName) => {
   }
   
   emit('navigate-to-view', { view, id: matchedId });
+};
+
+// 編輯：只要是登入使用者（非訪客）即可編輯任何提案，不限本人建立
+const canEditItem = (item) => {
+  if (!item) return false;
+  return !isGuestUser();
+};
+
+// 刪除：維持較嚴格的規則，管理員可刪除任何提案，一般使用者僅可刪除自己發佈的提案
+const canDeleteItem = (item) => {
+  if (!item) return false;
+  return checkDeletePermission(item).allowed;
 };
 
 const handleDelete = (item) => {

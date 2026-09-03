@@ -142,6 +142,7 @@ function getFormattedNow() {
 import { formatStandardDateTime } from './formatters';
 
 export function addOrUpdateItem(key, item) {
+  const previousRaw = localStorage.getItem(KEYS[key]);
   const list = getStorageData(key);
   const normalizedItem = normalizeItem(key, item);
   let savedItem = null;
@@ -215,15 +216,20 @@ export function addOrUpdateItem(key, item) {
     });
   }
 
-  // 背景非同步推送至 Google Sheets 資料庫
+  // 背景推送至 Google Sheets 資料庫；伺服器會依登入 Session 重新驗證權限，
+  // 若遭拒絕（未登入、非本人建立、訪客等）則還原本機畫面並提示使用者，
+  // 避免畫面顯示「已儲存」但雲端其實沒有真的寫入。
   if (hasSheetsIntegration()) {
-    pushToSheet(key, savedItem);
+    pushToSheet(key, savedItem).then(result => {
+      if (!result || !result.success) rollbackWrite_(key, previousRaw, result && result.error);
+    });
   }
 
   return savedItem;
 }
 
 export function deleteItem(key, id) {
+  const previousRaw = localStorage.getItem(KEYS[key]);
   const list = getStorageData(key);
   const targetItem = list.find(i => i.id === id);
   const filtered = list.filter(i => i.id !== id);
@@ -239,10 +245,25 @@ export function deleteItem(key, id) {
     });
   }
 
-  // 背景同步刪除到 Google Sheets
+  // 背景同步刪除到 Google Sheets，遭拒絕時還原本機畫面（理由同上）
   if (hasSheetsIntegration()) {
-    deleteFromSheet(key, id);
+    deleteFromSheet(key, id).then(result => {
+      if (!result || !result.success) rollbackWrite_(key, previousRaw, result && result.error);
+    });
   }
 
   return filtered;
+}
+
+/** 雲端寫入被伺服器拒絕時，還原本機這份資料表到寫入前的狀態並通知使用者。 */
+function rollbackWrite_(key, previousRaw, error) {
+  if (previousRaw !== null) {
+    localStorage.setItem(KEYS[key], previousRaw);
+  } else {
+    localStorage.removeItem(KEYS[key]);
+  }
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('design-lab-storage-updated', { detail: { key } }));
+  }
+  alert(`儲存失敗，變更未同步至雲端：${error || '權限不足或登入已逾期，請重新登入後再試一次。'}\n（本機畫面已還原）`);
 }

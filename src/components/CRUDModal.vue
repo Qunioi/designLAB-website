@@ -1,6 +1,11 @@
 <template>
   <Transition name="modal-fade">
-    <div v-if="isOpen" class="modal-backdrop" @click="close">
+    <div
+      v-if="isOpen"
+      class="modal-backdrop"
+      @pointerdown="handleBackdropPointerDown"
+      @click="handleBackdropClick"
+    >
       <div :class="['modal-container', 'glass-panel', currentTheme]" role="dialog" aria-modal="true" aria-labelledby="crud-modal-title" @click.stop>
         <div class="modal-header">
           <h2 id="crud-modal-title">{{ isEdit ? '編輯' : '新增' }} - {{ typeLabel }}</h2>
@@ -238,6 +243,9 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'save']);
 
+// 只有從遮罩開始的點擊才關閉，避免從彈窗內拖曳到遮罩時誤觸關閉。
+const backdropPointerDown = ref(false);
+
 const isEdit = computed(() => !!props.item);
 
 const typeLabel = computed(() => {
@@ -374,6 +382,21 @@ watch(() => [props.isOpen, props.item, props.type], () => {
 
 const close = () => {
   emit('close');
+};
+
+const handleBackdropPointerDown = (event) => {
+  backdropPointerDown.value = event.target === event.currentTarget;
+};
+
+const handleBackdropClick = (event) => {
+  const clickedBackdrop = event.target === event.currentTarget;
+  const isKeyboardClick = event.detail === 0;
+
+  if (clickedBackdrop && (backdropPointerDown.value || isKeyboardClick)) {
+    close();
+  }
+
+  backdropPointerDown.value = false;
 };
 
 const handleSubmit = () => {

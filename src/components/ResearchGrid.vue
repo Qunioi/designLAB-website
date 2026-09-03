@@ -80,7 +80,7 @@
               <span :class="badgeClass" class="clickable-badge" @click="handleBadgeClick(item)" title="點擊切換分類篩選">{{ getBadgeText(item) }}</span>
             </div>
             <div class="card-actions card-actions-reveal" v-if="!isGuest">
-              <ActionIconButton variant="edit" :aria-label="`編輯《${getTitle(item)}》`" @click="$emit('trigger-crud', { type: crudType, item })" title="編輯">
+              <ActionIconButton v-if="canEditCardItem(item)" variant="edit" :aria-label="`編輯《${getTitle(item)}》`" @click="$emit('trigger-crud', { type: crudType, item })" title="編輯">
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
               </ActionIconButton>
               <ActionIconButton v-if="canDeleteCardItem(item)" variant="delete" :aria-label="`刪除《${getTitle(item)}》`" @click="handleDelete(item)" title="刪除">
@@ -176,7 +176,7 @@
               </div>
               <div class="lightbox-footer">
                 <div class="lightbox-actions-group" v-if="!isGuest">
-                  <button type="button" class="lightbox-icon-btn edit" @click="$emit('trigger-crud', { type: crudType, item: lightbox.item }); closeLightbox();" :aria-label="`編輯`" title="編輯">
+                  <button v-if="canEditCardItem(lightbox.item)" type="button" class="lightbox-icon-btn edit" @click="$emit('trigger-crud', { type: crudType, item: lightbox.item }); closeLightbox();" :aria-label="`編輯`" title="編輯">
                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                   </button>
                   <!-- 刪除：管理員或我發佈的才顯示 -->
@@ -267,6 +267,12 @@ const isGuest = computed(() => {
 const canDeleteCardItem = (item) => {
   if (!item) return false;
   return checkDeletePermission(item).allowed;
+};
+
+/** 編輯：只要是登入使用者（非訪客）即可編輯任何項目，不限本人建立 */
+const canEditCardItem = (item) => {
+  if (!item) return false;
+  return !isGuest.value;
 };
 
 const creatorOptions = computed(() => {

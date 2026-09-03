@@ -1,8 +1,14 @@
 // ================================================
-// sheetsAPI.js — Design LAB Google Sheets 整合 (v3.0)
+// sheetsAPI.js — Design LAB Google Sheets 整合 (v5.0)
 // ================================================
+//
+// 這支模組是前端與 Google Apps Script 後端（apps-script/Code.gs）
+// 溝通的唯一入口。讀取（GET）維持公開；寫入／刪除／登入／成員管理
+// 一律呼叫後端的對應 action，並附帶登入後取得的 Session Token——
+// 實際的權限判斷全部在後端完成，前端這裡只是轉送與呈現錯誤訊息。
 
 const SHEETS_URL_KEY = 'design_lab_sheets_url';
+const SESSION_KEY = 'design_lab_session';
 
 const DEFAULT_SHEETS_URL =
   'https://script.google.com/macros/s/AKfycbx3rXEbJFV4UTOaQkMpWjgkUEjymFUjK1F6ZjJIn4CCLd1RD0cT-RLTx9yvvhKH-B1a2g/exec';
@@ -31,7 +37,6 @@ const STORAGE_KEY_MAP = {
   NOTIFICATIONS:   'design_lab_notifications'
 };
 
-
 const ALL_KEYS = Object.keys(KEY_MAP);
 
 /** 取得目前設定的 Apps Script URL（如未設定則回傳預設） */
@@ -49,7 +54,122 @@ export function hasSheetsIntegration() {
   return !!getSheetsUrl();
 }
 
-/** 讀取一個 Sheet 的所有資料 */
+// ------------------------------------------------------------
+// Session（登入權杖）管理
+// ------------------------------------------------------------
+// 權杖本身是由後端核發、儲存在後端 CacheService 的隨機字串，
+// 前端只是原樣保存與附帶送出；真正決定它是否有效、對應哪個帳號、
+// 哪個角色的判斷，一律由後端在每次寫入請求時重新驗證。
+
+/** 取得目前已登入的 Session（含 token / username / nickname / role），未登入回傳 null */
+export function getSession() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function setSession(session) {
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+}
+
+/** 清除本機保存的 Session（登出、或後端回報權杖已失效時呼叫） */
+export function clearSession() {
+  localStorage.removeItem(SESSION_KEY);
+}
+
+function getToken() {
+  const session = getSession();
+  return session ? session.token : '';
+}
+
+// ------------------------------------------------------------
+// 底層請求：一律真正讀取回應內容（不再使用 no-cors 盲送），
+// 才有辦法判斷後端是否因為權限不足而拒絕這次寫入。
+// ------------------------------------------------------------
+
+async function callAction_(action, payload = {}) {
+  const url = getSheetsUrl();
+  if (!url) return { success: false, error: 'Sheets URL 未設定' };
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action, ...payload })
+    });
+    const json = await res.json().catch(() => ({ success: false, error: '伺服器回應格式錯誤' }));
+    if (json && json.code === 'AUTH_REQUIRED') {
+      // 權杖已過期或不存在，清除本機 Session，讓畫面回到未登入狀態
+      clearSession();
+    }
+    return json;
+  } catch (err) {
+    return { success: false, error: `無法連線至 Google Sheets：${err.message}` };
+  }
+}
+
+// ------------------------------------------------------------
+// 登入 / 登出 / 密碼
+// ------------------------------------------------------------
+
+/** 以帳號密碼登入，成功會回傳並保存 Session Token */
+export async function loginRequest(username, password) {
+  const result = await callAction_('login', { username, password });
+  if (result.success && result.token) {
+    setSession({
+      token: result.token,
+      username: result.user.username,
+      nickname: result.user.nickname,
+      role: result.user.role
+    });
+  }
+  return result;
+}
+
+/** 登出：通知後端銷毀 Token，並清除本機 Session */
+export async function logoutRequest() {
+  const token = getToken();
+  clearSession();
+  if (token) await callAction_('logout', { token });
+}
+
+/** 修改自己的密碼（需要正確的舊密碼） */
+export async function changePasswordRequest(oldPassword, newPassword) {
+  return callAction_('changePassword', { token: getToken(), oldPassword, newPassword });
+}
+
+/** 管理員將他人密碼重設為臨時密碼，並強制對方下次登入變更 */
+export async function adminResetPasswordRequest(targetUsername) {
+  return callAction_('adminResetPassword', { token: getToken(), targetUsername });
+}
+
+// ------------------------------------------------------------
+// 成員管理（後端會再次確認呼叫者是否為管理員，前端呼叫失敗屬正常防護）
+// ------------------------------------------------------------
+
+export async function addUserRequest(nickname, username, role) {
+  return callAction_('addUser', { token: getToken(), nickname, username, role });
+}
+
+export async function removeUserRequest(targetUsername) {
+  return callAction_('removeUser', { token: getToken(), targetUsername });
+}
+
+/** 送出目前排序後的帳號清單（僅用於重新排序，後端不會覆寫密碼等欄位） */
+export async function reorderUsersRequest(profiles) {
+  return callAction_('overwrite_users', {
+    token: getToken(),
+    data: profiles.map(p => ({ username: p.username }))
+  });
+}
+
+// ------------------------------------------------------------
+// 一般資料讀取 / 寫入 / 刪除
+// ------------------------------------------------------------
+
+/** 讀取一個 Sheet 的所有資料（公開，不需登入） */
 export async function fetchSheetData(key) {
   const url = getSheetsUrl();
   if (!url) throw new Error('Sheets URL 未設定');
@@ -69,55 +189,42 @@ export async function fetchSheetData(key) {
   }
 }
 
-/** 新增 / 更新一筆資料（fire-and-forget） */
-export function pushToSheet(key, data) {
+/**
+ * 新增 / 更新一筆資料。回傳 `{ success, error }`；呼叫端可選擇是否
+ * await 並在失敗（例如未登入、非本人建立、訪客）時將本機變更復原。
+ */
+export async function pushToSheet(key, data) {
   const url = getSheetsUrl();
-  if (!url) return;
+  if (!url) return { success: false, error: 'Sheets URL 未設定' };
   const sheetName = KEY_MAP[key] || key;
-  fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action: 'write', sheet: sheetName, data }),
-    mode: 'no-cors'
-  }).catch(e => console.warn('[SheetsAPI] Push failed:', e));
+  const result = await callAction_('write', { token: getToken(), sheet: sheetName, data });
+  if (!result.success) console.warn('[SheetsAPI] Push failed:', result.error);
+  return result;
 }
 
-/** 刪除一筆資料（fire-and-forget） */
-export function deleteFromSheet(key, id) {
+/** 刪除一筆資料，回傳 `{ success, error }`。 */
+export async function deleteFromSheet(key, id) {
   const url = getSheetsUrl();
-  if (!url) return;
+  if (!url) return { success: false, error: 'Sheets URL 未設定' };
   const sheetName = KEY_MAP[key] || key;
-  fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action: 'delete', sheet: sheetName, id }),
-    mode: 'no-cors'
-  }).catch(e => console.warn('[SheetsAPI] Delete failed:', e));
+  const result = await callAction_('delete', { token: getToken(), sheet: sheetName, id });
+  if (!result.success) console.warn('[SheetsAPI] Delete failed:', result.error);
+  return result;
 }
 
-/** 專門推送整份排序後的 USERS 名單至 Sheets，確保全域順序 100% 一致 */
-export function pushAllUsersToSheet(profiles) {
-  const url = getSheetsUrl();
-  if (!url || !Array.isArray(profiles)) return;
-  fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action: 'overwrite_users', sheet: 'USERS', data: profiles }),
-    mode: 'no-cors'
-  }).catch(e => console.warn('[SheetsAPI] Push all users failed:', e));
+/** 團隊成員重新排序後，同步順序到 Google Sheets（管理員限定，後端授權）。 */
+export async function pushAllUsersToSheet(profiles) {
+  if (!Array.isArray(profiles)) return { success: false, error: '資料格式錯誤' };
+  const result = await reorderUsersRequest(profiles);
+  if (!result.success) console.warn('[SheetsAPI] Push all users failed:', result.error);
+  return result;
 }
 
-
-/** 觸發 Google Sheets 後端全量修復標頭與格式化 */
-export function forceFormatAllSheets() {
-  const url = getSheetsUrl();
-  if (!url) return;
-  fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action: 'force_format_all', sheet: 'UI_RESEARCH' }),
-    mode: 'no-cors'
-  }).catch(e => console.warn('[SheetsAPI] Format failed:', e));
+/** 觸發 Google Sheets 後端全量修復標頭與格式化（管理員限定）。 */
+export async function forceFormatAllSheets() {
+  const result = await callAction_('force_format_all', { token: getToken(), sheet: 'UI_RESEARCH' });
+  if (!result.success) console.warn('[SheetsAPI] Format failed:', result.error);
+  return result;
 }
 
 /** 測試連線（回傳 { ok, error }） */
@@ -146,7 +253,7 @@ export async function syncAllFromSheets(onProgress) {
     try {
       const data = await fetchSheetData(key);
       if (data && data.length > 0) {
-        // 雲端資料可能尚未包含本地上傳的 Base64 圖片／影片欄位。
+        // 雲端資料可能尚未包含本地上傳的媒體欄位（R2 公開網址）。
         // 同步時保留同 ID 本地已有的媒體，避免重整後封面消失。
         const localRaw = localStorage.getItem(STORAGE_KEY_MAP[key]);
         let localData = [];
@@ -194,17 +301,9 @@ export async function syncAllFromSheets(onProgress) {
     }
   }
 
-  // 如果 Google Sheets 是全新的（0 筆資料），自動填入標準 Mock 資料並上傳到 Google Sheets
+  // 如果 Google Sheets 是全新的（0 筆資料），提示需先於 Apps Script 執行 setup 初始化
   if (totalCount === 0 && errors.length === 0) {
-    const { resetToMockData } = await import('./storage');
-    resetToMockData();
-    pushAllToSheets();
-    for (const key of ALL_KEYS) {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY_MAP[key]);
-        counts[key] = raw ? JSON.parse(raw).length : 0;
-      } catch (e) {}
-    }
+    errors.push({ key: 'USERS', error: '尚未初始化：請先於 Apps Script 對後端送出一次 { action: "setup" }' });
   }
 
   return {
@@ -214,24 +313,18 @@ export async function syncAllFromSheets(onProgress) {
   };
 }
 
-/** 把目前全量資料推送到 Sheets 並自動矯正標頭與時間格式 */
+/** 把目前全量內容資料推送到 Sheets 並自動矯正標頭與時間格式（管理員限定） */
 export async function pushAllToSheets() {
-  forceFormatAllSheets();
-
-  // 確保 USERS 分頁具備初始團隊成員資料
-  try {
-    const { getUserProfiles } = await import('./userStore');
-    const profiles = getUserProfiles();
-    localStorage.setItem(STORAGE_KEY_MAP.USERS, JSON.stringify(profiles));
-  } catch (e) {}
+  await forceFormatAllSheets();
 
   for (const key of ALL_KEYS) {
+    if (key === 'USERS') continue; // 成員帳號一律透過專用的成員管理動作異動，不整批覆寫
     const raw = localStorage.getItem(STORAGE_KEY_MAP[key]);
     if (!raw) continue;
     try {
       const items = JSON.parse(raw);
       for (const item of items) {
-        pushToSheet(key, item);
+        await pushToSheet(key, item);
         await new Promise(r => setTimeout(r, 120));
       }
     } catch (e) {

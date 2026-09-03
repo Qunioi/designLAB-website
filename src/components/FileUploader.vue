@@ -556,6 +556,12 @@ const processFile = async (file) => {
   if (!file) return;
   try {
     const fileInfo = validateMediaFile(file);
+    if (!canUseFile(file)) {
+      const expected = props.accept.includes('video') && !props.accept.includes('image')
+        ? '影片檔案（MP4 / WEBM / MOV）'
+        : '圖片檔案';
+      throw new Error(`檔案格式不符：此欄位僅接受${expected}。`);
+    }
     selectedFile.value = {
       name: file.name,
       size: formatFileSize(file.size),

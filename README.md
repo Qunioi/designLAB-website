@@ -1,372 +1,400 @@
-# Design LAB 內部設計資料庫 🚀
+# Design LAB 內部設計資料庫
+
+供產品設計師與前端團隊使用的內部設計知識庫。以 Vue 3 + Vite 建置的單頁應用，提供案例收錄、標籤篩選、全站搜尋、多媒體預覽、主題切換，並整合 Google Sheets 作為雲端資料層、Cloudflare R2 作為媒體儲存。
 
 ---
 
-## 📑 目錄
+## 目錄
 
-- [專案簡介](#專案簡介)
-- [核心功能特色](#核心功能特色)
-- [開發環境與套件依賴](#開發環境與套件依賴)
+- [功能總覽](#功能總覽)
+- [技術棧](#技術棧)
 - [快速開始](#快速開始)
-- [專案目錄結構](#專案目錄結構)
-- [CSS 與設計系統結構](#css-與設計系統結構)
-- [頁面與路由架構](#頁面與路由架構)
-- [核心元件結構](#核心元件結構)
-- [資料架構與雲端同步](#資料架構與雲端同步)
-- [身分驗證與權限管理](#身分驗證與權限管理)
-- [維護與擴充指南](#維護與擴充指南)
+- [環境變數](#環境變數)
+- [部署](#部署)
+- [目錄結構](#目錄結構)
+- [路由與頁面](#路由與頁面)
+- [元件架構](#元件架構)
+- [樣式與主題系統](#樣式與主題系統)
+- [資料層與雲端同步](#資料層與雲端同步)
+- [媒體上傳架構](#媒體上傳架構)
+- [帳號與權限](#帳號與權限)
+- [擴充指南](#擴充指南)
+- [已知限制](#已知限制)
 
 ---
 
-## 專案簡介
+## 功能總覽
 
-**Design LAB** 專為產品設計師、前端工程師及產品團隊打造，提供一站式的設計知識沉澱與分析平台。支援豐富的多媒體案例展示（高解析截圖、流暢影片、互動預覽）、靈活的標籤過濾、即時全文搜尋（`Cmd + K`）、通用 CRUD 管理、8 套對比驗證的視覺主題切換，並無縫整合 Google Sheets 進行全自動雲端雙向同步。
-
----
-
-## 核心功能特色
-
-- 🎨 **現代化設計系統**：採用 Tailwind CSS v4 設計代幣（Design Tokens）與精緻 Glassmorphism 毛玻璃美學。
-- 🌓 **8 套精心校準的視覺主題**：4 款深色（深邃夜幕、GitHub Dark、黑曜石暖調、極地冷夜）與 4 款淺色（雲白蔚藍、現代冷灰、辦公暗紅、極地雪白）。
-- 🔍 **全域快捷搜尋 (`Cmd + K`)**：跨所有模組即時全文檢索，支援標題、描述、工具、標籤快速定位與自動跳轉。
-- 🖼️ **沉浸式多媒體 Lightbox**：支援多圖切換、雙影片並排對比、全螢幕燈箱放大、鍵盤快捷鍵（`ESC` / 方向鍵）導航。
-- ⚡ **自建輕量 Hash 路由**：無需外部龐大 Router 套件，網址與視圖/彈窗 ID 雙向同步（如 `#/ui-research/item-123`），支援重新整理與歷史紀錄。
-- ☁️ **Google Sheets 雙向同步**：透過 Google Apps Script 後端實現資料雲端備份、多人即時同步與離線快取優先機制。
-- 🔐 **細緻化權限與成員管理**：支援多角色（Super Admin / Admin / User / Guest）、密碼驗證、案例刪除防護與開發者帳號模擬。
-- 🔔 **站內即時通知系統**：當案例新增、編輯、刪除或成員異動時自動記錄並提供小鈴鐺即時提醒。
+| 功能 | 說明 |
+| :--- | :--- |
+| 六大資料模組 | UI 研究、動態研究、競品分析、AI 工具、設計資源、優化提案 |
+| 通用 CRUD | 單一 `CRUDModal` 依模組類型動態產生表單欄位 |
+| 全域搜尋 | `Cmd + K` / `Ctrl + K` 跨模組全文檢索並直接跳轉至目標項目 |
+| 多媒體預覽 | 全螢幕燈箱，支援多圖切換、雙影片並排、鍵盤導覽 |
+| Hash 路由 | 自建輕量路由，網址與視圖／項目 ID 雙向同步 |
+| 主題系統 | 8 套色票（4 深色 / 4 淺色），依使用者帳號記憶偏好 |
+| 雲端同步 | 透過 Google Apps Script 與 Google Sheets 雙向同步 |
+| 媒體儲存 | 前端取得預簽名網址後直傳 Cloudflare R2，附檔案管理器 |
+| 權限控管 | Super Admin / Admin / User / Guest 四級角色與密碼登入 |
+| 站內通知 | 記錄新增、編輯、刪除與成員異動，已讀滿三天自動清除 |
 
 ---
 
-## 開發環境與套件依賴
+## 技術棧
 
-### 運行環境要求
+執行環境需求：Node.js `>= 18`、npm `>= 9`。
 
-- **Node.js**：`>= 18.0.0`
-- **npm**：`>= 9.0.0`
+| 分類 | 套件 | 版本 |
+| :--- | :--- | :--- |
+| 前端框架 | `vue` | `^3.5.39` |
+| 建置工具 | `vite` | `^8.1.5` |
+| Vue 外掛 | `@vitejs/plugin-vue` | `^6.0.7` |
+| 樣式框架 | `tailwindcss` | `^4.3.3` |
+| PostCSS 整合 | `@tailwindcss/postcss` | `^4.3.3` |
+| CSS 處理 | `postcss` | `^8.5.26` |
 
-### 核心技術棧與套件清單
-
-| 分類 | 套件名稱 | 版本 | 說明 |
-| :--- | :--- | :--- | :--- |
-| **前端核心** | `vue` | `^3.5.39` | Vue 3 核心框架，全面採用 `<script setup>` Composition API |
-| **構建工具** | `vite` | `^8.1.5` | 極速前端構建與開發伺服器 |
-| **構建外掛** | `@vitejs/plugin-vue` | `^6.0.7` | Vite 官方 Vue 3 單檔案元件 (SFC) 編譯外掛 |
-| **樣式框架** | `tailwindcss` | `^4.3.3` | Tailwind CSS v4 最新版（CSS-First 原生代幣系統） |
-| **CSS 處理** | `@tailwindcss/postcss` | `^4.3.3` | Tailwind CSS PostCSS 整合外掛 |
-| **CSS 處理** | `postcss` | `^8.5.26` | CSS 轉換工具 |
+專案無額外執行期相依套件：路由、狀態管理、HTTP 客戶端皆以原生 API 自建。
 
 ---
 
 ## 快速開始
 
-### R2 媒體上傳環境變數
-
-圖片與影片會先由前端向 `/api/r2-upload-url` 取得短效預簽名網址，再直接上傳到 Cloudflare R2；R2 金鑰只存在後端環境變數，不會進入前端 bundle。請將 `.env.example` 複製為部署平台的環境變數（不要使用 `VITE_` 前綴）：
-
-| 變數 | 值 |
-| :--- | :--- |
-| `R2_ACCOUNT_ID` | Cloudflare Account ID |
-| `R2_ACCESS_KEY_ID` | R2 API Token 的 Access Key ID |
-| `R2_SECRET_ACCESS_KEY` | R2 API Token 的 Secret Access Key |
-| `R2_BUCKET_NAME` | `designlab-website` |
-| `R2_PUBLIC_URL` | `https://pub-cfdfde59ceb44b798935e3dc4a29de0d.r2.dev` |
-| `VITE_UPLOAD_API_URL` | 可選；API 不在網站同一個子目錄時，填入後端 API 基礎網址 |
-
-請在 Cloudflare R2 建立具備該 bucket 物件讀寫權限的 API Token，並在部署平台同時部署 `api/r2-upload-url.js`（此檔案採 Vercel Functions handler 格式）。若使用 Apache／Nginx 提供靜態 `dist`，需另外將 `/api/*` 反向代理到 Node／Serverless 執行環境；只部署 `dist` 不會提供安全上傳 API。
-
-若網站部署於 `/designLAB/` 子目錄，同源 API 應可從 `/designLAB/api/` 存取；否則請設定 `VITE_UPLOAD_API_URL`，例如 `https://api.example.com/api`。前端會自動依此網址呼叫上傳、清單與刪除 API。
-
-另外請在 R2 Bucket 的 CORS 設定允許網站來源對 S3 API endpoint 執行 `PUT`，至少允許 `Content-Type` request header；刪除由後端執行，不需要開放 R2 的 `DELETE` CORS。正式環境請將 `AllowedOrigins` 限定為實際網站網域。若要本機測試，可暫時加入 `http://localhost:5173` 與區網開發網址。
-
-### 1. 安裝依賴套件
-
 ```bash
-npm install
+npm install          # 安裝相依套件
+cp .env.example .env # 填入 R2 憑證（媒體上傳功能所需）
+npm run dev          # 啟動開發伺服器，預設 http://localhost:5173
+npm run build        # 建置至 dist/
+npm run preview      # 預覽建置產物
 ```
 
-### 2. 啟動本地開發伺服器
+`vite.config.js` 內建 `designlab-r2-dev-api` 外掛，開發模式下會直接掛載 `api/` 三支 handler，因此本機不需另啟後端即可測試上傳、列表與刪除。
 
-```bash
-npm run dev
-```
-> 預設會啟動 Vite 本地開發伺服器（預設監聽 `http://localhost:5173`，支援局域網連線）。
-
-### 3. 編譯正式發布版本
-
-```bash
-npm run build
-```
-> 編譯產物將輸出至 `dist/` 目錄，採用相對路徑打包（`base: './'`），可直接部署於各類靜態伺服器或 Web Server（如 Apache、Nginx）。
-
-### 4. 預覽正式發布版本
-
-```bash
-npm run preview
-```
+若未設定 R2 環境變數，應用其餘功能仍可正常運作，僅媒體上傳會回傳錯誤。
 
 ---
 
-## 專案目錄結構
+## 環境變數
+
+R2 憑證僅供後端 `api/` 使用，**不可加上 `VITE_` 前綴**，以避免被打包進前端 bundle。
+
+| 變數 | 用途 | 必填 |
+| :--- | :--- | :--- |
+| `R2_ACCOUNT_ID` | Cloudflare Account ID | 是 |
+| `R2_ACCESS_KEY_ID` | R2 API Token 的 Access Key ID | 是 |
+| `R2_SECRET_ACCESS_KEY` | R2 API Token 的 Secret Access Key | 是 |
+| `R2_BUCKET_NAME` | Bucket 名稱，預設 `designlab-website` | 否 |
+| `R2_PUBLIC_URL` | R2 公開存取網域 | 否 |
+| `VITE_UPLOAD_API_URL` | API 與網站不同源時，填入 API 基礎網址 | 否 |
+
+`VITE_UPLOAD_API_URL` 留白時，前端會以 `new URL('./api/', location.href)` 推導同源路徑；部署於 `/designLAB/` 子目錄時即對應 `/designLAB/api/`。
+
+---
+
+## 部署
+
+1. 執行 `npm run build`，產物輸出至 `dist/`，採相對路徑（`base: './'`），可置於任意子目錄。
+2. `api/` 下三支檔案為 Vercel Functions handler 格式，需部署至 Node 或 Serverless 執行環境。
+3. 若以 Apache / Nginx 提供靜態 `dist`，須將 `/api/*` 反向代理至該執行環境。僅部署 `dist` 不會提供上傳 API。
+4. 於 R2 Bucket 設定 CORS，允許網站來源對 S3 API endpoint 執行 `PUT`，並至少允許 `Content-Type` request header。刪除由後端簽章執行，不需開放 `DELETE`。正式環境的 `AllowedOrigins` 應限定實際網域。
+
+---
+
+## 目錄結構
 
 ```text
 designLAB-website/
-├── index.html                  # 應用程式入口 HTML
-├── package.json                # 專案套件設定與腳本
-├── postcss.config.js           # PostCSS 設定（載入 @tailwindcss/postcss）
-├── vite.config.js              # Vite 構建設定（Vue 外掛、相對路徑 base、主機監聽）
-├── public/                     # 靜態資源目錄
-│   └── vite.svg                # 網站圖示
-└── src/                        # 原始碼目錄
-    ├── main.js                 # 應用程式入口（載入全域 CSS、掛載 Vue 實例）
-    ├── App.vue                 # 根元件（佈局架構、Hash 路由同步、全域 Modal 管理）
-    ├── style.css               # 全域樣式（Tailwind @theme、CSS 變數、8 套主題、全域 Reset）
-    │
-    ├── styles/                 # 模組化樣式
-    │   └── components.css      # 共用 UI 樣式（毛玻璃面板、徽章、標籤、彈窗遮罩）
-    │
-    ├── views/                  # 主要頁面視圖 (Views)
-    │   ├── Dashboard.vue       # 總覽儀表板 (首頁)
-    │   ├── UIResearch.vue      # UI 設計研究模組
-    │   ├── MotionResearch.vue  # 動態與微互動研究模組
-    │   ├── Competitor.vue      # 競品與同業分析模組 (Web / 行動裝置)
-    │   ├── AICenter.vue        # AI 工具與 Prompt 範本庫
-    │   ├── Resources.vue       # 設計規範與資源下載庫
-    │   ├── Proposals.vue       # 產品優化提案看板
-    │   └── Settings.vue        # 個人設定、主題選擇、雲端同步與團隊成員管理
-    │
-    ├── components/             # 通用與業務元件
-    │   ├── Navigation.vue      # 側邊欄導覽 (含響應式手機抽屜選單)
-    │   ├── PageHeader.vue      # 各頁面標準頂部標題列
-    │   ├── FilterToolbar.vue   # 多維度分類篩選與排序工具列
-    │   ├── ResearchGrid.vue    # 研究案例卡片網格展示
-    │   ├── FullscreenMediaOverlay.vue # 沉浸式多媒體全螢幕預覽燈箱
-    │   ├── CRUDModal.vue       # 通用新增/編輯彈窗 (動態生成各模組表單)
-    │   ├── SearchModal.vue     # 全域搜尋彈窗 (Cmd+K)
-    │   ├── ThemeModal.vue      # 8 套視覺主題即時預覽與選取彈窗
-    │   ├── NotificationBell.vue# 頂部即時通知小鈴鐺與訊息下拉清單
-    │   ├── PromptCodeBox.vue   # AI 提示詞程式碼展示與一鍵複製元件
-    │   ├── ActionIconButton.vue# 卡片快捷操作按鈕 (編輯/刪除/外部連結)
-    │   ├── TagInput.vue        # 標籤輸入與增刪元件
-    │   ├── CategoryInput.vue   # 分類選擇與自訂輸入元件
-    │   ├── ImagePathInput.vue  # 圖片路徑/連結輸入元件
-    │   └── FileUploader.vue    # 本地檔案上傳與 Base64 轉換元件
-    │
-    ├── data/                   # 預設與 Mock 資料集
-    │   ├── mockData.js         # 統一匯出所有初始資料
-    │   ├── uiResearch.js       # UI 研究初始資料
-    │   ├── motionResearch.js   # 動態研究初始資料
-    │   ├── competitor.js       # 競品分析初始資料
-    │   ├── aiCenter.js         # AI 工具中心初始資料
-    │   ├── resources.js        # 設計資源初始資料
-    │   └── proposals.js        # 優化提案初始資料
-    │
-    └── utils/                  # 核心工具函式庫
-        ├── storage.js          # 本地 LocalStorage 資料儲存與 CRUD 封裝
-        ├── userStore.js        # 成員帳號、權限驗證、密碼管理與身分模擬
-        ├── sheetsAPI.js        # Google Sheets Apps Script API 雲端雙向同步
-        ├── notifications.js    # 全站通知記錄與廣播
-        ├── upload.js           # 圖片與媒體上傳處理
-        ├── formatters.js       # 標準時間與字串格式化
-        └── clipboard.js        # 剪貼簿快速複製工具
+├── index.html                  # 應用入口
+├── vite.config.js              # Vite 設定與開發用 R2 API middleware
+├── postcss.config.js           # 載入 @tailwindcss/postcss
+├── .env.example                # 環境變數範本
+├── api/                        # R2 媒體上傳 handler（Vercel Functions 格式，與帳號權限無關）
+│   ├── r2-upload-url.js        # AWS SigV4 簽章、預簽名上傳網址、檔案驗證
+│   ├── r2-list.js              # 列出 Bucket 內既有媒體
+│   └── r2-delete.js            # 刪除指定公開網址對應之物件
+├── apps-script/                # Google Apps Script 後端原始碼（帳號、密碼、寫入權限的唯一信任邊界）
+│   ├── Code.gs                 # 登入 / Session Token / 密碼雜湊 / 角色授權 / 資料讀寫
+│   └── README.md               # 部署與首次設定步驟
+├── public/
+│   └── vite.svg
+└── src/
+    ├── main.js                 # 掛載 Vue 實例
+    ├── App.vue                 # 根元件：佈局、Hash 路由、全域 Modal
+    ├── style.css               # Tailwind @theme 代幣、8 套主題、全域 Reset
+    ├── styles/
+    │   └── components.css      # 共用樣式（毛玻璃面板、徽章、標籤、遮罩）
+    ├── views/                  # 頁面層
+    │   ├── Dashboard.vue       # 總覽儀表板
+    │   ├── UIResearch.vue      # UI 設計研究
+    │   ├── MotionResearch.vue  # 動態與微互動研究
+    │   ├── Competitor.vue      # 競品分析（Web / 行動裝置）
+    │   ├── AICenter.vue        # AI 工具與 Prompt 範本
+    │   ├── Resources.vue       # 設計規範與資源
+    │   ├── Proposals.vue       # 優化提案看板
+    │   └── Settings.vue        # 登入、個人設定、雲端同步、成員管理
+    ├── components/             # 共用元件
+    │   ├── Navigation.vue      # 側邊欄與手機抽屜選單
+    │   ├── PageHeader.vue      # 頁面標題列
+    │   ├── FilterToolbar.vue   # 分類篩選與排序
+    │   ├── ResearchGrid.vue    # 案例卡片網格
+    │   ├── FullscreenMediaOverlay.vue  # 全螢幕媒體燈箱
+    │   ├── CRUDModal.vue       # 通用新增／編輯彈窗
+    │   ├── SearchModal.vue     # 全域搜尋
+    │   ├── ThemeModal.vue      # 主題預覽與選取
+    │   ├── NotificationBell.vue# 通知鈴鐺與清單
+    │   ├── FileUploader.vue    # R2 上傳、進度、預覽與檔案管理器
+    │   ├── PromptCodeBox.vue   # Prompt 展示與一鍵複製
+    │   ├── ActionIconButton.vue# 卡片操作按鈕
+    │   ├── TagInput.vue        # 標籤輸入
+    │   ├── CategoryInput.vue   # 分類選擇與自訂
+    │   └── ImagePathInput.vue  # 圖片路徑輸入
+    ├── data/                   # 各模組初始資料，由 mockData.js 統一匯出
+    └── utils/
+        ├── storage.js          # LocalStorage CRUD、雲端寫入結果檢查與失敗回滾
+        ├── userStore.js        # 顯示身分、角色快取、主題偏好、身分模擬（密碼不經過此層）
+        ├── sheetsAPI.js        # Google Apps Script 讀寫、登入 / Session Token 管理
+        ├── notifications.js    # 通知寫入、過濾與過期清理
+        ├── upload.js           # 媒體驗證、預簽名上傳、列表與刪除
+        ├── formatters.js       # 時間與字串格式化
+        └── clipboard.js        # 剪貼簿複製
 ```
 
 ---
 
-## CSS 與設計系統結構
+## 路由與頁面
 
-本專案採用 **Tailwind CSS v4** 原生架構搭配自訂 **CSS Custom Properties (CSS 變數)**，實現高度語義化與靈活的主題切換。
+路由由 `App.vue` 自建，監聽 `hashchange` 與 `popstate`，以 `VIEW_ROUTES` 對照表在網址與視圖名稱間雙向轉換。
 
-### 1. Tailwind v4 `@theme` 設計代幣架構 (`src/style.css`)
-
-```css
-@theme {
-  /* 字體系統 */
-  --font-sans: 'Outfit', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-display: 'Outfit', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-body: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-
-  /* 語義化色彩 (Semantic Color Tokens) */
-  --color-brand: var(--color-primary);
-  --color-brand-secondary: var(--color-secondary);
-  --color-brand-accent: var(--color-accent);
-  --color-surface-base: var(--bg-primary);
-  --color-surface-card: var(--bg-card);
-  --color-surface-elevated: var(--bg-elevated);
-  --color-ink-primary: var(--text-primary);
-  --color-ink-secondary: var(--text-secondary);
-  --color-ink-muted: var(--text-muted);
-  --color-border-hairline: var(--border-color);
-
-  /* 圓角尺度 */
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
-  --radius-2xl: 22px;
-}
-```
-
-### 2. 8 套雙模視覺主題系統 (Dark & Light)
-
-透過在頂層 `.app-container` 動態綁定主題 Class（如 `:class="currentTheme"`），全站即可無縫切換整套色票：
-
-| 主題 Class | 模式 | 特色與色彩調性 |
+| Hash | View | 說明 |
 | :--- | :--- | :--- |
-| `.theme-cloud-canvas` *(預設)* | ☀️ 淺色 | **純白蔚藍 (Airy Crisp Pure White + Royal Azure)**，高明度、極致清爽現代感 |
-| `.theme-material-light` | ☀️ 淺色 | **科技冷灰 (Cool Grey + Electric Azure)**，細緻灰階襯底與護眼對比 |
-| `.theme-office-access` | ☀️ 淺色 | **經典暗紅 (Office Red + Paper White)**，專業沉穩紙本質感 |
-| `.theme-nord-light` | ☀️ 淺色 | **極地雪白 (Arctic Crisp Ice Canvas)**，北歐冰川淡藍灰調 |
-| `.theme-midnight-indigo` | 🌙 深色 | **深邃夜幕 (Palenight Purple Slate)**，奢華靛藍與柔和紫色高亮 |
-| `.theme-github-dark` | 🌙 深色 | **極客炭灰 (Graphite Workshop)**，經典開發者暗黑高對比風 |
-| `.theme-obsidian-neon` | 🌙 深色 | **黑曜暖銅 (Warm Ink + Copper)**，黑曜石底色搭配溫潤金屬銅色 |
-| `.theme-nord-dark` | 🌙 深色 | **極地極夜 (Nord Polar Night)**，冷色調藍黑與北極光綠點綴 |
+| `#/dashboard` | `Dashboard.vue` | 統計卡片、最新動態、快速新增入口 |
+| `#/ui-research` | `UIResearch.vue` | UI 案例庫、分類篩選、多圖預覽 |
+| `#/motion-research` | `MotionResearch.vue` | 動效與微互動、雙影片對照 |
+| `#/competitor` | `Competitor.vue` | 競品分析，區分 Web 與行動裝置 |
+| `#/ai-center` | `AICenter.vue` | AI 工具、工作流分類、Prompt 複製 |
+| `#/resources` | `Resources.vue` | 設計規範、圖示、字型、外掛資源 |
+| `#/proposals` | `Proposals.vue` | 提案看板，支援看板／清單視圖 |
+| `#/settings` | `Settings.vue` | 登入、密碼、主題、同步、成員管理 |
 
-### 3. 共用元件樣式 (`src/styles/components.css`)
-
-- `.glass-panel`：毛玻璃背景、微邊框與懸停深度效果。
-- `.card-actions-reveal`：懸停/Focus 時平滑浮現的操作按鈕列。
-- `.type-badge` / `.category-badge` / `.comp-badge`：色彩語義清晰的狀態與類型徽章。
-- `.tool-tag` / `.tag` / `.clickable-tag`：支援可點擊篩選與主色反白的高質感標籤。
-- `.modal-backdrop` / `.lightbox-backdrop`：背景 8px 高斯模糊遮罩與標準化彈窗分層。
-
-### 4. 響應式佈局規範
-
-- **側邊欄 (Sidebar)**：桌機版固定寬度 `260px`；平板 (≤ 1024px) 收合為 `72px` 緊湊模式；手機 (≤ 900px) 轉為底部/頂部懸浮漢堡選單抽屜。
-- **Bento Grid**：桌機 4 欄 (`repeat(4, 1fr)`) ➔ 平板 2 欄 ➔ 手機單欄堆疊。
+網址支援第二段項目 ID，例如 `#/ui-research/ui-research-1` 會導向該頁並自動開啟對應燈箱。無法比對的 slug 會回退至 `#/dashboard`。
 
 ---
 
-## 頁面與路由架構
-
-### 輕量 Hash 路由機制
-
-專案採用自建 Hash 路由處理器（監聽 `popstate` 與 `hashchange` 事件），無須重整頁面即可實現雙向同步：
-
-| 路由 Hash | 對應 View 元件 | 頁面功能說明 |
-| :--- | :--- | :--- |
-| `#/dashboard` | `Dashboard.vue` | 總覽看板、數據統計卡片、最新案例動態、快速新增入口 |
-| `#/ui-research` | `UIResearch.vue` | UI 介面案例庫、元件分類過濾、多圖預覽、規格與提示詞展示 |
-| `#/motion-research` | `MotionResearch.vue` | 動態效果庫、微互動範例、雙影片播放、緩動曲線與技術細節 |
-| `#/competitor` | `Competitor.vue` | 競品分析庫（區分 Web 平台與行動裝置雙維度）、優缺點剖析 |
-| `#/ai-center` | `AICenter.vue` | AI 設計工具箱、分類工作流、Prompt 程式碼一鍵複製 |
-| `#/resources` | `Resources.vue` | 設計規範、圖示庫、字型、外掛資源庫與外部直達連結 |
-| `#/proposals` | `Proposals.vue` | 產品體驗優化提案看板（看板視圖 / 清單視圖切換） |
-| `#/settings` | `Settings.vue` | 個人 Profile、密碼修改、主題更換、雲端同步、團隊成員管理 |
-
-> 支援帶參數深度定位：例如訪問 `#/ui-research/ui-research-1` 會自動導向該頁面並觸發該項目的 Lightbox 彈窗預覽。
-
----
-
-## 核心元件結構
+## 元件架構
 
 ```mermaid
 graph TD
-    App[App.vue 根元件] --> Nav[Navigation.vue 導覽列]
-    App --> View[當前 View 視圖元件]
-    App --> Search[SearchModal.vue 全域搜尋 Cmd+K]
-    App --> CRUD[CRUDModal.vue 通用新增/編輯]
+    App[App.vue] --> Nav[Navigation.vue]
+    App --> View[當前 View]
+    App --> Search[SearchModal.vue]
+    App --> CRUD[CRUDModal.vue]
 
-    View --> Header[PageHeader.vue 標題欄]
-    View --> Filter[FilterToolbar.vue 篩選器]
-    View --> Grid[ResearchGrid.vue 卡片網格]
-    View --> Lightbox[FullscreenMediaOverlay.vue 燈箱]
+    View --> Header[PageHeader.vue]
+    View --> Filter[FilterToolbar.vue]
+    View --> Grid[ResearchGrid.vue]
+    View --> Lightbox[FullscreenMediaOverlay.vue]
 
-    Nav --> Bell[NotificationBell.vue 通知鈴鐺]
-    Grid --> Actions[ActionIconButton.vue 操作按鈕]
-    Grid --> Prompt[PromptCodeBox.vue 程式碼框]
+    Nav --> Bell[NotificationBell.vue]
+    Grid --> Actions[ActionIconButton.vue]
+    Grid --> Prompt[PromptCodeBox.vue]
+    CRUD --> Uploader[FileUploader.vue]
+    CRUD --> Tag[TagInput.vue]
+    CRUD --> Category[CategoryInput.vue]
 ```
 
-### 重點元件介紹
+`App.vue` 為唯一持有全域狀態的層級：主題 class 綁定於最外層 `.app-container`，搜尋彈窗與 CRUD 彈窗皆由此掛載，各 View 透過事件（`trigger-crud`、`navigate-detail`、`select-theme` 等）向上通知。
 
-1. **`CRUDModal.vue`**：
-   - 根據傳入的 `type`（如 `UI_RESEARCH`、`COMPETITORS`、`AI_CENTER` 等）動態渲染對應表單欄位。
-   - 整合 `TagInput`、`CategoryInput`、`ImagePathInput` 與 `FileUploader`。
-2. **`FullscreenMediaOverlay.vue`**：
-   - 支援大圖無損縮放、雙影片同時並排播放、鍵盤快捷鍵切換上下筆。
-3. **`SearchModal.vue`**：
-   - 支援全站熱鍵 `Cmd + K` (Mac) 或 `Ctrl + K` (Windows) 喚醒。
-   - 即時跨模組全文檢索並標記命中欄位。
-4. **`NotificationBell.vue`**：
-   - 即時顯示未讀通知紅點、展示成員發布/編輯/刪除操作紀錄，支援一鍵全部已讀與清空。
+重點元件：
+
+- **`CRUDModal.vue`** — 依 `type`（`UI_RESEARCH`、`MOTION_RESEARCH`、`COMPETITORS`、`AI_CENTER`、`RESOURCES`、`PROPOSALS`）切換表單版型，並整合標籤、分類與檔案上傳元件。
+- **`FileUploader.vue`** — 拖放上傳、上傳進度、全螢幕預覽，並內建 R2 檔案管理器，可列出既有媒體、直接選用或刪除。
+- **`SearchModal.vue`** — 熱鍵喚醒，跨模組檢索標題、描述、工具與標籤，標記命中欄位並跳轉。
+- **`FullscreenMediaOverlay.vue`** — 多圖切換、雙影片並排播放、`ESC` 與方向鍵操作。
+- **`NotificationBell.vue`** — 未讀紅點、操作紀錄清單、全部已讀與清空。
 
 ---
 
-## 資料架構與雲端同步
+## 樣式與主題系統
 
-### 資料流轉架構
+採 Tailwind CSS v4 的 CSS-First 架構，於 `src/style.css` 以 `@theme` 定義設計代幣，主題色票則以 CSS Custom Properties 分層覆寫。
+
+```css
+@theme {
+  --font-sans:    'Outfit', 'Noto Sans TC', -apple-system, sans-serif;
+  --font-display: 'Outfit', 'Noto Sans TC', sans-serif;
+  --font-body:    'Noto Sans TC', -apple-system, sans-serif;
+  --font-mono:    'SFMono-Regular', Consolas, Menlo, monospace;
+
+  --color-brand:          var(--color-primary);
+  --color-surface-base:   var(--bg-primary);
+  --color-surface-card:   var(--bg-card);
+  --color-ink-primary:    var(--text-primary);
+  --color-border-hairline: var(--border-color);
+
+  --radius-xs: 4px;  --radius-sm: 6px;  --radius-md: 10px;
+  --radius-lg: 14px; --radius-xl: 18px; --radius-2xl: 22px;
+}
+```
+
+### 主題清單
+
+主題 class 綁定於 `.app-container`，切換時整套 CSS 變數一併替換。
+
+| Class | 模式 | 色彩調性 |
+| :--- | :--- | :--- |
+| `.theme-cloud-canvas`（預設） | 淺色 | 雲端畫布，純白襯底搭配寶石藍 |
+| `.theme-material-light` | 淺色 | 材質晴光，冷灰階與電光藍 |
+| `.theme-office-access` | 淺色 | Office 酒紅，紙本質感 |
+| `.theme-nord-light` | 淺色 | 極地雪原，北歐冰川淡藍灰 |
+| `.theme-midnight-indigo` | 深色 | Palenight，靛藍底與柔紫高亮 |
+| `.theme-github-dark` | 深色 | 石墨藍，開發者高對比暗色 |
+| `.theme-obsidian-neon` | 深色 | 暖焰工坊，黑曜石底與銅色點綴 |
+| `.theme-nord-dark` | 深色 | 極地暗夜，冷調藍黑與極光綠 |
+
+`style.css` 另保留 `.theme-midnight-slate` 與 `.theme-charcoal-ember` 兩組別名 class，對應舊版命名，行為與 `.theme-midnight-indigo`、`.theme-github-dark` 相同。
+
+### 共用樣式（`src/styles/components.css`）
+
+- `.glass-panel` — 毛玻璃背景、微邊框與懸停深度。
+- `.card-actions-reveal` — 懸停或 focus 時浮現的操作列。
+- `.type-badge` / `.category-badge` / `.comp-badge` — 狀態與類型徽章。
+- `.tool-tag` / `.tag` / `.clickable-tag` — 可點擊篩選的標籤。
+- `.modal-backdrop` / `.lightbox-backdrop` — 高斯模糊遮罩與彈窗分層。
+
+### 響應式斷點
+
+- 側邊欄：桌機固定 `260px`；`≤ 1024px` 收合為 `72px`；`≤ 900px` 轉為抽屜選單。
+- 卡片網格：桌機 4 欄、平板 2 欄、手機單欄。
+
+---
+
+## 資料層與雲端同步
+
+資料採「本地優先、雲端非同步」策略：所有寫入先落 LocalStorage 以維持即時 UI 反應，再於背景推送至 Google Sheets。推送時會附帶登入取得的 Session Token；伺服器若因權限不足或登入逾期而拒絕，前端會還原本機這份資料到寫入前的狀態並提示使用者，而不是讓畫面停留在一個雲端其實沒有的假狀態。
 
 ```mermaid
 sequenceDiagram
     participant User as 使用者操作
     participant Storage as utils/storage.js
-    participant Local as LocalStorage 本地快取
+    participant Local as LocalStorage
     participant Sheets as utils/sheetsAPI.js
-    participant GAS as Google Apps Script (雲端)
+    participant GAS as Google Apps Script
 
-    User->>Storage: 新增/編輯案例 (addOrUpdateItem)
-    Storage->>Local: 立即寫入本地 LocalStorage (0 延遲更新 UI)
-    Storage->>Sheets: 背景非同步發送 POST 請求 (pushToSheet)
-    Sheets-->>GAS: 寫入對應 Google Sheet 分頁
-    GAS-->>Sheets: 雲端同步完成
+    User->>Storage: addOrUpdateItem / deleteItem
+    Storage->>Local: 立即寫入，UI 零延遲更新
+    Storage->>Sheets: 背景 POST（附 Session Token）
+    Sheets->>GAS: write / delete
+    GAS->>GAS: 驗證 Token 與角色，重新確認擁有權
+    GAS-->>Sheets: 成功則寫入 Sheet 分頁；失敗回傳原因
+    Sheets-->>Storage: 回報結果
+    Storage-->>Local: 若失敗，還原寫入前的本機資料並提示
 ```
 
-### 資料模組與 Key 對照
+### 資料鍵對照
 
-| 模組名稱 | LocalStorage Key | Google Sheet 分頁名稱 |
+| 模組 | LocalStorage Key | Sheet 分頁 |
 | :--- | :--- | :--- |
-| **UI 設計研究** | `design_lab_ui_research` | `UI_RESEARCH` |
-| **動態研究** | `design_lab_motion_research` | `MOTION_RESEARCH` |
-| **競品分析** | `design_lab_competitors` | `COMPETITORS` |
-| **AI 工具中心** | `design_lab_ai_center` | `AI_CENTER` |
-| **設計資源** | `design_lab_resources` | `RESOURCES` |
-| **優化提案** | `design_lab_proposals` | `PROPOSALS` |
-| **團隊成員** | `design_lab_user_profiles` | `USERS` |
-| **操作通知** | `design_lab_notifications` | `NOTIFICATIONS` |
+| UI 設計研究 | `design_lab_ui_research` | `UI_RESEARCH` |
+| 動態研究 | `design_lab_motion_research` | `MOTION_RESEARCH` |
+| 競品分析 | `design_lab_competitors` | `COMPETITORS` |
+| AI 工具中心 | `design_lab_ai_center` | `AI_CENTER` |
+| 設計資源 | `design_lab_resources` | `RESOURCES` |
+| 優化提案 | `design_lab_proposals` | `PROPOSALS` |
+| 團隊成員 | `design_lab_user_profiles` | `USERS` |
+| 操作通知 | `design_lab_notifications` | `NOTIFICATIONS` |
 
-### 離線優先與媒體保留策略
+Apps Script 端點網址存於 `design_lab_sheets_url`，可於 Settings 頁面覆寫；未設定時使用 `sheetsAPI.js` 內的預設值。
 
-- 本地已上傳之 Base64 高解析圖片與影片，在自 Google Sheets 雲端拉取文字資料進行覆蓋合併時，系統會智慧保留同 ID 的本機多媒體快取，確保重新整理後畫面不遺失。
-
----
-
-## 身分驗證與權限管理
-
-### 角色權限矩陣
-
-| 角色 (Role) | 識別代表 | 案例瀏覽/檢視 | 新增案例 | 編輯/刪除案例 | 帳號密碼修改 | 團隊成員管理 |
-| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Admin** | 網站管理員 | ✅ | ✅ | ✅ (全站所有) | ✅ | ✅ (查看與排序) |
-| **User** | 一般團隊成員 | ✅ | ✅ | 僅限自己建立的案例 | ✅ (自身密碼) | ❌ |
-| **Guest** | 訪客 (`@guest`) | ✅ | ❌ | ❌ | ❌ | ❌ |
-
-### 關鍵安全防護
-
-- **防篡改機制**：非 Google Sheets 成員名單內之帳號嚴禁登入，系統絕不自動為未授權訪客建立寫入雲端。
-- **管理員防誤刪**：系統核心 Super Admin 與 Admin 帳號受程式碼保護，禁止於前端刪除。
-- **帳號模擬 (Impersonation)**：Super Admin 具備「身分模擬」功能，可無縫切換至其他成員或訪客視角進行體驗除錯，並可一鍵還原。
+`storage.js` 的 `normalizeItem()` 會在讀取時補齊舊版欄位（如 `source` / `link` 併入 `sourceUrl`），確保跨版本資料相容。自雲端拉取覆蓋本地時，系統會保留同 ID 項目的本機媒體欄位，避免既有預覽遺失。
 
 ---
 
-## 維護與擴充指南
+## 媒體上傳架構
 
-### 1. 新增一個全新視圖 (View)
+媒體檔案不進 LocalStorage，亦不轉為 Base64，一律直傳 Cloudflare R2，資料表僅保存公開網址。
 
-1. 在 `src/views/` 建立新頁面元件（例如 `MyNewView.vue`）。
-2. 在 `src/data/` 建立對應的初始資料集並於 `mockData.js` 導出。
-3. 在 `src/utils/storage.js` 及 `sheetsAPI.js` 新增對應的 `KEYS` 與 `KEY_MAP`。
-4. 在 `src/App.vue` 中的 `viewComponentMap` 與 `VIEW_ROUTES` 註冊該 View。
-5. 在 `src/components/Navigation.vue` 中的 `menuItems` 陣列加入選單圖示與名稱。
+1. 前端 `validateMediaFile()` 先行檢查副檔名與大小。
+2. 呼叫 `POST /api/r2-upload-url` 取得有效期 900 秒的預簽名 `PUT` 網址。
+3. 以 `XMLHttpRequest` 直傳 R2，並回報上傳進度。
+4. 成功後回傳 `publicUrl`，寫入該筆資料的媒體欄位。
 
-### 2. 擴充全新視覺主題
+後端會重複驗證副檔名、大小與 `Content-Type` 是否一致，並以 `crypto.randomUUID()` 重新命名，存入 `images/` 或 `videos/` 前綴。刪除端點僅接受屬於本站 `R2_PUBLIC_URL` 且符合 `images/` 或 `videos/` 路徑規則的網址。R2 金鑰全程僅存在後端環境變數。
 
-1. 在 `src/style.css` 中定義新的 Theme Class（例如 `.theme-cyberpunk`）。
-2. 填寫該主題下的 `--bg-primary`、`--color-primary`、`--text-primary`、`--border-color` 等 CSS 變數。
-3. 在 `src/components/ThemeModal.vue` 及 `src/views/Settings.vue` 的主題清單中加入新主題的選項資訊與色票預覽。
+### 格式與容量限制
+
+| 類型 | 格式 | 上限 |
+| :--- | :--- | :--- |
+| 圖片 | JPG、JPEG、PNG、WEBP | 5 MB |
+| GIF | GIF | 10 MB |
+| 影片 | MP4、WEBM、MOV | 50 MB |
+
+單檔另有 100 MB 的總上限保護。
 
 ---
 
-## 授權資訊
+## 帳號與權限
 
-本專案為內部設計團隊專屬資產，未經許可請勿擅自對外散布或商用。
+登入介面位於 Settings 頁面。密碼驗證與角色授權**全部在 Google Apps Script 後端
+（`apps-script/Code.gs`）執行**，前端只是轉送請求與呈現結果——這是本專案唯一具備
+伺服器角色的地方，即使沒有傳統後端，也是實際的信任邊界。部署方式見
+[`apps-script/README.md`](apps-script/README.md)。
+
+登入成功會取得一組 Session Token（伺服器核發，存於 `CacheService`，6 小時效期，
+使用中會自動延長），之後所有寫入 / 刪除 / 成員管理請求都必須附帶這個 Token；
+伺服器會重新查驗 Token 對應的帳號與角色，不採信前端宣稱的身分。讀取維持公開、
+不需登入，符合「訪客可瀏覽、寫入才要登入」的設計。
+
+### 角色矩陣
+
+| 角色 | 檢視 | 新增 | 編輯 | 刪除 | 修改密碼 | 成員管理 |
+| :--- | :---: | :---: | :--- | :--- | :---: | :---: |
+| Super Admin | 是 | 是 | 全站 | 全站 | 是 | 是（含身分模擬） |
+| Admin | 是 | 是 | 全站 | 全站 | 是 | 是 |
+| User | 是 | 是 | 全站（不限本人建立） | 僅限自建項目 | 僅自身 | 否 |
+| Guest（`@guest`） | 是 | 否 | 否 | 否 | 否 | 否 |
+
+### 安全機制
+
+- **密碼雜湊** — `USERS` 分頁只存放加鹽迭代雜湊（SHA-256 × 2000 次），不存明文密碼；公開讀取（`doGet`）一律移除密碼相關欄位，前端從未取得、也無從比對任何密碼。
+- **伺服器端授權** — 寫入 / 刪除 / 成員管理一律由 Apps Script 依 Token 對應的角色重新授權；前端的按鈕顯示與角色判斷僅供操作體驗使用，不是實際的權限邊界。
+- **登入失敗鎖定** — 同一帳號連續 5 次登入失敗會鎖定 5 分鐘，降低密碼猜測攻擊效率。
+- **名單控管** — 不在成員名單內的帳號無法登入，系統不會自動為未授權訪客建立雲端寫入權。
+- **管理員保護** — Super Admin 與 Admin 帳號在伺服器端受保護，無法被刪除（含前端遭繞過的情況）。
+- **編輯與刪除的擁有權規則不同** — 編輯開放給所有已登入（非訪客）使用者，不限本人建立，方便團隊共同維護同一批案例；刪除則較嚴格，伺服器會比對該筆資料實際記錄的建立者是否為目前登入者（或具管理員角色），而非採信前端傳來的欄位。新建項目的建立者資訊一律由伺服器依登入身分覆寫，前端無法冒名。
+- **身分模擬** — 僅 Super Admin 可切換至其他成員或訪客視角預覽畫面，並隨時還原；此為純前端顯示切換，實際寫入權限仍以真正登入的 Session Token 為準。
+- **通知過濾** — 一般使用者僅看到與自身相關的通知；訪客操作不留紀錄；已讀滿三天的訊息自動清除。
+
+新建帳號的臨時密碼固定為 `123456`，並標記為「首次登入必須變更密碼」，登入後前端會強制彈出修改密碼視窗。管理員也可將任一成員密碼重設回這個臨時密碼、並重新要求對方強制變更。
+
+---
+
+## 擴充指南
+
+### 新增資料模組
+
+1. 於 `src/views/` 建立 View 元件。
+2. 於 `src/data/` 建立初始資料並在 `mockData.js` 匯出。
+3. 於 `storage.js` 的 `KEYS`、`sheetsAPI.js` 的 `KEY_MAP` 與 `STORAGE_KEY_MAP` 補上對應鍵。
+4. 於 `App.vue` 的 `viewComponentMap` 與 `VIEW_ROUTES` 註冊。
+5. 於 `Navigation.vue` 的 `menuItems` 加入選單項目。
+6. 於 `CRUDModal.vue` 補上該 `type` 的表單版型與標題對照。
+
+### 新增主題
+
+1. 於 `src/style.css` 定義主題 class，填寫 `--bg-primary`、`--color-primary`、`--text-primary`、`--border-color` 等變數。
+2. 於 `ThemeModal.vue` 的 `themes` 陣列加入 class 與顯示名稱。
+3. 於 `Settings.vue` 的主題清單同步補上選項與色票預覽。
+
+---
+
+## 已知限制
+
+- 密碼雜湊與 Session 驗證雖已移至 Google Apps Script 後端，但 Apps Script 沒有原生的 bcrypt / Argon2，實作上以「每人一組隨機鹽 + SHA-256 迭代雜湊」折衷，強度不如專用密碼雜湊演算法（詳見 [`apps-script/README.md`](apps-script/README.md) 的「已知取捨」）。
+- Google Apps Script 的 Web App 網址本身仍是公開資訊（讀取本來就要公開）；能編輯該 Apps Script 專案原始碼的人，等同擁有伺服器權限，這份存取權應比照一般後端機密妥善管理。
+- LocalStorage 為單一裝置範圍，跨裝置一致性依賴 Sheets 同步；離線期間的寫入需重新連線後才會推送，且若寫入遭伺服器拒絕（例如登入已逾期），畫面會還原並提示，而非靜默失敗。
+- 專案目前未配置測試與 lint 流程。
+
+---
+
+## 授權
+
+本專案為內部設計團隊資產，未經許可請勿對外散布或商業使用。

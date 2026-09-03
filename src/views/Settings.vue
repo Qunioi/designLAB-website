@@ -253,10 +253,17 @@
                         <span class="user-role-tag" :class="(p.role || '').toLowerCase().includes('admin') ? 'admin' : 'user'">
                           <span>{{ p.role || 'User' }}</span>
                         </span>
-                        <button 
-                          v-if="!(p.role || '').toLowerCase().includes('admin') && p.username !== '@quni_jhuang' && p.username !== '@ray_zhao'" 
-                          class="del-user-btn" 
-                          @click="handleDeleteUser(p.username)" 
+                        <button
+                          class="del-user-btn reset-pass-btn"
+                          @click="handleResetPassword(p.username)"
+                          title="重設為臨時密碼 123456，該成員下次登入需強制變更"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        </button>
+                        <button
+                          v-if="!(p.role || '').toLowerCase().includes('admin') && p.username !== '@quni_jhuang' && p.username !== '@ray_zhao'"
+                          class="del-user-btn"
+                          @click="handleDeleteUser(p.username)"
                           title="刪除此成員"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -324,37 +331,6 @@
               <div class="modal-footer">
                 <button class="cancel-btn" @click="showChangePassModal = false">取消</button>
                 <button class="submit-btn" @click="handleChangePasswordSubmit">確認修改密碼</button>
-              </div>
-            </div>
-          </div>
-        </Teleport>
-
-        <!-- 管理員密碼驗證 Modal 視窗 (帶 :class="currentTheme") -->
-        <Teleport to="body">
-          <div v-if="showAuthModal" class="modal-backdrop" :class="currentTheme" @click.self="showAuthModal = false">
-            <div class="modal-card auth-modal glass-panel" role="dialog" aria-modal="true">
-              <div class="modal-header">
-                <h3>管理員身份解鎖驗證</h3>
-                <button type="button" class="close-btn" aria-label="關閉管理員驗證" @click="showAuthModal = false">✕</button>
-              </div>
-              <div class="modal-body">
-                <p class="auth-desc">請輸入管理員 <code>@quni_jhuang</code> 專屬驗證密碼（設定於 USERS 表單）：</p>
-                <div class="field-group">
-                  <input 
-                    v-model="inputPasscode" 
-                    type="password" 
-                    placeholder="請輸入管理員解鎖密碼" 
-                    class="field-input auth-input" 
-                    @keyup.enter="handleVerifyPasscode"
-                    ref="passcodeInputRef"
-                    autofocus
-                  />
-                </div>
-                <p v-if="authError" class="auth-error-msg">⚠️ 解鎖失敗：密碼不正確！請重新輸入。</p>
-              </div>
-              <div class="modal-footer">
-                <button class="cancel-btn" @click="showAuthModal = false">取消</button>
-                <button class="submit-btn" @click="handleVerifyPasscode">驗證解鎖</button>
               </div>
             </div>
           </div>
@@ -525,15 +501,16 @@ import {
   testSheetsConnection, syncAllFromSheets, pushAllToSheets
 } from '../utils/sheetsAPI';
 
-import { 
-  getUserProfiles, 
+import {
+  getUserProfiles,
   getCurrentUser,
-  setCurrentUser, 
+  setCurrentUser,
   loginByAccountID,
-  isAdminUser,
-  lockAdmin,
+  logout as logoutUser,
+  isSuperAdminUser,
   addUserProfile,
   removeUserProfile,
+  adminResetPassword,
   reorderUserProfiles,
   getImpersonatorStatus,
   impersonateUser,
@@ -545,10 +522,9 @@ const targetImpersonateUser = ref('');
 const impersonatorInfo = ref(getImpersonatorStatus());
 const isImpersonating = computed(() => impersonatorInfo.value.isImpersonating);
 
-// 是否為開發者帳號 Quni (或是正處於模擬狀態中的開發者)
-const isDeveloperAccount = computed(() => {
-  return isImpersonating.value || props.username.toLowerCase() === '@quni_jhuang' || props.username.toLowerCase() === 'quni_jhuang';
-});
+// 身分模擬區塊僅對最高管理員 (Super Admin) 顯示（或正處於模擬狀態中時，方便看到「退出模擬」）；
+// 一律以伺服器記錄的角色為準，不再有任何帳號名稱字串可以取得這塊 UI。
+const isDeveloperAccount = computed(() => isImpersonating.value || isSuperAdminUser());
 
 const handleStartImpersonate = () => {
   if (!targetImpersonateUser.value) return;
@@ -615,15 +591,10 @@ const newUserNickname = ref('');
 const newUsername = ref('');
 const newUserRole = ref('USER');
 
-const showAuthModal = ref(false);
-const inputPasscode = ref('');
-const authError = ref(false);
-
-
-const handleAddUser = () => {
+const handleAddUser = async () => {
+  if (!newUserNickname.value.trim() || !newUsername.value.trim()) return;
   try {
-    if (!newUserNickname.value.trim() || !newUsername.value.trim()) return;
-    addUserProfile({
+    await addUserProfile({
       nickname: newUserNickname.value,
       username: newUsername.value,
       role: newUserRole.value
@@ -632,31 +603,40 @@ const handleAddUser = () => {
     newUsername.value = '';
     newUserRole.value = 'USER';
     refreshProfiles();
-    alert('成功新增成員並同步至 Google Sheets USERS 分頁！');
+    alert('成功新增成員並同步至 Google Sheets USERS 分頁！臨時密碼為 123456，該成員首次登入需強制變更密碼。');
   } catch (err) {
     alert(err.message || '新增成員失敗！');
   }
 };
 
 
-const handleDeleteUser = (targetUsername) => {
-  if (confirm(`確定要刪除成員 ${targetUsername} 嗎？`)) {
-    try {
-      removeUserProfile(targetUsername);
-      refreshProfiles();
-      alert('已成功刪除該成員！');
-    } catch (err) {
-      alert(err.message || '刪除成員失敗！');
-    }
+const handleDeleteUser = async (targetUsername) => {
+  if (!confirm(`確定要刪除成員 ${targetUsername} 嗎？`)) return;
+  try {
+    await removeUserProfile(targetUsername);
+    refreshProfiles();
+    alert('已成功刪除該成員！');
+  } catch (err) {
+    alert(err.message || '刪除成員失敗！');
+  }
+};
+
+const handleResetPassword = async (targetUsername) => {
+  if (!confirm(`確定要將 ${targetUsername} 的密碼重設為臨時密碼 123456 嗎？\n該成員下次登入時將被強制要求變更密碼。`)) return;
+  const result = await adminResetPassword(targetUsername);
+  if (result.success) {
+    alert(`已將 ${targetUsername} 的密碼重設為臨時密碼 123456，請通知該成員盡快登入並修改密碼。`);
+  } else {
+    alert(result.error || '重設密碼失敗！');
   }
 };
 
 
+// 是否為管理員（Super Admin / Admin）：一律以目前登入 Session 對應的伺服器角色為準，
+// 不再有任何帳號名稱字串可以繞過此判斷。
 const isAdmin = computed(() => {
-  const currentUser = getCurrentUser();
-  const r = (currentUser.role || '').toLowerCase();
-  const u = (props.username || currentUser.username || '').toLowerCase();
-  return u === '@quni_jhuang' || u === 'quni_jhuang' || r === 'super admin' || r === 'admin' || r === 'super_admin';
+  const role = (getCurrentUser().role || '').toLowerCase();
+  return role === 'super admin' || role === 'admin';
 });
 
 // 修改個人密碼狀態與處理方法
@@ -674,7 +654,7 @@ const openChangePasswordModal = () => {
   showChangePassModal.value = true;
 };
 
-const handleChangePasswordSubmit = () => {
+const handleChangePasswordSubmit = async () => {
   passErrorMsg.value = '';
   if (!oldPasswordInput.value) {
     passErrorMsg.value = '請輸入原密碼！';
@@ -697,45 +677,19 @@ const handleChangePasswordSubmit = () => {
     return;
   }
 
-  const result = updateUserPassword(props.username, oldPasswordInput.value, newPasswordInput.value);
+  const result = await updateUserPassword(props.username, oldPasswordInput.value, newPasswordInput.value);
   if (result.success) {
     alert('密碼修改成功！新密碼已儲存。');
     showChangePassModal.value = false;
+    mustChangePassword.value = false;
   } else {
     passErrorMsg.value = result.error || '密碼修改失敗！';
   }
 };
 
-const handleVerifyPasscode = () => {
-  if (verifyAdminPasscode(inputPasscode.value)) {
-    showAuthModal.value = false;
-    authError.value = false;
-    inputPasscode.value = '';
-    refreshProfiles();
-    const u = { nickname: localNickname.value || 'Quni', username: '@quni_jhuang', role: 'ADMIN' };
-    emit('update-user', u);
-    emit('update-nickname', u.nickname);
-  } else {
-    authError.value = true;
-  }
-};
-
-const handleLockAdmin = () => {
-  lockAdmin();
+const handleLogout = async () => {
   showUserMgmtModal.value = false;
-  const u = setCurrentUser('訪客', '@account', 'USER');
-  refreshProfiles();
-  emit('update-user', u);
-  emit('update-nickname', u.nickname);
-};
-
-const handleLogout = () => {
-  try {
-    stopImpersonating();
-  } catch(e){}
-  lockAdmin();
-  showUserMgmtModal.value = false;
-  const u = setCurrentUser('訪客', '@guest', 'USER');
+  const u = await logoutUser();
   localNickname.value = u.nickname;
   localUsername.value = u.username;
   quickInputID.value = '';
@@ -766,7 +720,12 @@ watch([quickInputID, quickInputPassword], () => {
   if (loginErrorMsg.value) loginErrorMsg.value = '';
 });
 
-const handleQuickIDLogin = () => {
+// 登入成功但伺服器標示「必須變更密碼」時（例如新帳號的臨時密碼、或管理員重設過），
+// 強制先跳出修改密碼視窗，避免使用者一直用臨時密碼 123456 登入。
+const mustChangePassword = ref(false);
+const isLoggingIn = ref(false);
+
+const handleQuickIDLogin = async () => {
   loginErrorMsg.value = '';
   const input = quickInputID.value.trim();
   const pass = quickInputPassword.value.trim();
@@ -780,7 +739,10 @@ const handleQuickIDLogin = () => {
     return;
   }
 
-  const res = loginByAccountID(input, pass);
+  isLoggingIn.value = true;
+  const res = await loginByAccountID(input, pass);
+  isLoggingIn.value = false;
+
   if (res.error) {
     loginErrorMsg.value = res.error;
     return;
@@ -795,6 +757,12 @@ const handleQuickIDLogin = () => {
     quickInputPassword.value = '';
     showLoginPassword.value = false;
     loginErrorMsg.value = '';
+
+    if (res.mustChangePassword) {
+      mustChangePassword.value = true;
+      openChangePasswordModal();
+      passErrorMsg.value = '首次登入請先變更密碼（原密碼為臨時密碼 123456）。';
+    }
   }
 };
 
@@ -803,44 +771,6 @@ const isNicknameChanged = computed(() => {
   const propNick = (props.nickname || '').trim();
   return currentNick !== '' && currentNick !== propNick;
 });
-
-const handleUserSwitch = (e) => {
-  const selectedUser = e.target.value;
-  if (!selectedUser) return;
-
-  if (selectedUser.toLowerCase() === '@quni_jhuang') {
-    if (!isAdmin.value) {
-      showAuthModal.value = true;
-      authError.value = false;
-      inputPasscode.value = '';
-      return;
-    }
-  }
-
-  if (selectedUser.toLowerCase() === '@account') {
-    lockAdmin();
-    const user = setCurrentUser('訪客', '@account', 'USER');
-    localNickname.value = user.nickname;
-    localUsername.value = user.username;
-    refreshProfiles();
-    emit('update-user', user);
-    emit('update-nickname', user.nickname);
-    return;
-  }
-
-  const res = loginByAccountID(selectedUser);
-  if (res.requiresPassword) {
-    showAuthModal.value = true;
-    authError.value = false;
-    inputPasscode.value = '';
-  } else if (res.user) {
-    localNickname.value = res.user.nickname;
-    localUsername.value = res.user.username;
-    refreshProfiles();
-    emit('update-user', res.user);
-    emit('update-nickname', res.user.nickname);
-  }
-};
 
 const saveProfile = () => {
   const nick = (localNickname.value || '').trim();
@@ -2253,6 +2183,10 @@ const lightThemes = [
 
 .del-user-btn:hover {
   opacity: 1;
+}
+
+.reset-pass-btn:hover {
+  color: var(--color-primary);
 }
 
 .name-badge-row {
