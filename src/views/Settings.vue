@@ -42,7 +42,6 @@
             title="登出目前帳號"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-            <!-- <span>登出</span> -->
           </button>
         </div>
 
@@ -195,7 +194,7 @@
                   </svg>
                   <span>團隊成員管理</span>
                 </h3>
-                <button type="button" class="close-btn" aria-label="關閉團隊成員管理" @click="showUserMgmtModal = false">✕</button>
+                <button type="button" class="close-btn" aria-label="關閉團隊成員管理" @click="showUserMgmtModal = false"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
               </div>
 
               <div class="modal-body user-mgmt-body">
@@ -292,7 +291,7 @@
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                   <span>修改個人密碼 (Change Password)</span>
                 </h3>
-                <button type="button" class="close-btn" aria-label="關閉修改密碼" @click="showChangePassModal = false">✕</button>
+                <button type="button" class="close-btn" aria-label="關閉修改密碼" @click="showChangePassModal = false"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
               </div>
               <div class="modal-body">
                 <p class="auth-desc">修改帳號 <code>{{ username }}</code> 的個人登入密碼：</p>
@@ -991,7 +990,6 @@ const lightThemes = [
   padding: var(--space-2);
   border-radius: 8px;
   background: rgba(239, 68, 68, 0.1);
-  /* border: 1px solid rgba(239, 68, 68, 0.25); */
   color: var(--color-danger);
   font-size: var(--fs-meta);
   font-weight: var(--fw-semibold);
@@ -1045,7 +1043,6 @@ const lightThemes = [
   background: var(--border-color);
 }
 
-/* Form */
 .profile-form {
   display: flex;
   flex-direction: column;
@@ -1393,7 +1390,6 @@ const lightThemes = [
   border: 1px solid var(--border-color);
 }
 
-/* Auth Modal & User Management Modal (100% 連動當前 Appearance 主題色) */
 /* Auth Modal & User Management Modal (100% 連動當前 Appearance 主題色) */
 .auth-modal,
 .user-mgmt-modal {

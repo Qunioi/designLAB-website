@@ -20,7 +20,7 @@ defineProps({
 .lbs-text {
   margin: 0;
   color: var(--text-secondary);
-  font-size: var(--fs-meta);
+  font-size: var(--fs-label);
   line-height: var(--lh-relaxed);
   white-space: pre-line;
 }

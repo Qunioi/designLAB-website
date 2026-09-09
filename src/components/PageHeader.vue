@@ -7,13 +7,11 @@
       </div>
 
       <div class="header-actions">
-        <!-- 允許自訂操作按鈕區域 -->
         <slot name="actions" />
 
         <!-- 通知鈴鐺組件 (訪客登入不顯示，行動版下收納至頂部 Header 欄內) -->
         <NotificationBell v-if="showNotification && !isGuest" class="page-header-bell" />
 
-        <!-- 新增按鈕 (訪客登入不顯示) -->
         <button
           v-if="addBtnLabel && !isGuest"
           type="button"

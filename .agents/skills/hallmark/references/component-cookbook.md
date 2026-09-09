@@ -117,7 +117,7 @@ When you pick an archetype, **state the knob values you chose** in the macrostru
 | **F6 Product card grid** | Card ratio: 3/4 portrait · 1/1 square · 4/3 landscape | Density: 3-up · 4-up · 5-up | Micro-action: Add · Save · View → · none |
 | **C1 Outlined chip** | Shape: rectangular · pill (only allowed for tactile/playful tones) · slab | Density: spacious · compact | Adornment: arrow · plus · none |
 | **C2 Inline form-as-CTA** | Field count: 1 · 2 · 3 | Submit position: end-of-row · separate line · embedded button | Helper: above · below · none |
-| **C3 Typographic link CTA** | Underline: solid · dashed · double · none | Hover behaviour: thicken · slide · colour shift | Arrow: → · ↗ · none |
+| **C3 Typographic link CTA** | Underline: solid · dashed · double · none | Hover behaviour: thicken · slide · colour shift | Arrow: → · · none |
 | **C4 Sticky bottom bar** | Reveal: always · scroll-up · after fold | Anchored: viewport bottom · viewport top · inline at bottom | Shadow: hairline · none · subtle |
 | **T1 Pull quote w/ marginalia** | Quote treatment: italic display · roman large · serif italic | Attribution: signed · stamped · timestamped | Marginalia: none · timeline · 1 footnote |
 | **T2 Logo wall (hairline)** | Layout: single row · 2 rows · grid 3×N | Logo treatment: monochrome ink · brand colour · ghosted | Divider: hairline cells · none |

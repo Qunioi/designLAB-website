@@ -67,7 +67,11 @@ export function normalizeSheetRecord(record) {
     }
   }
 
-  const normalized = { ...record, ...embedded };
+  // 欄位真正存在於 record 就以 record 為準（例如剛編輯過、還沒重新序列化的
+  // 表單資料）；record 完全沒有這個欄位（真正的舊格式資料列）才用 embedded 補上。
+  // 反過來寫（embedded 蓋過 record）會讓每次編輯都被這份夾帶的舊 JSON 快照蓋掉，
+  // 使用者剛存的內容表面上存進去了，實際上馬上被打回原本的舊值。
+  const normalized = { ...embedded, ...record };
   normalized.id = normalized.id || record.ID || record.Id || '';
   normalized.createdAt = normalized.createdAt || record['建立時間 (createdAt)'] || '';
   normalized.updatedAt = normalized.updatedAt || record['最後更新時間 (updatedAt)'] || '';

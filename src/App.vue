@@ -1,15 +1,12 @@
 <template>
-  <!-- 最外層容器動態套用當前主題 class -->
   <div class="app-container" :class="currentTheme">
-    <!-- Navigation Sidebar -->
-    <Navigation 
+    <Navigation
       :current-view="currentView" 
       :nickname="nickname"
       :username="username"
       @change-view="handleViewChange" 
     />
 
-    <!-- Main Content Area -->
     <main class="main-content">
       <Transition name="fade" mode="out-in">
           <component
@@ -44,11 +41,12 @@
     />
 
     <!-- Universal CRUD Modal -->
-    <CRUDModal 
-      :is-open="crudModalOpen" 
-      :type="crudType" 
-      :item="crudItem" 
+    <CRUDModal
+      :is-open="crudModalOpen"
+      :type="crudType"
+      :item="crudItem"
       :current-theme="currentTheme"
+      :saving="crudSaving"
       @close="crudModalOpen = false"
       @save="handleSave"
     />
@@ -140,18 +138,16 @@ const syncViewFromUrl = () => {
 
 import { getCurrentUser, saveUserTheme, getUserTheme } from './utils/userStore';
 
-// 個人資訊狀態
 const nickname = ref('訪客');
 const username = ref('@account');
 
-// 主題切換狀態
 const currentTheme = ref('theme-cloud-canvas');
 
-// 背景同步狀態
 const isSyncing = ref(false);
 const crudModalOpen = ref(false);
 const crudType = ref('UI_RESEARCH');
 const crudItem = ref(null);
+const crudSaving = ref(false);
 
 // 被高亮的項目 ID（用於搜尋/關聯跳轉後自動定位）
 const highlightedId = ref('');
@@ -186,7 +182,6 @@ onMounted(async () => {
   }
 });
 
-// 切換分頁
 const handleViewChange = (view) => {
   currentView.value = view;
   highlightedId.value = ''; // 清除高亮
@@ -220,16 +215,24 @@ const openCrudForCreate = (viewName) => {
   handleTriggerCrud({ type: storageKey, item: null });
 };
 
-// 處理表單儲存並全自動刷新頁面回到列表
-const handleSave = ({ type, item }) => {
-  addOrUpdateItem(type, item);
+// 處理表單儲存：先寫入本機（畫面已同步更新），儲存按鈕維持 loading，
+// 等雲端 Sheets 真的同步完成（成功或失敗都算「結束等待」）才關閉 Modal 並刷新頁面。
+// 同步失敗時 storage.js 的 rollbackWrite_ 已經跳出 alert 並還原本機資料，
+// 這裡讓 Modal 保持開啟，使用者可以直接看著表單重試或取消，不會誤以為存好了。
+const handleSave = async ({ type, item }) => {
+  crudSaving.value = true;
+  const { synced } = addOrUpdateItem(type, item);
+  const result = await synced;
+  crudSaving.value = false;
+
+  if (result && result.success === false) return;
+
   crudModalOpen.value = false;
   highlightedId.value = '';
   updateUrl(currentView.value, '');
   triggerRefresh();
 };
 
-// 處理跳轉高亮與開啟彈窗
 const handleNavigate = ({ view, id }) => {
   currentView.value = view;
   highlightedId.value = id || '';
@@ -252,7 +255,6 @@ const handleThemeSelect = (themeClass) => {
   saveUserTheme(themeClass);
 };
 
-// 處理個人暱稱變更
 const handleNicknameUpdate = (newNickname) => {
   nickname.value = newNickname;
   localStorage.setItem('design_lab_nickname', newNickname);

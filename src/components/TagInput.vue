@@ -1,10 +1,12 @@
 <template>
   <div class="tag-input-container" ref="containerRef" @click="focusInput">
     <div class="tag-chips-wrapper">
-      <span v-for="(tag, index) in tags" :key="index" class="tag-chip">
-        # {{ tag }}
-        <button type="button" class="remove-btn" @click.stop="removeTag(index)" title="移除標籤">✕</button>
-      </span>
+      <div v-for="(tag, index) in tags" :key="index" class="tag-chip">
+        <span># {{ tag }}</span>
+        <button type="button" class="remove-btn" @click.stop="removeTag(index)" title="移除標籤">
+          <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
 
       <input
         ref="inputRef"
@@ -14,7 +16,7 @@
         @keydown.enter.prevent="addCurrentInput"
         @keydown.comma.prevent="addCurrentInput"
         @keydown.delete="handleBackspace"
-        @focus="isFocused = true"
+        @focus="handleFocus"
         @blur="handleBlur"
         class="chip-input"
       />
@@ -22,7 +24,7 @@
 
     <!-- 歷史標籤建議選單 (Suggested Tags) -->
     <Transition name="fade">
-      <div v-show="isFocused && filteredSuggestions.length > 0" class="suggestions-dropdown glass-panel" @mousedown.prevent>
+      <div v-show="isFocused && filteredSuggestions.length > 0" class="suggestions-dropdown glass-panel" :class="{ 'drop-up': dropUp }" @mousedown.prevent>
         <div class="dropdown-header">
           <span>歷史添加過的標籤 (點擊快速新增)</span>
         </div>
@@ -67,6 +69,19 @@ const inputQuery = ref('');
 const isFocused = ref(false);
 const inputRef = ref(null);
 const containerRef = ref(null);
+const dropUp = ref(false);
+
+// 表單欄位可能被排到彈窗接近底部（例如放在最後一個內容區塊），下方空間
+// 不夠時建議選單改往上開，避免被固定在下方的「取消／儲存」按鈕列擋住。
+const DROPDOWN_ESTIMATED_HEIGHT = 220;
+const handleFocus = () => {
+  isFocused.value = true;
+  if (containerRef.value) {
+    const rect = containerRef.value.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    dropUp.value = spaceBelow < DROPDOWN_ESTIMATED_HEIGHT && rect.top > DROPDOWN_ESTIMATED_HEIGHT;
+  }
+};
 
 watch(() => props.modelValue, (newVal) => {
   tags.value = [...(newVal || [])];
@@ -179,6 +194,9 @@ const filteredSuggestions = computed(() => {
   line-height: var(--lh-tight);
   transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
 }
+.tag-chip span {
+  text-box: trim-both cap alphabetic;
+}
 
 .tag-chip:hover {
   background: var(--bg-hover);
@@ -231,6 +249,11 @@ const filteredSuggestions = computed(() => {
   box-shadow: var(--shadow-surface);
   z-index: 100;
   overflow: hidden;
+}
+
+.suggestions-dropdown.drop-up {
+  top: auto;
+  bottom: calc(100% + 4px);
 }
 
 .dropdown-header {

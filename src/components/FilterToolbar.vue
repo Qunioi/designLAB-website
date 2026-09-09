@@ -68,7 +68,6 @@
             aria-label="更多篩選與排序"
             @click.stop="$emit('toggle-dropdown', 'adv_filter')"
           >
-            <!-- 控制器 Sliders SVG Icon -->
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="4" y1="21" x2="4" y2="14"></line>
               <line x1="4" y1="10" x2="4" y2="3"></line>
@@ -145,11 +144,13 @@
       <span class="chips-label">已選條件：</span>
       <div class="chip-list">
         <template v-for="f in filters" :key="f.field">
-          <span v-for="opt in multiFilterValues[f.field]" :key="opt" class="tag-chip">
+          <div v-for="opt in multiFilterValues[f.field]" :key="opt" class="tag-chip">
             <small class="chip-category-prefix">{{ getFilterEnglishTitle(f) }}:</small>
-            {{ f.field === 'tags' ? '#' + opt : opt }}
-            <button class="chip-remove-btn" @click="$emit('remove-option', { field: f.field, opt })" title="移除條件">✕</button>
-          </span>
+            <span>{{ f.field === 'tags' ? '#' + opt : opt }}</span>
+            <button class="chip-remove-btn" @click="$emit('remove-option', { field: f.field, opt })" title="移除條件">
+              <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
         </template>
       </div>
       <button class="reset-all-tags-btn" @click="$emit('reset-all')">清除全部篩選</button>
@@ -560,6 +561,10 @@ const getFilterButtonLabel = (f) => {
   padding: var(--space-1) var(--space-3);
   border-radius: 99px;
   line-height: var(--lh-tight);
+  
+}
+.tag-chip span {
+  text-box: trim-both cap alphabetic;
 }
 
 .chip-category-prefix {

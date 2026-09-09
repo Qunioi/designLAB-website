@@ -7,7 +7,7 @@ export { checkDeletePermission } from './storage';
 
 
 const NOTIFICATIONS_KEY = 'design_lab_notifications';
-const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000; // 3 天毫秒數
+const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
 
 import { getCurrentUser as getUserFromStore } from './userStore';
 

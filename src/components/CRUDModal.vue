@@ -29,16 +29,20 @@
               <input v-model="form.sourceUrl" type="url" required @blur="form.sourceUrl = ensureProtocol(form.sourceUrl)" placeholder="例如：https://linear.app" />
             </div>
             <div class="form-group full-width">
-              <label>標籤 (按 Enter 新增標籤，可點選歷史標籤)</label>
-              <TagInput v-model="form.tags" :suggested-tags="historyTags" placeholder="輸入標籤如：Bento Grid, SaaS..." />
-            </div>
-            <div class="form-group full-width">
-              <label>圖片上傳</label>
+              <label>圖片上傳<span class="field-help-inline">JPG / JPEG / PNG / GIF / WEBP</span> <span class="required">*</span><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></label>
               <ImagePathInput v-model="form.cover" required />
             </div>
             <div class="form-group full-width">
-              <label>研究心得 / 可借鏡重點</label>
+              <label>研究重點</label>
               <textarea v-model="form.takeaways" rows="3" required placeholder="請輸入詳細的研究心得或設計分析..."></textarea>
+            </div>
+            <div class="form-group full-width">
+              <label>值得參考<span class="field-help-inline">選填，一行一項，會顯示成條列重點</span></label>
+              <textarea v-model="form.highlights" rows="3" placeholder="例如：&#10;設計變數集中管理，減少重複設定&#10;支援多主題與品牌切換"></textarea>
+            </div>
+            <div class="form-group full-width">
+              <label>適用情境<span class="field-help-inline">按 Enter 新增標籤，可點選歷史標籤</span></label>
+              <TagInput v-model="form.tags" :suggested-tags="historyTags" placeholder="輸入標籤如：Bento Grid, SaaS..." />
             </div>
           </div>
 
@@ -49,7 +53,7 @@
               <input v-model="form.title" type="text" placeholder="例如：Dynamic Island 彈性轉場動畫" required />
             </div>
             <div class="form-group">
-              <label>動畫類型 (可輸入或從建議選取) <span class="required">*</span></label>
+              <label>動畫類型<span class="field-help-inline">可輸入或從建議選取</span> <span class="required">*</span></label>
               <CategoryInput v-model="form.motionType" :options="historyCategories" placeholder="例如：Micro-interaction, Drag & Drop" required />
             </div>
             <div class="form-group">
@@ -57,24 +61,28 @@
               <input v-model="form.sourceUrl" type="url" required @blur="form.sourceUrl = ensureProtocol(form.sourceUrl)" placeholder="請貼上來源網址" />
             </div>
             <div class="form-group full-width">
-              <label>影片檔案（MP4 / WEBM / MOV）<span class="required">*</span><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></label>
+              <label>影片檔案<span class="field-help-inline">MP4 / WEBM / MOV</span> <span class="required">*</span><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></label>
               <FileUploader v-model="form.videoUrl" accept="video/mp4,video/webm,video/quicktime" placeholder="選擇影片檔案" />
             </div>
             <div class="form-group full-width">
-              <label>圖片上傳（JPG / JPEG / PNG / GIF / WEBP）<span class="required">*</span><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></label>
+              <label>圖片上傳<span class="field-help-inline">JPG / JPEG / PNG / GIF / WEBP</span> <span class="required">*</span><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></label>
               <ImagePathInput v-model="form.cover" />
             </div>
             <div class="form-group full-width">
-              <label>製作工具 (按 Enter 新增標籤，可點選歷史製作工具) <span class="required">*</span></label>
-              <TagInput v-model="form.tools" :suggested-tags="historyTools" placeholder="輸入製作工具如：SwiftUI, Vue, GSAP..." />
+              <label>效果解析</label>
+              <textarea v-model="form.takeaways" rows="4" required placeholder="請描述此動畫的物理特性與可借鏡處..."></textarea>
             </div>
             <div class="form-group full-width">
-              <label>標籤 (按 Enter 新增標籤，可點選歷史標籤)</label>
+              <label>適用情境<span class="field-help-inline">按 Enter 新增標籤，可點選歷史標籤</span></label>
               <TagInput v-model="form.tags" :suggested-tags="historyTags" placeholder="輸入標籤如：Spring Animation, iOS..." />
             </div>
             <div class="form-group full-width">
-              <label>動畫特色與借鏡重點</label>
-              <textarea v-model="form.takeaways" rows="4" required placeholder="請描述此動畫的物理特性與可借鏡處..."></textarea>
+              <label>製作工具<span class="field-help-inline">按 Enter 新增標籤，可點選歷史製作工具；會自動變成下面「實作資訊」表格的第一列</span> <span class="required">*</span></label>
+              <TagInput v-model="form.tools" :suggested-tags="historyTools" placeholder="輸入製作工具如：SwiftUI, Vue, GSAP..." />
+            </div>
+            <div class="form-group full-width">
+              <label>實作資訊<span class="field-help-inline">選填，「製作工具」以外的欄位名稱與內容都可自訂、新增或刪除</span></label>
+              <KeyValueListInput v-model="form.implInfo" />
             </div>
           </div>
 
@@ -92,7 +100,7 @@
               </select>
             </div>
             <div class="form-group full-width">
-              <label>標籤 (按 Enter 新增標籤，可點選下方歷史建議標籤)</label>
+              <label>標籤<span class="field-help-inline">按 Enter 新增標籤，可點選下方歷史建議標籤</span></label>
               <TagInput v-model="form.tags" :suggested-tags="historyTags" placeholder="輸入標籤如：Mobile UX, Fintech..." />
             </div>
             <div class="form-group full-width">
@@ -100,8 +108,12 @@
               <input v-model="form.url" type="url" required @blur="form.url = ensureProtocol(form.url)" placeholder="例如：https://figma.com" />
             </div>
             <div class="form-group full-width">
-              <label>圖片上傳</label>
+              <label>圖片上傳<span class="field-help-inline">JPG / JPEG / PNG / GIF / WEBP</span> <span class="required">*</span><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></label>
               <ImagePathInput v-model="form.screenshot" required />
+            </div>
+            <div class="form-group full-width">
+              <label>值得參考與借鏡之處</label>
+              <textarea v-model="form.takeaways" rows="3" required placeholder="我們如何參考此競品的優點、避免其缺點？" ></textarea>
             </div>
             <div class="form-group full-width">
               <label>優點 (Pros)</label>
@@ -110,10 +122,6 @@
             <div class="form-group full-width">
               <label>缺點 (Cons)</label>
               <textarea v-model="form.cons" rows="2" required placeholder="請輸入競品設計缺點，可條列..." ></textarea>
-            </div>
-            <div class="form-group full-width">
-              <label>值得參考與借鏡之處</label>
-              <textarea v-model="form.takeaways" rows="3" required placeholder="我們如何參考此競品的優點、避免其缺點？" ></textarea>
             </div>
           </div>
 
@@ -132,7 +140,7 @@
               <input v-model="form.url" type="url" @blur="form.url = ensureProtocol(form.url)" placeholder="例如：https://chatgpt.com" required />
             </div>
             <div class="form-group full-width">
-              <label>工具封面 <span class="required">*</span></label>
+              <label>工具封面<span class="field-help-inline">JPG / JPEG / PNG / GIF / WEBP</span> <span class="required">*</span><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></label>
               <ImagePathInput v-model="form.cover" required />
             </div>
             <div class="form-group full-width">
@@ -144,7 +152,11 @@
               <textarea v-model="form.prompt" rows="3" placeholder="請輸入經測試效果良好的 Prompt..." required></textarea>
             </div>
             <div class="form-group full-width">
-              <label>工作流程 <span class="required">*</span><span class="field-help-inline">請用 → 分隔步驟</span></label>
+              <label>適合用途<span class="field-help-inline">選填，按 Enter 新增標籤，可點選歷史標籤</span></label>
+              <TagInput v-model="form.tags" :suggested-tags="historyTags" placeholder="輸入適合用途如：Landing Page, Dashboard..." />
+            </div>
+            <div class="form-group full-width">
+              <label>工作流程<span class="field-help-inline">請用 → 分隔步驟</span> <span class="required">*</span></label>
               <textarea v-model="form.workflow" rows="2" placeholder="例如：ChatGPT 優化 Prompt -> Midjourney 生成 -> Figma 局部微調" required></textarea>
             </div>
           </div>
@@ -164,12 +176,20 @@
               <input v-model="form.url" type="text" @blur="form.url = ensureProtocol(form.url)" placeholder="例如：https://awwwards.com" required />
             </div>
             <div class="form-group full-width">
-              <label>圖片上傳</label>
+              <label>圖片上傳<span class="field-help-inline">JPG / JPEG / PNG / GIF / WEBP</span><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></label>
               <ImagePathInput v-model="form.screenshot" />
+            </div>
+            <div class="form-group full-width">
+              <label>標籤<span class="field-help-inline">按 Enter 新增標籤，可點選歷史標籤</span></label>
+              <TagInput v-model="form.tags" :suggested-tags="historyTags" placeholder="輸入標籤如：Web Design, Motion..." />
             </div>
             <div class="form-group full-width">
               <label>網站簡短說明</label>
               <textarea v-model="form.desc" rows="3" placeholder="簡述網站特色與用途..."></textarea>
+            </div>
+            <div class="form-group full-width">
+              <label>推薦用途<span class="field-help-inline">選填</span></label>
+              <textarea v-model="form.usage" rows="2" placeholder="例如：提案前的靈感探索、設計趨勢研究..."></textarea>
             </div>
           </div>
 
@@ -205,7 +225,10 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn-cancel" @click="close">取消</button>
-            <button type="submit" class="btn-save">儲存資料</button>
+            <button type="submit" class="btn-save" :disabled="saving" :aria-busy="saving">
+              <svg v-if="saving" class="animate-spin btn-save-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+              {{ saving ? '儲存中...' : '儲存資料' }}
+            </button>
           </div>
         </form>
       </div>
@@ -219,6 +242,7 @@ import TagInput from './TagInput.vue';
 import CategoryInput from './CategoryInput.vue';
 import FileUploader from './FileUploader.vue';
 import ImagePathInput from './ImagePathInput.vue';
+import KeyValueListInput from './KeyValueListInput.vue';
 import { getStorageData } from '../utils/storage';
 import { ensureProtocol } from '../utils/formatters';
 
@@ -238,6 +262,12 @@ const props = defineProps({
   currentTheme: {
     type: String,
     default: 'theme-cloud-canvas'
+  },
+  // 儲存＋雲端同步是否還在進行中：由父層在 @save 之後、資料實際同步完成前設為 true，
+  // 按鈕顯示 loading 並鎖住，避免使用者誤以為已經存好、或重複送出。
+  saving: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -263,12 +293,10 @@ const typeLabel = computed(() => {
 const form = ref({});
 
 // 自動收集歷史曾添加過的所有標籤
+// 只建議「目前這個類型」自己建過的標籤，不要混進其他頁面的標籤——
+// 跟 historyTools（只拉 MOTION_RESEARCH）是同一種邏輯。
 const historyTags = computed(() => {
-  const allKeyData = [
-    ...getStorageData('UI_RESEARCH'),
-    ...getStorageData('MOTION_RESEARCH'),
-    ...getStorageData('COMPETITORS')
-  ];
+  const allKeyData = getStorageData(props.type);
   const set = new Set();
   allKeyData.forEach(item => {
     let raw = item.tags;
@@ -303,7 +331,6 @@ const historyCategories = computed(() => {
   return [...set].sort();
 });
 
-// 自動收集歷史曾添加過的所有製作工具
 const historyTools = computed(() => {
   const list = getStorageData('MOTION_RESEARCH');
   const set = new Set();
@@ -320,6 +347,18 @@ const historyTools = computed(() => {
   });
   return [...set].sort();
 });
+
+// 「實作資訊」表格的預設起始欄位（動態研究專用）；每次呼叫回傳新陣列，
+// 避免多筆資料共用同一個陣列參照、互相污染。「製作工具」不在這裡——
+// 它是獨立的 TagInput 欄位（form.tools），顯示時自動變成表格第一列，
+// 不需要（也不該）讓使用者在這個自訂表格裡重複填一次。
+function defaultImplInfo() {
+  return [
+    { label: '前端技術', value: '' },
+    { label: 'Demo 連結', value: '' },
+    { label: '檔案大小', value: '' }
+  ];
+}
 
 watch(() => [props.isOpen, props.item, props.type], () => {
   if (props.isOpen) {
@@ -346,7 +385,20 @@ watch(() => [props.isOpen, props.item, props.type], () => {
         toolsArr = itemCopy.toolsInput.split(/[,/，#\n\r]+/).map(s => s.trim()).filter(Boolean);
       }
       itemCopy.tools = toolsArr;
-      
+
+      if (props.type === 'MOTION_RESEARCH') {
+        // 舊資料可能還留著一列手動填的「製作工具」（改版前的預設欄位）——
+        // 現在這一列已經改由 form.tools 自動產生，這裡濾掉避免表格重複顯示兩次。
+        if (Array.isArray(itemCopy.implInfo)) {
+          itemCopy.implInfo = itemCopy.implInfo.filter(row => (row.label || '').trim() !== '製作工具');
+        }
+        // 「實作資訊」表格：既有資料沒有這欄（舊資料）就先給預設的 3 個欄位名稱，
+        // 內容留空讓使用者自己填；已經有自訂內容的資料則完全照舊，不覆蓋。
+        if (!(Array.isArray(itemCopy.implInfo) && itemCopy.implInfo.length)) {
+          itemCopy.implInfo = defaultImplInfo();
+        }
+      }
+
       form.value = itemCopy;
     } else {
       form.value = {
@@ -359,6 +411,8 @@ watch(() => [props.isOpen, props.item, props.type], () => {
         source: '',
         sourceUrl: '',
         takeaways: '',
+        highlights: '',
+        implInfo: props.type === 'MOTION_RESEARCH' ? defaultImplInfo() : [],
         videoUrl: '',
         motionType: '',
         name: '',
@@ -371,6 +425,7 @@ watch(() => [props.isOpen, props.item, props.type], () => {
         prompt: '',
         workflow: '',
         desc: '',
+        usage: '',
         status: 'Idea',
         relatedResearch: '',
         figmaLink: '',
@@ -460,7 +515,12 @@ const handleSubmit = () => {
     formattedItem.tools = formattedItem.tools.split(/[,/，#\n\r]+/).map(s => s.trim()).filter(Boolean);
     formattedItem.toolsInput = formattedItem.tools.join(', ');
   }
-  
+
+  // 「實作資訊」表格：兩欄都沒填的預設空列不用存
+  if (Array.isArray(formattedItem.implInfo)) {
+    formattedItem.implInfo = formattedItem.implInfo.filter(row => (row.label || '').trim() || (row.value || '').trim());
+  }
+
   if (!formattedItem.cover && (props.type === 'UI_RESEARCH' || props.type === 'MOTION_RESEARCH')) {
     formattedItem.cover = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop";
   }
@@ -469,12 +529,12 @@ const handleSubmit = () => {
     formattedItem.screenshot = "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?q=80&w=800&auto=format&fit=crop";
   }
 
+  // 不在這裡關閉彈窗——父層收到 save 事件後要先等雲端同步完成（見 saving prop），
+  // 確認成功才會把 isOpen 關掉，避免看起來存好了、其實還在跟 Sheets 同步或同步失敗。
   emit('save', {
     type: props.type,
     item: formattedItem
   });
-  
-  close();
 };
 </script>
 
@@ -561,14 +621,17 @@ const handleSubmit = () => {
   grid-column: span 2;
 }
 
-label {
-  font-size: var(--fs-meta);
-  font-weight: var(--fw-semibold);
-  color: var(--text-primary);
-}
-
 .required {
   color: var(--color-danger);
+}
+
+/* 標籤裡的補充說明（怎麼操作、選填與否），跟前面的欄位名稱做出主次之分：
+   縮小、變淡、拿掉粗體，閱讀時第一眼只會抓到欄位名稱本身。 */
+.field-help-inline {
+  margin-left: 0.5em;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-medium);
+  color: var(--text-muted);
 }
 
 .media-guideline-help {

@@ -75,7 +75,7 @@
       <section class="dashboard-latest">
         <div class="card-header">
           <h3>最新更新</h3>
-          <button class="card-action-link" type="button" @click="$emit('open-search')">查看全部 →</button>
+          <!-- <button class="card-action-link" type="button" @click="$emit('open-search')">查看全部 →</button> -->
         </div>
         <div class="dashboard-latest-grid">
           <article
@@ -110,7 +110,7 @@
       <section v-if="featuredItems.length" class="dashboard-featured">
         <div class="card-header">
           <h3>精選內容</h3>
-          <button class="card-action-link" type="button" @click="$emit('open-search')">查看全部 →</button>
+          <!-- <button class="card-action-link" type="button" @click="$emit('open-search')">查看全部 →</button> -->
         </div>
 
         <div class="featured-grid">
@@ -143,39 +143,12 @@
       </section>
 
       <!-- Removed from Dashboard: proposal progress is managed in Proposals. -->
-      <!--
-      <div class="bento-card proposal-card glass-panel" @click="$emit('change-view', 'Proposals')">
-        <div class="card-header">
-          <h3>優化提案進度</h3>
-          <button class="card-action-link" type="button" @click.stop="$emit('change-view', 'Proposals')">互動看板 →</button>
-        </div>
-        <div class="proposal-summary">
-          <div class="prop-stat">
-            <span class="num idea">{{ proposalStats.idea }}</span>
-            <span class="lbl">提案想法</span>
-          </div>
-          <div class="prop-stat">
-            <span class="num eval">{{ proposalStats.evaluating }}</span>
-            <span class="lbl">評估中</span>
-          </div>
-          <div class="prop-stat">
-            <span class="num proto">{{ proposalStats.prototype }}</span>
-            <span class="lbl">驗證中</span>
-          </div>
-          <div class="prop-stat">
-            <span class="num approved">{{ proposalStats.approved }}</span>
-            <span class="lbl">已採納</span>
-          </div>
-        </div>
-      </div>
-      -->
 
       <!-- 5. AI Quick Prompt -->
       <div v-if="false" class="bento-card ai-prompt-card glass-panel">
         <div class="card-header">
           <div class="header-title-group">
             <h3>熱門 AI 工具</h3>
-            <!-- <span v-if="currentPrompt?.toolName" class="ai-tool-pill">{{ currentPrompt.toolName }}</span> -->
           </div>
           <div class="header-actions">
             <button 
@@ -188,46 +161,17 @@
               <span>換一個</span>
             </button>
             <button class="card-action-link" type="button" @click.stop="$emit('change-view', 'AICenter')">前往 AI Center →</button>
-            <!-- <button class="copy-btn" :class="{ copied }" @click="copyPrompt">
-              <svg v-if="!copied" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <span>{{ copied ? '已複製！' : '一鍵複製' }}</span>
-            </button> -->
           </div>
         </div>
 
         <div class="ai-card-content">
           <div class="ai-usecase-row" v-if="currentPrompt?.useCase">
             <span class="usecase-tag"><span class="dot"></span> {{ currentPrompt?.fullTitle || currentPrompt?.name }}</span>
-            <!-- <span class="usecase-text">{{ currentPrompt.useCase }}</span> -->
           </div>
 
           <PromptCodeBox :prompt="currentPrompt?.prompt" :copied="copied" @copy="copyPrompt" />
         </div>
-
-        <!-- <div class="prompt-meta">
-          <span class="tool-label">
-            <span class="dot"></span>
-            {{ currentPrompt?.fullTitle || currentPrompt?.name }}
-          </span>
-        </div> -->
       </div>
-
-      <!-- 6. Quick Action -->
-      <!-- <div class="bento-card quick-action-card glass-panel">
-        <h3>快速建立研究</h3>
-        <div class="action-buttons">
-          <button class="btn btn-primary" @click="$emit('trigger-crud', 'UIResearch')">
-            + UI 案例
-          </button>
-          <button class="btn btn-secondary" @click="$emit('trigger-crud', 'MotionResearch')">
-            + 動態設計
-          </button>
-          <button class="btn btn-tertiary" @click="$emit('trigger-crud', 'Competitor')">
-            + 競品分析
-          </button>
-        </div>
-      </div> -->
     </div>
 
   <Teleport to="body">
@@ -582,8 +526,6 @@ const handleRecentClick = (item) => {
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1px;
   overflow: hidden;
-  /* border: 1px solid var(--border-color); */
-  /* border-radius: var(--radius-sm); */
   background: var(--bg-card);
 }
 
@@ -678,7 +620,6 @@ const handleRecentClick = (item) => {
 
 .search-trigger:hover {
   background: var(--bg-hover);
-  /* border-color: var(--color-primary); */
   color: var(--text-primary);
 }
 
@@ -1253,7 +1194,6 @@ const handleRecentClick = (item) => {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  /* gap: var(--space-3); */
 }
 
 .header-title-group {

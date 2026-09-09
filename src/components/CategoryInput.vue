@@ -129,7 +129,6 @@ const selectOption = (opt) => {
   isFocused.value = false;
 };
 
-// 即時關鍵字過濾
 const filteredOptions = computed(() => {
   if (!props.options || props.options.length === 0) return [];
   const q = searchKeyword.value.toLowerCase();
@@ -171,12 +170,6 @@ onUnmounted(() => {
 
 .category-input-field {
   width: 100%;
-  /* background: var(--bg-input);
-  border: 1px solid transparent;
-  padding: var(--space-2) var(--space-8) var(--space-2) var(--space-3);
-  border-radius: 8px;
-  font-size: var(--fs-label);
-  color: var(--text-primary); */
   font-family: var(--font-body);
   font-size: var(--fs-body);
   background: var(--bg-input);

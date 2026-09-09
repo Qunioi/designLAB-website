@@ -192,13 +192,6 @@ const menuItems = [
     labelEn: 'Resources', 
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path></svg>`
   }
-  // ,
-  // { 
-  //   view: 'Proposals', 
-  //   labelZh: '產品優化提案', 
-  //   labelEn: 'Proposals Board', 
-  //   icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`
-  // }
 ];
 
 const currentViewLabel = computed(() => {
@@ -239,7 +232,6 @@ watch(() => props.currentView, () => {
   border-radius: var(--radius-2xl);
   background: var(--sidebar-bg);
   border: 1px solid var(--border-color);
-  /* box-shadow: var(--shadow-sm); */
   z-index: 100;
   padding: var(--space-2) var(--space-1);
 }
@@ -571,8 +563,6 @@ watch(() => props.currentView, () => {
     width: 44px;
     height: 44px;
     border-radius: var(--radius-md);
-    /* background: var(--bg-subtle); */
-    /* border: 1px solid var(--border-color); */
     color: var(--text-primary);
     cursor: pointer;
     transition: background-color 0.2s ease, color 0.2s ease;

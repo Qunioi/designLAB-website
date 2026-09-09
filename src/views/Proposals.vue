@@ -49,7 +49,7 @@
 
             <div class="figma-link-wrapper" v-if="item.figmaLink">
               <a :href="item.figmaLink" target="_blank" class="figma-btn">
-                <span>Figma Prototype ↗</span>
+                <span>Figma Prototype</span>
               </a>
             </div>
 

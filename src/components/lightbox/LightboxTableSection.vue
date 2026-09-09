@@ -2,8 +2,8 @@
   <LightboxSection :icon="icon" :title="title" :accent="accent">
     <div class="lbs-table">
       <div v-for="row in rows" :key="row.label" class="lbs-table-row">
-        <span class="lbs-table-label" :style="{ color: accent }">{{ row.label }}</span>
-        <a v-if="row.href" :href="row.href" target="_blank" rel="noopener noreferrer" class="lbs-table-value lbs-table-link">{{ row.value }} ↗</a>
+        <span class="lbs-table-label">{{ row.label }}</span>
+        <a v-if="row.href" :href="row.href" target="_blank" rel="noopener noreferrer" class="lbs-table-value lbs-table-link">{{ row.value }}</a>
         <span v-else class="lbs-table-value">{{ row.value }}</span>
       </div>
     </div>
@@ -32,7 +32,7 @@ defineProps({
 
 .lbs-table-row {
   display: grid;
-  grid-template-columns: minmax(90px, 0.85fr) 1.15fr;
+  grid-template-columns: minmax(90px, 0.4fr) 1.15fr;
   gap: var(--space-2);
 }
 
@@ -49,7 +49,7 @@ defineProps({
 
 .lbs-table-label {
   font-weight: var(--fw-bold);
-  background: color-mix(in srgb, var(--bg-subtle) 85%, transparent);
+  border-right: 1px solid var(--border-color);
 }
 
 .lbs-table-value {

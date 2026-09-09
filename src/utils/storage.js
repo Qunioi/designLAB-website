@@ -216,16 +216,20 @@ export function addOrUpdateItem(key, item) {
     });
   }
 
-  // 背景推送至 Google Sheets 資料庫；伺服器會依登入 Session 重新驗證權限，
+  // 推送至 Google Sheets 資料庫；伺服器會依登入 Session 重新驗證權限，
   // 若遭拒絕（未登入、非本人建立、訪客等）則還原本機畫面並提示使用者，
   // 避免畫面顯示「已儲存」但雲端其實沒有真的寫入。
-  if (hasSheetsIntegration()) {
-    pushToSheet(key, savedItem).then(result => {
-      if (!result || !result.success) rollbackWrite_(key, previousRaw, result && result.error);
-    });
-  }
+  // `synced` 這個 promise 一律會 resolve（不丟出例外），呼叫端可選擇要不要
+  // await 它來得知「真的同步完成了」（例如 CRUDModal 的儲存按鈕 loading 狀態），
+  // 不 await 也沒關係——本機畫面已經同步寫好，UI 不會被卡住。
+  const synced = hasSheetsIntegration()
+    ? pushToSheet(key, savedItem).then(result => {
+        if (!result || !result.success) rollbackWrite_(key, previousRaw, result && result.error);
+        return result;
+      })
+    : Promise.resolve({ success: true });
 
-  return savedItem;
+  return { item: savedItem, synced };
 }
 
 export function deleteItem(key, id) {

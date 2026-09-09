@@ -43,6 +43,12 @@
 // ------------------------------------------------------------
 const SS = SpreadsheetApp.getActiveSpreadsheet();
 const CACHE = CacheService.getScriptCache();
+// Session Token 改存這裡（PropertiesService），不是 CacheService——CacheService 在
+// Google 記憶體壓力大時可能提前把項目清掉（官方文件本身就這樣寫），導致使用者明明
+// 在效期內卻被強制登出。PropertiesService 是真正持久化的儲存，沒有這個問題；
+// 代價是它沒有原生 TTL，效期要自己存一個 expiresAt 欄位、讀取時手動判斷。
+// 登入失敗鎖定（lock:/fails: 開頭）風險低、效期短（5 分鐘），維持用 CacheService 即可。
+const SESSION_STORE = PropertiesService.getScriptProperties();
 
 const SESSION_TTL_SECONDS = 6 * 60 * 60;   // Session 有效期 6 小時，每次驗證成功會自動延長（Sliding Expiration）
 const LOGIN_LOCK_SECONDS = 5 * 60;         // 登入失敗鎖定 5 分鐘
@@ -152,12 +158,33 @@ function withAuth_(body, allowedRoles, handler) {
   return handler(session);
 }
 
+/** 寫入／延長一個 session，帶上明確的到期時間戳記（PropertiesService 沒有原生 TTL）。 */
+function putSession_(token, session) {
+  const payload = Object.assign({}, session, { expiresAt: Date.now() + SESSION_TTL_SECONDS * 1000 });
+  SESSION_STORE.setProperty('session:' + token, JSON.stringify(payload));
+}
+
+function removeSession_(token) {
+  SESSION_STORE.deleteProperty('session:' + token);
+}
+
 function validateSession_(token) {
   if (!token) return null;
-  const raw = CACHE.get('session:' + token);
+  const raw = SESSION_STORE.getProperty('session:' + token);
   if (!raw) return null;
-  CACHE.put('session:' + token, raw, SESSION_TTL_SECONDS); // 每次成功使用即延長效期
-  return JSON.parse(raw);
+  let session;
+  try {
+    session = JSON.parse(raw);
+  } catch (err) {
+    SESSION_STORE.deleteProperty('session:' + token);
+    return null;
+  }
+  if (!session.expiresAt || session.expiresAt < Date.now()) {
+    SESSION_STORE.deleteProperty('session:' + token); // 真的過期才清掉，不是被提前回收
+    return null;
+  }
+  putSession_(token, session); // 每次成功使用即延長效期（Sliding Expiration）
+  return session;
 }
 
 function isGuestSession_(session) {
@@ -205,7 +232,7 @@ function handleLogin_(body) {
     role: row.role || 'User',
     createdAt: new Date().toISOString()
   };
-  CACHE.put('session:' + token, JSON.stringify(session), SESSION_TTL_SECONDS);
+  putSession_(token, session);
 
   return ok_({
     token: token,
@@ -224,7 +251,7 @@ function recordFailedLogin_(username, lockKey) {
 }
 
 function handleLogout_(body) {
-  if (body.token) CACHE.remove('session:' + body.token);
+  if (body.token) removeSession_(body.token);
   return ok_({});
 }
 

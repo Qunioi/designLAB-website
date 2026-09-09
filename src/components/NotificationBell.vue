@@ -190,7 +190,6 @@ const handleMarkAllRead = () => {
   border-bottom: 1px solid var(--border-color);
 }
 
-/* 標題字大、清楚清晰 */
 .notif-header-title {
   font-size: var(--fs-body-lg);
   font-weight: var(--fw-black);
@@ -244,7 +243,6 @@ const handleMarkAllRead = () => {
   align-items: center;
 }
 
-/* 每條通知大字標題 */
 .notif-title {
   font-size: var(--fs-body);
   font-weight: var(--fw-black);
@@ -281,7 +279,6 @@ const handleMarkAllRead = () => {
   background: var(--bg-card);
 }
 
-/* 淡入動畫 */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.2s ease, transform 0.2s ease;

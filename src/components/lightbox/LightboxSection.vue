@@ -29,4 +29,7 @@ defineProps({
   padding-bottom: 0;
   border-bottom: 0;
 }
+.lbs-body {
+  padding-left: 1px;
+}
 </style>

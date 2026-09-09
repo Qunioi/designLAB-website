@@ -17,7 +17,6 @@ export function ensureProtocol(url) {
     return trimmed;
   }
 
-  // 否則自動補齊 https://
   return `https://${trimmed}`;
 }
 
@@ -73,7 +72,22 @@ export function parseList(val) {
     return val.split(/[,/，#\n\r]+/).map(s => s.trim()).filter(Boolean);
   }
   return [];
-}/**
+}
+
+/**
+ * 把一行一項的純文字（或陣列）拆成條列項目陣列，只用換行分割——
+ * 跟 parseList() 不同，不會誤把句子裡本來就有的逗號、斜線切開。
+ * 適合「值得參考」「優點」「缺點」這類一行一項的長條列文字。
+ * @param {string|Array} val
+ * @returns {Array<string>}
+ */
+export function parseLines(val) {
+  if (!val) return [];
+  const source = Array.isArray(val) ? val : String(val).split(/[\r\n]+/);
+  return source.map(line => String(line).trim()).filter(Boolean);
+}
+
+/**
  * 格式化日期時間字串為「YYYY-MM-DD HH:mm:ss」(年月日 時分秒)
  * @param {string|Date|number} dateVal
  * @returns {string}

@@ -196,6 +196,13 @@
 
             <!-- 底部橫跨全寬：編輯/刪除/發布者（左）＋ 前往連結 CTA（右） -->
             <div class="lightbox-footer">
+              <div class="lightbox-actions-group" v-if="isGuest">
+                <!-- 發佈者標示：自己發佈顯示「我發佈」，其他人發佈的顯示對方暱稱 -->
+                <span v-if="isMyCreatedItem(lightbox.item) || getPublisherNickname(lightbox.item)" class="mine-lightbox-indicator" :class="{ 'is-others': !isMyCreatedItem(lightbox.item) }">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                  {{ isMyCreatedItem(lightbox.item) ? '我發佈' : getPublisherNickname(lightbox.item) }} 發佈
+                </span>
+              </div>
               <div class="lightbox-actions-group" v-if="!isGuest">
                 <button v-if="canEditCardItem(lightbox.item)" type="button" class="lightbox-icon-btn edit" @click="$emit('trigger-crud', { type: crudType, item: lightbox.item }); closeLightbox();" :aria-label="`編輯`" title="編輯">
                   <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
@@ -207,7 +214,7 @@
                 <!-- 發佈者標示：自己發佈顯示「我發佈」，其他人發佈的顯示對方暱稱 -->
                 <span v-if="isMyCreatedItem(lightbox.item) || getPublisherNickname(lightbox.item)" class="mine-lightbox-indicator" :class="{ 'is-others': !isMyCreatedItem(lightbox.item) }">
                   <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
-                  {{ isMyCreatedItem(lightbox.item) ? '我發佈' : getPublisherNickname(lightbox.item) }}
+                  {{ isMyCreatedItem(lightbox.item) ? '我' : getPublisherNickname(lightbox.item) }} 發佈
                 </span>
               </div>
               <a v-if="getLightboxLink(lightbox.item)" :href="getLightboxLink(lightbox.item)" target="_blank" rel="noopener noreferrer" class="source-btn">
@@ -608,7 +615,6 @@ const checkAndAutoOpenModal = () => {
   });
 
   if (found) {
-    // 自動開啟 Lightbox 彈窗
     openLightbox(found, false);
     nextTick(() => {
       const el = document.getElementById(`item-${found.id}`);
@@ -899,7 +905,7 @@ const handleDelete = (item) => {
 
 .lightbox-scroll-area {
   overflow-y: auto;
-  padding: var(--space-6) var(--space-7) var(--space-7);
+  padding: var(--space-5) var(--space-6) var(--space-6);
   display: flex;
   flex-direction: column;
 }
@@ -994,9 +1000,6 @@ const handleDelete = (item) => {
 .clickable-media-box:hover .media-zoom-overlay,
 .video-media-container:hover .video-expand-btn {
   opacity: 1;
-  /* background: var(--color-primary);
-  border-color: var(--color-primary);
-  box-shadow: 0 4px 15px var(--glow-primary); */
 }
 
 .video-media-container {
@@ -1027,7 +1030,7 @@ const handleDelete = (item) => {
 /* ── 主體兩欄排版：左欄標題＋媒體／右欄各類型自訂內容 ── */
 .lightbox-body-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.15fr);
   gap: var(--space-6);
   align-items: start;
 }
@@ -1041,7 +1044,7 @@ const handleDelete = (item) => {
 .lightbox-slot-content {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 .lightbox-slot-content :deep(.card-tags),
 .lightbox-slot-content :deep(.card-tools) {
@@ -1083,12 +1086,11 @@ const handleDelete = (item) => {
   /* 這是 h2，line-height／color 跟 h1~h6 共用規則一樣，不重複寫 */
   font-size: var(--fs-h1);
   font-weight: var(--fw-black);
-  margin: var(--space-4) 0;
+  margin: var(--space-3) 0;
 }
-.lightbox-footer { 
+.lightbox-footer {
   margin-top: var(--space-5);
   padding-top: var(--space-4);
-  border-top: 1px solid color-mix(in srgb, var(--border-color) 65%, transparent);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1129,7 +1131,6 @@ const handleDelete = (item) => {
   color: #fff;
 }
 
-/* 參考示意圖按鈕：主題實色背景 */
 .source-btn {
   display: inline-flex;
   align-items: center;
@@ -1137,13 +1138,16 @@ const handleDelete = (item) => {
   background: var(--color-primary);
   border: 1px solid var(--color-primary);
   color: #fff;
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-sm);
   font-weight: var(--fw-semibold);
   font-size: var(--fs-meta);
   transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
   text-decoration: none;
   flex-shrink: 0;
+}
+.source-btn span {
+  text-box: trim-both cap alphabetic;
 }
 .source-btn:hover {
   background: var(--bg-hover);
