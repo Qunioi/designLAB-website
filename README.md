@@ -6,20 +6,32 @@
 
 ## 目錄
 
-- [功能總覽](#功能總覽)
-- [技術棧](#技術棧)
-- [快速開始](#快速開始)
-- [環境變數](#環境變數)
-- [部署](#部署)
-- [目錄結構](#目錄結構)
-- [路由與頁面](#路由與頁面)
-- [元件架構](#元件架構)
-- [樣式與主題系統](#樣式與主題系統)
-- [資料層與雲端同步](#資料層與雲端同步)
-- [媒體上傳架構](#媒體上傳架構)
-- [帳號與權限](#帳號與權限)
-- [擴充指南](#擴充指南)
-- [已知限制](#已知限制)
+- [Design LAB 內部設計資料庫](#design-lab-內部設計資料庫)
+  - [目錄](#目錄)
+  - [功能總覽](#功能總覽)
+  - [技術棧](#技術棧)
+  - [快速開始](#快速開始)
+  - [環境變數](#環境變數)
+  - [部署](#部署)
+  - [目錄結構](#目錄結構)
+  - [路由與頁面](#路由與頁面)
+  - [元件架構](#元件架構)
+  - [樣式與主題系統](#樣式與主題系統)
+    - [主題清單](#主題清單)
+    - [共用樣式（`src/styles/components.css`）](#共用樣式srcstylescomponentscss)
+    - [響應式斷點](#響應式斷點)
+  - [資料層與雲端同步](#資料層與雲端同步)
+    - [資料鍵對照](#資料鍵對照)
+  - [媒體上傳架構](#媒體上傳架構)
+    - [格式與容量限制](#格式與容量限制)
+  - [帳號與權限](#帳號與權限)
+    - [角色矩陣](#角色矩陣)
+    - [安全機制](#安全機制)
+  - [擴充指南](#擴充指南)
+    - [新增資料模組](#新增資料模組)
+    - [新增主題](#新增主題)
+  - [已知限制](#已知限制)
+  - [授權](#授權)
 
 ---
 
@@ -119,8 +131,9 @@ designLAB-website/
 └── src/
     ├── main.js                 # 掛載 Vue 實例
     ├── App.vue                 # 根元件：佈局、Hash 路由、全域 Modal
-    ├── style.css               # Tailwind @theme 代幣、8 套主題、全域 Reset
     ├── styles/
+    │   ├── tokens.css          # Tailwind @theme 代幣、CSS 變數、8 套主題（只放「值」）
+    │   ├── base.css            # 全域 Reset、原生元素樣式、版面骨架、轉場
     │   └── components.css      # 共用樣式（毛玻璃面板、徽章、標籤、遮罩）
     ├── views/                  # 頁面層
     │   ├── Dashboard.vue       # 總覽儀表板
@@ -215,7 +228,7 @@ graph TD
 
 ## 樣式與主題系統
 
-採 Tailwind CSS v4 的 CSS-First 架構，於 `src/style.css` 以 `@theme` 定義設計代幣，主題色票則以 CSS Custom Properties 分層覆寫。
+採 Tailwind CSS v4 的 CSS-First 架構，於 `src/styles/tokens.css` 以 `@theme` 定義設計代幣，主題色票則以 CSS Custom Properties 分層覆寫。
 
 ```css
 @theme {
@@ -250,11 +263,10 @@ graph TD
 | `.theme-obsidian-neon` | 深色 | 暖焰工坊，黑曜石底與銅色點綴 |
 | `.theme-nord-dark` | 深色 | 極地暗夜，冷調藍黑與極光綠 |
 
-`style.css` 另保留 `.theme-midnight-slate` 與 `.theme-charcoal-ember` 兩組別名 class，對應舊版命名，行為與 `.theme-midnight-indigo`、`.theme-github-dark` 相同。
+舊版命名 `theme-midnight-slate`／`theme-charcoal-ember` 已在 `userStore.js` 的 `getUserTheme()` 做一次性轉換成現在的 `theme-midnight-indigo`／`theme-github-dark`，畫面上不會再套用舊 class，`tokens.css` 因此不需要再保留對應的別名選擇器。
 
 ### 共用樣式（`src/styles/components.css`）
 
-- `.glass-panel` — 毛玻璃背景、微邊框與懸停深度。
 - `.card-actions-reveal` — 懸停或 focus 時浮現的操作列。
 - `.type-badge` / `.category-badge` / `.comp-badge` — 狀態與類型徽章。
 - `.tool-tag` / `.tag` / `.clickable-tag` — 可點擊篩選的標籤。
@@ -380,7 +392,7 @@ Apps Script 端點網址存於 `design_lab_sheets_url`，可於 Settings 頁面�
 
 ### 新增主題
 
-1. 於 `src/style.css` 定義主題 class，填寫 `--bg-primary`、`--color-primary`、`--text-primary`、`--border-color` 等變數。
+1. 於 `src/styles/tokens.css` 定義主題 class，填寫 `--bg-primary`、`--color-primary`、`--text-primary`、`--border-color` 等變數。
 2. 於 `ThemeModal.vue` 的 `themes` 陣列加入 class 與顯示名稱。
 3. 於 `Settings.vue` 的主題清單同步補上選項與色票預覽。
 

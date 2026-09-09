@@ -25,11 +25,11 @@ defineEmits(['click']);
 .action-icon-btn {
   width: 26px;
   height: 26px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7375rem;
+  font-size: var(--fs-meta);
   background: var(--bg-subtle);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
@@ -50,7 +50,7 @@ defineEmits(['click']);
 @media (max-width: 900px) {
   .action-icon-btn {
     width: 38px;
-    height: 38px;
+    height: var(--control-height-md);
   }
 }
 

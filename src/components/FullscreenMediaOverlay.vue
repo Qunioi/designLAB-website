@@ -34,7 +34,7 @@ defineEmits(['close']);
   align-items: center;
   justify-content: center;
   z-index: var(--z-fullscreen);
-  padding: 2rem;
+  padding: var(--space-8);
 }
 
 .fullscreen-media-content {
@@ -60,7 +60,7 @@ defineEmits(['close']);
   top: 1.25rem;
   right: 1.25rem;
   width: 42px;
-  height: 42px;
+  height: var(--control-height-lg);
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.15);
   color: #ffffff;

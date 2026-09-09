@@ -60,6 +60,30 @@ const ALL_SHEETS = CONTENT_SHEETS.concat([USERS_SHEET, NOTIFICATIONS_SHEET]);
 
 const USERS_HEADERS = ['id', 'username', 'nickname', 'role', 'passwordHash', 'passwordSalt', 'mustChangePassword', 'themeClass', 'createdAt', 'updatedAt'];
 
+// 內容分頁的舊格式（UI_RESEARCH、COMPETITORS…）：完整內容包在一個 JSON
+// 欄位裡，另外幾欄純供 Sheets 畫面快速瀏覽用。這個 blob 欄位的中文欄名
+// 前端 normalizeSheetRecord() 有直接寫死比對，遷移時維持原樣不改名，
+// 只把其餘欄位的中文欄名換成後端各處理函式實際在找的英文欄名。
+const CONTENT_JSON_FIELD = '完整資料 (JSON)';
+const CONTENT_LEGACY_HEADER_MAP = {
+  'ID': 'id',
+  '建立時間 (createdAt)': 'createdAt',
+  '最後更新時間 (updatedAt)': 'updatedAt',
+  '最後操作者 (updatedBy)': 'updatedBy',
+  '建立者 (createdBy)': 'createdBy'
+};
+const NOTIFICATIONS_LEGACY_HEADER_MAP = Object.assign({}, CONTENT_LEGACY_HEADER_MAP, {
+  '標題 (title)': 'title',
+  '內容 (message)': 'message',
+  '觸發/發布者 (triggeredBy)': 'triggeredBy'
+});
+
+// 兩個時間欄位一律存成真正的 Date 型別，並套用統一的顯示格式
+// （例如 2026/7/20 8:00:00，24 小時制），不論寫入時傳進來的是
+// ISO 字串、Date.toString() 這種舊格式、或已經是 Date 物件。
+const TIMESTAMP_FIELDS = ['createdAt', 'updatedAt'];
+const TIMESTAMP_NUMBER_FORMAT = 'yyyy/m/d h:mm:ss';
+
 // ------------------------------------------------------------
 // 對外進入點
 // ------------------------------------------------------------
@@ -94,6 +118,9 @@ function doPost(e) {
   try {
     switch (action) {
       case 'setup':              return handleSetup_();
+      case 'migrate_users_legacy_headers': return handleMigrateUsersLegacyHeaders_(body);
+      case 'migrate_content_legacy_headers': return handleMigrateContentLegacyHeaders_(body);
+      case 'list_sheets':        return handleListSheets_();
       case 'login':               return handleLogin_(body);
       case 'logout':              return handleLogout_(body);
       case 'changePassword':      return handleChangePassword_(body);
@@ -297,7 +324,7 @@ function handleAddUser_(body) {
 
   const salt = generateSalt_();
   const hash = hashPassword_(DEFAULT_PASSWORD, salt);
-  const now = new Date().toISOString();
+  const now = new Date();
   const headers = getHeaders_(sheet);
   const record = {
     id: 'u-' + Date.now(), username: username, nickname: nickname, role: role,
@@ -305,6 +332,11 @@ function handleAddUser_(body) {
     themeClass: 'theme-cloud-canvas', createdAt: now, updatedAt: now
   };
   sheet.appendRow(headers.map(function (h) { return record[h] !== undefined ? record[h] : ''; }));
+  const newRow = sheet.getLastRow();
+  TIMESTAMP_FIELDS.forEach(function (field) {
+    const col = headers.indexOf(field);
+    if (col !== -1) sheet.getRange(newRow, col + 1).setNumberFormat(TIMESTAMP_NUMBER_FORMAT);
+  });
 
   return ok_({ user: stripUserSecrets_(record) });
 }
@@ -401,17 +433,39 @@ function handleWrite_(body, session) {
       data.updatedBy = identityStr;
     }
 
-    upsertRowByKey_(sheetName, null, 'id', data);
+    writeContentRow_(sheetName, data);
     return ok_({});
   }
 
   if (sheetName === NOTIFICATIONS_SHEET) {
     if (isGuestSession_(session)) return fail_('訪客不可寫入通知', 'FORBIDDEN');
-    upsertRowByKey_(NOTIFICATIONS_SHEET, null, 'id', data);
+    writeContentRow_(NOTIFICATIONS_SHEET, data, ['title', 'message', 'triggeredBy']);
     return ok_({});
   }
 
   return fail_('未知的資料表：' + sheetName);
+}
+
+/**
+ * 內容分頁（UI_RESEARCH…）與 NOTIFICATIONS 共用的寫入方式：完整的
+ * data 物件——可能包含 tags 這類陣列、Sheets 單一儲存格放不下的
+ * 內容——整包序列化進「完整資料 (JSON)」欄位；另外只把 id、時間、
+ * 建立者/操作者（及 extraFlatFields 指定的簡單字串欄位，方便直接在
+ * Sheets 畫面上瀏覽）拆成獨立欄位，供後端用欄位查詢與判斷擁有者。
+ */
+function writeContentRow_(sheetName, data, extraFlatFields) {
+  const row = { id: data.id };
+  (extraFlatFields || []).forEach(function (f) { if (data[f] !== undefined) row[f] = data[f]; });
+  ['createdAt', 'updatedAt', 'createdBy', 'updatedBy'].forEach(function (f) {
+    if (data[f] !== undefined) row[f] = data[f];
+  });
+  // data 有可能是「讀出來又寫回去」的項目，本身就帶著上一次讀取時
+  // normalizeSheetRecord() 合併進來、忘記刪掉的舊「完整資料 (JSON)」
+  // 欄位——這裡序列化前一定要先剔除，否則會一次比一次包得更深一層。
+  const cleanData = Object.assign({}, data);
+  delete cleanData[CONTENT_JSON_FIELD];
+  row[CONTENT_JSON_FIELD] = JSON.stringify(cleanData);
+  upsertRowByKey_(sheetName, null, 'id', row);
 }
 
 function handleDelete_(body, session) {
@@ -491,7 +545,7 @@ function handleSetup_() {
     ['@yu-na', 'Yu-na', 'User'],
     ['@jason_hong', 'Jason', 'User']
   ];
-  const now = new Date().toISOString();
+  const now = new Date();
   const headers = getHeaders_(sheet);
   seed.forEach(function (entry, i) {
     const salt = generateSalt_();
@@ -503,8 +557,190 @@ function handleSetup_() {
     };
     sheet.appendRow(headers.map(function (h) { return record[h] !== undefined ? record[h] : ''; }));
   });
+  TIMESTAMP_FIELDS.forEach(function (field) {
+    const col = headers.indexOf(field);
+    if (col !== -1) sheet.getRange(2, col + 1, seed.length, 1).setNumberFormat(TIMESTAMP_NUMBER_FORMAT);
+  });
 
   return ok_({ message: '已建立 ' + seed.length + ' 個初始帳號，臨時密碼為 ' + DEFAULT_PASSWORD + '，首次登入將強制要求變更密碼' });
+}
+
+// ------------------------------------------------------------
+// 一次性轉換：USERS 分頁若還停留在最舊版格式（欄名是「帳號
+// (username)」「完整資料 (JSON)」這種中文＋括號寫法），登入比對
+// 會因為找不到精確叫 `username` 的欄位而永遠失敗。這裡把舊格式
+// 轉成 handleLogin_ 等函式預期的英文欄名，資料則優先取用「完整
+// 資料 (JSON)」裡還原出來的內容（若曾經升級過雜湊密碼也在裡面，
+// 一併保留），沒有密碼雜湊的帳號一律標記為必須改密碼、沿用臨時
+// 密碼，交由 verifyOrMigratePassword_ 在下次登入時就地升級。
+//
+// 預設從 USERS 分頁本身讀取舊資料；如果 USERS 已經被清空或改壞，
+// 可傳入 { sourceSheet: '<備份分頁名稱>' } 改從備份分頁讀取舊資料，
+// 轉換結果一律寫回 USERS 這個分頁（來源分頁本身不會被更動）。
+// ------------------------------------------------------------
+
+/**
+ * 診斷用：列出試算表裡所有分頁的名稱與資料列數（不含任何欄位內容），
+ * 方便確認備份分頁的正確名稱、或分頁是否真的有資料。
+ */
+function handleListSheets_() {
+  const sheets = SS.getSheets().map(function (s) {
+    return { name: s.getName(), rows: s.getLastRow(), cols: s.getLastColumn() };
+  });
+  return ok_({ sheets: sheets });
+}
+
+function handleMigrateUsersLegacyHeaders_(body) {
+  const sourceSheetName = (body && body.sourceSheet) ? String(body.sourceSheet).trim() : USERS_SHEET;
+  const sourceSheet = SS.getSheetByName(sourceSheetName);
+  if (!sourceSheet || sourceSheet.getLastRow() < 2) {
+    return fail_('「' + sourceSheetName + '」分頁沒有資料可供轉換');
+  }
+
+  const headers = getHeaders_(sourceSheet);
+  const isSelfMigration = !(body && body.sourceSheet);
+  if (isSelfMigration && headers.indexOf('username') !== -1 && headers.indexOf('passwordHash') !== -1) {
+    return fail_('USERS 分頁已經是新版欄位格式，未執行轉換');
+  }
+
+  const values = sourceSheet.getDataRange().getValues();
+  const rawRows = values.slice(1).filter(function (r) {
+    return r.some(function (c) { return c !== '' && c !== null; });
+  });
+
+  const now = new Date();
+  const migrated = rawRows.map(function (r, i) {
+    const raw = rowToObject_(headers, r);
+
+    let embedded = {};
+    const rawJson = raw['完整資料 (JSON)'];
+    if (typeof rawJson === 'string' && rawJson.trim()) {
+      try {
+        const parsed = JSON.parse(rawJson);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) embedded = parsed;
+      } catch (e) {
+        // 舊 JSON 壞掉就忽略，改用同一列其他欄位補值
+      }
+    }
+
+    const username = normalizeUsername_(embedded.username || raw['帳號 (username)'] || raw.username);
+    const nickname = String(embedded.nickname || raw['暱稱 (nickname)'] || raw.nickname || username).trim();
+    const role = normalizeRole_(embedded.role || raw['身分 (role)'] || raw.role);
+    const createdAt = coerceDate_(embedded.createdAt || raw['建立時間 (createdAt)'] || raw.createdAt) || now;
+    const updatedAt = coerceDate_(embedded.updatedAt || raw['最後更新時間 (updatedAt)'] || raw.updatedAt) || createdAt;
+    const hasHash = !!(embedded.passwordHash && embedded.passwordSalt);
+
+    return {
+      id: embedded.id || raw.id || raw.ID || ('u-' + (i + 1)),
+      username: username,
+      nickname: nickname,
+      role: role,
+      passwordHash: hasHash ? embedded.passwordHash : '',
+      passwordSalt: hasHash ? embedded.passwordSalt : '',
+      mustChangePassword: hasHash ? truthy_(embedded.mustChangePassword) : true,
+      themeClass: embedded.themeClass || 'theme-cloud-canvas',
+      createdAt: createdAt,
+      updatedAt: updatedAt
+    };
+  }).filter(function (r) { return r.username; });
+
+  if (!migrated.length) {
+    return fail_('沒有任何一列能辨識出帳號 ID，未執行轉換');
+  }
+
+  const targetSheet = getOrCreateSheet_(USERS_SHEET, USERS_HEADERS);
+  targetSheet.clearContents();
+  targetSheet.getRange(1, 1, 1, USERS_HEADERS.length).setValues([USERS_HEADERS]);
+  targetSheet.setFrozenRows(1);
+  targetSheet.getRange(2, 1, migrated.length, USERS_HEADERS.length).setValues(
+    migrated.map(function (record) {
+      return USERS_HEADERS.map(function (h) { return record[h] !== undefined ? record[h] : ''; });
+    })
+  );
+  TIMESTAMP_FIELDS.forEach(function (field) {
+    const col = USERS_HEADERS.indexOf(field);
+    if (col !== -1) targetSheet.getRange(2, col + 1, migrated.length, 1).setNumberFormat(TIMESTAMP_NUMBER_FORMAT);
+  });
+
+  const needsTempPassword = migrated.filter(function (r) { return !r.passwordHash; }).length;
+  return ok_({
+    message: '已從「' + sourceSheetName + '」轉換 ' + migrated.length + ' 個帳號寫入 USERS 分頁為新版欄位格式' +
+      (needsTempPassword
+        ? '，其中 ' + needsTempPassword + ' 個沒有找到密碼雜湊，暫時使用臨時密碼 ' + DEFAULT_PASSWORD + '，首次登入將強制要求變更密碼'
+        : '，密碼雜湊皆已保留')
+  });
+}
+
+/**
+ * 一次性轉換：內容分頁（UI_RESEARCH…）與 NOTIFICATIONS 若還停留在
+ * 「ID」「建立時間 (createdAt)」這種舊式中文欄名，這裡把它們換成
+ * handleWrite_ 現在實際在用的英文欄名（id / createdAt / updatedAt /
+ * createdBy / updatedBy，NOTIFICATIONS 另外還有 title / message /
+ * triggeredBy）。「完整資料 (JSON)」欄位維持原欄名、內容完全不動——
+ * 前端 normalizeSheetRecord() 是直接寫死比對這個中文欄名去讀取完整
+ * 內容的，不能改。只是重新命名欄位、不重組資料列，所以風險很低；
+ * 兩個時間欄位順便轉成真正的 Date 型別、套用統一顯示格式。
+ *
+ * 傳入 body.sheets（字串陣列）可只轉換指定的分頁，預設轉換全部
+ * 內容分頁 + NOTIFICATIONS；已經是新版欄位格式的分頁會直接略過。
+ */
+function handleMigrateContentLegacyHeaders_(body) {
+  const targets = (body && Array.isArray(body.sheets) && body.sheets.length)
+    ? body.sheets.map(function (s) { return String(s).toUpperCase(); })
+    : CONTENT_SHEETS.concat([NOTIFICATIONS_SHEET]);
+
+  const results = targets.map(migrateOneContentSheetHeaders_);
+  return ok_({ results: results });
+}
+
+function migrateOneContentSheetHeaders_(sheetName) {
+  const sheet = SS.getSheetByName(sheetName);
+  if (!sheet || sheet.getLastRow() < 2) {
+    return { sheet: sheetName, migrated: false, reason: '分頁沒有資料' };
+  }
+
+  const headers = getHeaders_(sheet);
+  if (headers.indexOf('id') !== -1 && headers.indexOf('createdAt') !== -1) {
+    return { sheet: sheetName, migrated: false, reason: '已經是新版欄位格式' };
+  }
+
+  const values = sheet.getDataRange().getValues();
+  const rawRows = values.slice(1).filter(function (r) {
+    return r.some(function (c) { return c !== '' && c !== null; });
+  });
+  if (!rawRows.length) {
+    return { sheet: sheetName, migrated: false, reason: '沒有資料列' };
+  }
+
+  const headerMap = (sheetName === NOTIFICATIONS_SHEET) ? NOTIFICATIONS_LEGACY_HEADER_MAP : CONTENT_LEGACY_HEADER_MAP;
+  const newHeaders = headers.map(function (h) { return headerMap[h] || h; });
+
+  const seen = {};
+  newHeaders.forEach(function (h) {
+    if (seen[h]) throw new Error('「' + sheetName + '」欄位轉換後名稱重複：' + h);
+    seen[h] = true;
+  });
+
+  // 只重新命名欄位、逐格保留原值（除了時間欄位轉成真正的 Date），
+  // 完全不重組資料列，避免動到「完整資料 (JSON)」以外任何內容。
+  const rows = rawRows.map(function (r) {
+    return newHeaders.map(function (h, i) {
+      if (TIMESTAMP_FIELDS.indexOf(h) !== -1) {
+        return coerceDate_(r[i]) || r[i];
+      }
+      return r[i];
+    });
+  });
+
+  sheet.getRange(1, 1, 1, newHeaders.length).setValues([newHeaders]);
+  sheet.getRange(2, 1, rows.length, newHeaders.length).setValues(rows);
+
+  TIMESTAMP_FIELDS.forEach(function (field) {
+    const col = newHeaders.indexOf(field);
+    if (col !== -1) sheet.getRange(2, col + 1, rows.length, 1).setNumberFormat(TIMESTAMP_NUMBER_FORMAT);
+  });
+
+  return { sheet: sheetName, migrated: true, rows: rows.length };
 }
 
 // ------------------------------------------------------------
@@ -570,9 +806,49 @@ function findRowIndexByKey_(sheet, keyField, keyValue) {
 }
 
 /**
+ * 把任意輸入（Date 物件、ISO 字串、Date.toString() 這種舊格式字串、
+ * 或 Google Sheets 讀出來的序列值）轉成真正的 Date 物件；無法辨識
+ * 就回傳 null，呼叫端應該保留原值不動，而不是硬塞一個無效日期。
+ */
+function coerceDate_(value) {
+  if (value instanceof Date) return isNaN(value.getTime()) ? null : value;
+  if (value === undefined || value === null || value === '') return null;
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+/**
+ * 只覆寫某一列裡的單一欄位，其餘欄位完全不動——密碼相關流程
+ * （驗證時就地升級雜湊、改密碼、管理員重設密碼）都靠這個函式，
+ * 才不會因為整列重寫而不小心動到不相干的欄位。若 headers 裡還沒有
+ * 這個欄位名稱，會在最後新增一欄（同時更新傳入的 headers 陣列）。
+ * 時間欄位（createdAt / updatedAt）一律轉成真正的 Date 型別並套用
+ * 統一顯示格式，不論傳入的是什麼字串格式。
+ */
+function writeCell_(sheet, rowIndex, headers, field, value) {
+  let col = headers.indexOf(field);
+  if (col === -1) {
+    col = headers.length;
+    headers.push(field);
+    sheet.getRange(1, col + 1).setValue(field);
+  }
+  const cell = sheet.getRange(rowIndex, col + 1);
+  if (TIMESTAMP_FIELDS.indexOf(field) !== -1) {
+    const parsed = coerceDate_(value);
+    if (parsed) {
+      cell.setValue(parsed).setNumberFormat(TIMESTAMP_NUMBER_FORMAT);
+      return;
+    }
+  }
+  cell.setValue(value);
+}
+
+/**
  * 依 keyField 新增或更新一列。更新既有列時，只覆寫 data 實際包含的
  * 欄位，其餘欄位維持原值不動——避免部分寫入（例如只改暱稱）
- * 意外把密碼雜湊等未提供的欄位清空。
+ * 意外把密碼雜湊等未提供的欄位清空。時間欄位一律轉成真正的 Date
+ * 型別並套用統一顯示格式，這樣不管呼叫端傳的是什麼字串格式，寫進
+ * 試算表後看起來、排序起來都是一致的。
  */
 function upsertRowByKey_(name, fallbackHeaders, keyField, data) {
   let sheet = SS.getSheetByName(name);
@@ -591,14 +867,30 @@ function upsertRowByKey_(name, fallbackHeaders, keyField, data) {
     }
   });
 
+  TIMESTAMP_FIELDS.forEach(function (field) {
+    if (data[field] === undefined) return;
+    const parsed = coerceDate_(data[field]);
+    if (parsed) data[field] = parsed;
+  });
+
   const rowIndex = findRowIndexByKey_(sheet, keyField, data[keyField]);
+  let targetRow;
   if (rowIndex === -1) {
     sheet.appendRow(headers.map(function (h) { return data[h] !== undefined ? data[h] : ''; }));
-    return;
+    targetRow = sheet.getLastRow();
+  } else {
+    const existingValues = sheet.getRange(rowIndex, 1, 1, headers.length).getValues()[0];
+    const merged = headers.map(function (h, i) { return data[h] !== undefined ? data[h] : existingValues[i]; });
+    sheet.getRange(rowIndex, 1, 1, merged.length).setValues([merged]);
+    targetRow = rowIndex;
   }
-  const existingValues = sheet.getRange(rowIndex, 1, 1, headers.length).getValues()[0];
-  const merged = headers.map(function (h, i) { return data[h] !== undefined ? data[h] : existingValues[i]; });
-  sheet.getRange(rowIndex, 1, 1, merged.length).setValues([merged]);
+
+  TIMESTAMP_FIELDS.forEach(function (field) {
+    const col = headers.indexOf(field);
+    if (col === -1) return;
+    if (!(data[field] instanceof Date)) return; // 沒有這個欄位資料就不用特地補格式
+    sheet.getRange(targetRow, col + 1).setNumberFormat(TIMESTAMP_NUMBER_FORMAT);
+  });
 }
 
 function deleteRowByKey_(name, keyField, keyValue) {

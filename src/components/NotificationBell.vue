@@ -110,7 +110,7 @@ const handleMarkAllRead = () => {
 
 .bell-btn {
   width: 38px;
-  height: 38px;
+  height: var(--control-height-md);
   border-radius: var(--radius-md);
   background: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -136,7 +136,7 @@ const handleMarkAllRead = () => {
   background: var(--color-danger);
   color: #ffffff;
   font-size: var(--fs-tiny);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   min-width: 17px;
   height: 17px;
   padding: 0 4px;
@@ -144,7 +144,7 @@ const handleMarkAllRead = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 1;
+  line-height: var(--lh-none);
   box-shadow: var(--shadow-sm);
   font-variant-numeric: tabular-nums;
   z-index: 2;
@@ -168,8 +168,6 @@ const handleMarkAllRead = () => {
 
 /* 深色主題提高面板與背景的層次；淺色主題沿用較輕的陰影。 */
 :global(.theme-midnight-indigo) .notif-panel.solid-panel,
-:global(.theme-midnight-slate) .notif-panel.solid-panel,
-:global(.theme-charcoal-ember) .notif-panel.solid-panel,
 :global(.theme-github-dark) .notif-panel.solid-panel,
 :global(.theme-obsidian-neon) .notif-panel.solid-panel,
 :global(.theme-nord-dark) .notif-panel.solid-panel {
@@ -187,25 +185,25 @@ const handleMarkAllRead = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.95rem 1.2rem;
+  padding: var(--space-4) var(--space-5);
   background: var(--bg-card);
   border-bottom: 1px solid var(--border-color);
 }
 
 /* 標題字大、清楚清晰 */
 .notif-header-title {
-  font-size: 0.9375rem;
-  font-weight: 800;
+  font-size: var(--fs-body-lg);
+  font-weight: var(--fw-black);
   color: var(--text-primary);
   letter-spacing: -0.2px;
 }
 
 .mark-read-btn {
-  font-size: 0.7175rem;
+  font-size: var(--fs-tiny);
   color: var(--color-primary);
   background: transparent;
   cursor: pointer;
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   transition: opacity 0.2s ease;
 }
 
@@ -223,11 +221,11 @@ const handleMarkAllRead = () => {
 }
 
 .notif-item {
-  padding: 0.5rem 1.2rem 1.2rem;
+  padding: var(--space-2) var(--space-5) var(--space-5);
   border-bottom: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: var(--space-2);
   transition: background 0.2s ease;
 }
 
@@ -248,23 +246,23 @@ const handleMarkAllRead = () => {
 
 /* 每條通知大字標題 */
 .notif-title {
-  font-size: 0.8575rem;
-  font-weight: 800;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-black);
   color: var(--color-primary);
 }
 
 .notif-time {
   font-size: var(--fs-tiny);
   color: var(--text-muted);
-  font-weight: 500;
+  font-weight: var(--fw-medium);
 }
 
 /* 描述文字：深色背景下高亮純白，淺色背景下純黑 */
 .notif-msg {
-  font-size: 0.8375rem;
-  font-weight: 500;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-medium);
   color: var(--text-primary); /* 在深色主題自動為白色，淺色主題自動為黑色 */
-  line-height: 1.5;
+  line-height: var(--lh-normal);
   word-break: break-word;
 }
 
@@ -278,7 +276,7 @@ const handleMarkAllRead = () => {
 .notif-empty {
   padding: 2.2rem;
   text-align: center;
-  font-size: 0.8375rem;
+  font-size: var(--fs-label);
   color: var(--text-muted);
   background: var(--bg-card);
 }

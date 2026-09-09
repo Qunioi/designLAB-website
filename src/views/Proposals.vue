@@ -204,7 +204,7 @@ const handleDelete = (item) => {
 .proposals-container {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--space-6);
   min-width: 0;
 }
 
@@ -212,11 +212,11 @@ const handleDelete = (item) => {
 .kanban-board {
   display: grid;
   grid-template-columns: repeat(4, minmax(360px, 1fr));
-  gap: 1rem;
+  gap: var(--space-4);
   align-items: start;
   min-width: 0;
   overflow-x: auto;
-  padding-bottom: 1rem;
+  padding-bottom: var(--space-4);
   /* Smooth scroll on touch */
   -webkit-overflow-scrolling: touch;
   /* Hide scrollbar aesthetically */
@@ -229,19 +229,19 @@ const handleDelete = (item) => {
 }
 .kanban-board::-webkit-scrollbar-thumb {
   background: var(--border-color-hover);
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
 }
 .kanban-board::-webkit-scrollbar-track {
   background: var(--bg-subtle);
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
 }
 
 .kanban-column {
   background: var(--bg-card);
-  padding: 1rem;
+  padding: var(--space-4);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-4);
   min-height: 60vh;
   min-width: 220px;
   transition: border-color 0.2s ease, background 0.2s ease;
@@ -255,16 +255,16 @@ const handleDelete = (item) => {
 .column-header {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--space-2);
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: 0.75rem;
+  padding-bottom: var(--space-3);
   position: relative;
   min-width: 0;
 }
 
 .column-header h3 {
-  font-size: 0.8375rem;
-  font-weight: 700;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-bold);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -286,27 +286,27 @@ const handleDelete = (item) => {
   margin-left: auto;
   font-size: var(--fs-meta);
   background: var(--bg-hover);
-  padding: 0.15rem 0.5rem;
+  padding: var(--space-1) var(--space-2);
   border-radius: 999px;
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
 }
 
 .column-cards-list {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: var(--space-3);
 }
 
 .proposal-kanban-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 1.15rem;
+  padding: var(--space-5);
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--space-3);
   transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
   cursor: grab;
   box-shadow: var(--shadow-sm);
@@ -335,18 +335,18 @@ const handleDelete = (item) => {
 }
 
 .prop-title {
-  font-size: 0.95rem;
-  font-weight: 700;
+  /* line-height 跟 h1~h6 共用規則一樣，不重複寫 */
+  font-size: var(--fs-body-lg);
+  font-weight: var(--fw-bold);
   letter-spacing: -0.015em;
-  line-height: 1.4;
 }
 
 .prop-impact {
   font-size: var(--fs-body);
   color: var(--text-secondary);
-  line-height: 1.45;
+  line-height: var(--lh-normal);
   background: var(--bg-subtle);
-  padding: 0.5rem 0.65rem;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   border-left: 2px solid var(--border-color);
 }
@@ -356,7 +356,7 @@ const handleDelete = (item) => {
   color: var(--color-primary);
   background: var(--bg-subtle);
   border: 1px solid var(--border-color);
-  padding: 0.3rem 0.55rem;
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
   cursor: pointer;
   white-space: nowrap;
@@ -373,15 +373,15 @@ const handleDelete = (item) => {
 }
 
 .figma-link-wrapper {
-  margin-top: 0.25rem;
+  margin-top: var(--space-1);
 }
 
 .figma-btn {
   display: block;
   text-align: center;
   font-size: var(--fs-meta);
-  font-weight: 600;
-  padding: 0.4rem;
+  font-weight: var(--fw-semibold);
+  padding: var(--space-2);
   border-radius: var(--radius-sm);
   background: var(--bg-subtle);
   border: 1px solid var(--border-color);
@@ -397,20 +397,20 @@ const handleDelete = (item) => {
 .prop-move-bar {
   display: flex;
   justify-content: space-between;
-  margin-top: 0.5rem;
+  margin-top: var(--space-2);
   border-top: 1px solid var(--color-divider);
-  padding-top: 0.5rem;
+  padding-top: var(--space-2);
 }
 
 .status-change-label {
   color: var(--text-secondary);
   font-size: var(--fs-meta);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
 }
 
 .proposal-status-select {
   min-height: var(--control-height-md);
-  padding: 0.35rem 2rem 0.35rem 0.6rem;
+  padding: var(--space-1) var(--space-8) var(--space-1) var(--space-2);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   background-color: var(--bg-input);
@@ -420,22 +420,13 @@ const handleDelete = (item) => {
   cursor: pointer;
 }
 
-.move-btn {
-  font-size: var(--fs-tiny);
-  color: var(--text-muted);
-}
-
-.move-btn:hover {
-  color: var(--text-primary);
-}
-
 .column-empty-state {
   text-align: center;
-  font-size: 0.7875rem;
+  font-size: var(--fs-label);
   color: var(--text-secondary);
   border: 1px dashed var(--border-color);
   border-radius: 8px;
-  padding: 2rem 1rem;
+  padding: var(--space-8) var(--space-4);
 }
 
 @media (max-width: 1024px) {

@@ -85,11 +85,12 @@
             </div>
           </div>
 
-          <p v-if="loginErrorMsg" class="auth-error-msg" style="margin-top: 0.25rem;">⚠️ {{ loginErrorMsg }}</p>
+          <p v-if="loginErrorMsg" class="auth-error-msg" style="margin-top: var(--space-1);">⚠️ {{ loginErrorMsg }}</p>
 
-          <button type="submit" class="save-btn" :disabled="!quickInputID.trim() || !quickInputPassword.trim()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
-            登入帳號
+          <button type="submit" class="save-btn" :disabled="isLoggingIn || !quickInputID.trim() || !quickInputPassword.trim()">
+            <svg v-if="isLoggingIn" class="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" stroke="none" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+            {{ isLoggingIn ? '登入中...' : '登入帳號' }}
           </button>
         </form>
 
@@ -296,7 +297,7 @@
               <div class="modal-body">
                 <p class="auth-desc">修改帳號 <code>{{ username }}</code> 的個人登入密碼：</p>
 
-                <div class="field-group" style="margin-bottom: 0.85rem;">
+                <div class="field-group" style="margin-bottom: var(--space-3);">
                   <label class="field-label">原密碼 (Current Password)</label>
                   <input 
                     v-model="oldPasswordInput" 
@@ -306,7 +307,7 @@
                   />
                 </div>
 
-                <div class="field-group" style="margin-bottom: 0.85rem;">
+                <div class="field-group" style="margin-bottom: var(--space-3);">
                   <label class="field-label">新密碼 (New Password)</label>
                   <input 
                     v-model="newPasswordInput" 
@@ -416,77 +417,6 @@
         </div>
       </section>
     </div>
-
-    <!-- Google Sheets 整合面板 -->
-    <section class="settings-panel glass-panel sheets-panel">
-      <div class="panel-label">
-        <!-- Google Sheets icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
-        <span>Google Sheets 資料庫</span>
-        <span class="connection-dot" :class="connectionStatus"></span>
-        <span class="connection-label">{{ connectionLabel }}</span>
-      </div>
-
-      <div class="sheets-body">
-        <!-- URL 輸入 (僅管理員可修改，一般使用者唯讀) -->
-        <div class="field-group">
-          <label class="field-label">Apps Script 網址</label>
-          <p class="field-hint" v-if="isAdmin">Apps Script 部署為 Web App 後產生的網址。</p>
-          <p class="field-hint" v-else>由管理員設定之 Web App 網址（唯讀狀態，一般使用者不可修改）。</p>
-          <div class="sheets-url-row">
-            <div class="field-input-wrap sheets-url-wrap" :class="{ locked: !isAdmin }">
-              <input
-                v-model="localSheetsUrl"
-                type="text"
-                class="field-input sheets-url-input"
-                :readonly="!isAdmin"
-                placeholder="https://script.google.com/macros/s/.../exec"
-              />
-              <span v-if="!isAdmin" class="lock-indicator">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-              </span>
-            </div>
-            <button class="test-btn" @click="testConnection" :disabled="!isAdmin || isTesting" :title="isAdmin ? '測試連線' : '僅管理員可進行測試連線'">
-              {{ isTesting ? '連線中...' : '測試連線' }}
-            </button>
-          </div>
-        </div>
-
-        <!-- 操作按鈕區 -->
-        <div class="sheets-actions">
-          <div class="sync-info">
-            <span class="sync-time" v-if="lastSyncTime">{{ lastSyncLabel }}</span>
-            <span class="sync-time" v-else>尚未同步</span>
-          </div>
-          <div class="sheets-btns">
-            <!-- 推送全量資料與格式化（僅管理者可使用與顯示） -->
-            <button 
-              v-if="isAdmin"
-              class="sheets-btn primary" 
-              @click="pushAll" 
-              :disabled="isPushing" 
-              title="將本地帶有標準時間與操作者欄位的資料全量矯正並上傳至 Google Sheets"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
-              {{ isPushing ? '全量上傳中...' : '推送全量資料與格式化 (Push All to Sheets)' }}
-            </button>
-
-            <!-- 從 Sheets 重新同步（所有人可用） -->
-            <button class="sheets-btn secondary" @click="runSync" :disabled="isSyncing">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-              {{ isSyncing ? '同步中...' : '從 Sheets 重新同步 (Sync from Sheets)' }}
-            </button>
-          </div>
-        </div>
-
-
-
-        <!-- 狀態訊息 -->
-        <div class="sync-message" v-if="syncMessage" :class="syncMessageType">
-          {{ syncMessage }}
-        </div>
-      </div>
-    </section>
   </div>
 </template>
 
@@ -494,12 +424,6 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import PageHeader from '../components/PageHeader.vue';
 import NotificationBell from '../components/NotificationBell.vue';
-
-
-import {
-  getSheetsUrl, setSheetsUrl,
-  testSheetsConnection, syncAllFromSheets, pushAllToSheets
-} from '../utils/sheetsAPI';
 
 import {
   getUserProfiles,
@@ -784,76 +708,9 @@ const saveProfile = () => {
 
 
 
-// ── Google Sheets 整合狀態 ──
-const localSheetsUrl = ref('');
-const connectionStatus = ref('unknown');  // 'connected' | 'error' | 'unknown'
-const isTesting = ref(false);
-const isSyncing = ref(false);
-const isPushing = ref(false);
-const lastSyncTime = ref(null);
-const syncMessage = ref('');
-const syncMessageType = ref('info'); // 'info' | 'success' | 'error'
-
 onMounted(() => {
-  localSheetsUrl.value = getSheetsUrl();
   refreshProfiles();
 });
-
-
-const connectionLabel = computed(() => {
-  if (connectionStatus.value === 'connected') return '已連線';
-  if (connectionStatus.value === 'error') return '連線失敗';
-  return '未驗證';
-});
-
-const lastSyncLabel = computed(() => {
-  if (!lastSyncTime.value) return '';
-  return `上次同步：${lastSyncTime.value}`;
-});
-
-const testConnection = async () => {
-  if (localSheetsUrl.value.trim()) {
-    setSheetsUrl(localSheetsUrl.value.trim());
-  }
-  isTesting.value = true;
-  syncMessage.value = '';
-  const result = await testSheetsConnection();
-  isTesting.value = false;
-  connectionStatus.value = result.ok ? 'connected' : 'error';
-  syncMessage.value = result.ok
-    ? 'Google Sheets 連線成功！'
-    : `連線失敗：${result.error}`;
-  syncMessageType.value = result.ok ? 'success' : 'error';
-};
-
-const runSync = async () => {
-  isSyncing.value = true;
-  syncMessage.value = '正在從 Google Sheets 同步資料...';
-  syncMessageType.value = 'info';
-  const result = await syncAllFromSheets();
-  isSyncing.value = false;
-  const now = new Date().toLocaleTimeString('zh-TW');
-  lastSyncTime.value = now;
-  if (result.success) {
-    const total = Object.values(result.counts).reduce((a, b) => a + b, 0);
-    syncMessage.value = `同步完成！共讀入 ${total} 筆資料。`;
-    syncMessageType.value = 'success';
-    connectionStatus.value = 'connected';
-  } else {
-    syncMessage.value = `部分同步失敗：${result.errors.map(e => e.key).join(', ')}`;
-    syncMessageType.value = 'error';
-  }
-};
-
-const pushAll = async () => {
-  isPushing.value = true;
-  syncMessage.value = '正在上傳本地資料到 Google Sheets...';
-  syncMessageType.value = 'info';
-  await pushAllToSheets();
-  isPushing.value = false;
-  syncMessage.value = '上傳完成！資料已寫入 Google Sheets。';
-  syncMessageType.value = 'success';
-};
 
 const darkThemes = [
   {
@@ -951,48 +808,29 @@ const lightThemes = [
 .settings-view {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-}
-
-.settings-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.settings-page-title {
-  font-size: var(--fs-h1);
-  font-weight: var(--fw-black);
-  letter-spacing: -0.02em;
-}
-
-.settings-page-sub {
-  color: var(--text-secondary);
-  font-size: var(--fs-body);
-  margin-top: 0.35rem;
+  gap: var(--space-4);
 }
 
 /* Main layout: profile left, themes right */
 .settings-layout {
   display: grid;
   grid-template-columns: 320px 1fr;
-  gap: 1rem;
+  gap: var(--space-4);
   align-items: start;
 }
 
 /* Panel shared style */
 .settings-panel {
-  padding: 1.75rem;
+  padding: var(--space-7);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--space-6);
 }
 
 .panel-label {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
   font-size: var(--fs-caption);
   font-weight: var(--fw-semibold);
   text-transform: uppercase;
@@ -1008,55 +846,55 @@ const lightThemes = [
 
 /* ── Quni 專屬開發者模擬模式區塊 ────────────── */
 .dev-mode-block {
-  margin-top: 1rem;
+  margin-top: var(--space-4);
 }
 
 .dev-mode-box {
   background: var(--glow-primary);
   border: 1px dashed var(--color-primary);
   border-radius: 12px;
-  padding: 1.1rem;
+  padding: var(--space-4);
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
 .dev-mode-header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .dev-badge {
   background: var(--color-primary);
   color: #ffffff;
   font-size: var(--fs-meta);
-  font-weight: 700;
-  padding: 0.2rem 0.6rem;
+  font-weight: var(--fw-bold);
+  padding: var(--space-1) var(--space-2);
   border-radius: 99px;
   box-shadow: var(--shadow-sm);
 }
 
 .dev-select-row {
   display: flex;
-  gap: 0.6rem;
+  gap: var(--space-2);
   align-items: center;
 }
 
 .dev-select {
   flex: 1;
-  font-size: 0.7875rem;
-  padding: 0.55rem 0.85rem;
+  font-size: var(--fs-label);
+  padding: var(--space-2) var(--space-3);
 }
 
 .impersonate-trigger-btn {
   background: var(--color-primary);
   color: var(--color-on-primary);
   border: 1px solid var(--color-primary);
-  padding: 0.55rem 1.1rem;
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-sm);
-  font-size: 0.7875rem;
-  font-weight: 700;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-bold);
   cursor: pointer;
   white-space: nowrap;
   box-shadow: var(--shadow-sm);
@@ -1076,18 +914,18 @@ const lightThemes = [
 .impersonating-active-banner {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--space-3);
   background: rgba(220, 38, 38, 0.1);
   border: 1px solid var(--color-danger);
-  padding: 0.85rem 1rem;
-  border-radius: 10px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
 }
 
 .banner-text {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  font-size: 0.7875rem;
+  gap: var(--space-2);
+  font-size: var(--fs-label);
   color: var(--text-primary);
 }
 
@@ -1119,10 +957,10 @@ const lightThemes = [
   background: var(--color-danger);
   color: #ffffff;
   border: 1px solid var(--color-danger);
-  padding: 0.5rem 1rem;
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-sm);
-  font-size: 0.7625rem;
-  font-weight: 700;
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-bold);
   cursor: pointer;
   transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
@@ -1137,26 +975,26 @@ const lightThemes = [
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .avatar-user-info {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .logout-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.45rem;
+  gap: var(--space-1);
+  padding: var(--space-2);
   border-radius: 8px;
   background: rgba(239, 68, 68, 0.1);
   /* border: 1px solid rgba(239, 68, 68, 0.25); */
   color: var(--color-danger);
-  font-size: 0.7375rem;
-  font-weight: 600;
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-semibold);
   cursor: pointer;
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
@@ -1188,7 +1026,7 @@ const lightThemes = [
 .avatar-meta {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: var(--space-1);
 }
 
 .avatar-nickname {
@@ -1211,13 +1049,13 @@ const lightThemes = [
 .profile-form {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .field-group {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: var(--space-1);
 }
 
 .field-label {
@@ -1231,7 +1069,7 @@ const lightThemes = [
 .field-hint {
   font-size: var(--fs-tiny);
   color: var(--text-muted);
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--space-1);
 }
 
 .field-input-wrap {
@@ -1242,7 +1080,7 @@ const lightThemes = [
 
 .field-input-wrap input {
   width: 100%;
-  padding: 0.55rem 0.75rem;
+  padding: var(--space-2) var(--space-3);
   padding-right: 2.5rem;
   background: var(--bg-hover);
   border: 1px solid var(--border-color);
@@ -1259,16 +1097,9 @@ const lightThemes = [
   background: rgba(128, 128, 128, 0.06);
 }
 
-.lock-indicator {
-  position: absolute;
-  right: 0.75rem;
-  color: var(--text-muted);
-  display: flex;
-}
-
 .field-input {
   width: 100%;
-  padding: 0.55rem 0.85rem;
+  padding: var(--space-2) var(--space-3);
   background: var(--bg-input);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
@@ -1292,10 +1123,10 @@ const lightThemes = [
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
+  gap: var(--space-2);
   background: var(--color-primary);
   color: #fff;
-  padding: 0.55rem 1rem;
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-sm);
   font-size: var(--fs-body);
   font-weight: var(--fw-semibold);
@@ -1319,7 +1150,7 @@ const lightThemes = [
 .theme-group {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
 /* Light themes first, dark themes second. */
@@ -1333,18 +1164,18 @@ const lightThemes = [
 
 .theme-group-label {
   font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
+  /* font-weight 跟 h3 本身的規則一樣是 --fw-semibold，不重複寫 */
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);
-  padding-bottom: 0.25rem;
+  padding-bottom: var(--space-1);
   border-bottom: 1px solid var(--border-color);
 }
 
 .theme-cards-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .theme-card {
@@ -1417,16 +1248,16 @@ const lightThemes = [
 .preview-mini-card {
   flex: 1;
   height: 22px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   border: 1px solid;
 }
 
 /* Theme footer */
 .theme-card-footer {
-  padding: 0.85rem;
+  padding: var(--space-3);
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: var(--space-1);
   flex: 1;
 }
 
@@ -1434,12 +1265,12 @@ const lightThemes = [
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .theme-name-wrap h4 {
-  font-size: 0.8575rem;
-  font-weight: 700;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
@@ -1485,189 +1316,6 @@ const lightThemes = [
 
 
 
-/* ========= GOOGLE SHEETS PANEL ========= */
-.connection-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin-left: 0.25rem;
-  background: var(--text-muted);
-}
-.connection-dot.connected {
-  background: var(--color-success);
-}
-.connection-dot.error {
-  background: var(--color-error);
-}
-.connection-dot.unknown {
-  background: var(--text-muted);
-}
-
-.connection-label {
-  font-size: var(--fs-caption);
-  color: var(--text-muted);
-}
-
-.sheets-body {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.sheets-url-row {
-  display: flex;
-  gap: 0.75rem;
-  align-items: stretch;
-  margin-top: 0.5rem;
-}
-
-.sheets-url-wrap {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  position: relative;
-}
-
-.sheets-url-wrap.locked input {
-  opacity: 0.75;
-  cursor: not-allowed;
-  padding-right: 2.2rem;
-  background: var(--bg-hover);
-}
-
-.sheets-url-input {
-  width: 100%;
-  font-size: 0.7375rem;
-  font-family: monospace;
-}
-
-
-.test-btn {
-  background: var(--bg-hover);
-  border: 1px solid var(--border-color);
-  padding: 0.6rem 1rem;
-  border-radius: 10px;
-  font-size: 0.7575rem;
-  font-weight: 600;
-  white-space: nowrap;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-  color: var(--text-primary);
-}
-.test-btn:hover:not(:disabled) {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: white;
-}
-.test-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.sheets-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.sync-info {
-  flex: 1;
-}
-
-.sync-time {
-  font-size: var(--fs-caption);
-  color: var(--text-muted);
-}
-
-.sheets-btns {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.sheets-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.1rem;
-  border-radius: 10px;
-  font-size: 0.7875rem;
-  font-weight: 600;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-}
-.sheets-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.sheets-btn.primary {
-  background: var(--glow-primary);
-  border: 1px solid var(--color-primary);
-  color: var(--color-primary);
-}
-.sheets-btn.primary:hover:not(:disabled) {
-  background: var(--color-primary);
-  color: white;
-}
-.sheets-btn.secondary {
-  background: var(--bg-hover);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-}
-.sheets-btn.secondary:hover:not(:disabled) {
-  background: var(--color-secondary);
-  border-color: var(--color-secondary);
-  color: white;
-}
-
-.sync-message {
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  font-size: 0.7875rem;
-  line-height: 1.5;
-}
-.id-login-form {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.id-login-form .locked-wrap {
-  flex: 1;
-}
-
-.account-select {
-  cursor: pointer;
-}
-
-.id-login-btn {
-  padding: 0.55rem 1rem;
-  border-radius: var(--radius-sm);
-  background: var(--color-primary);
-  color: var(--color-on-primary);
-  border: 1px solid var(--color-primary);
-  font-size: 0.7575rem;
-  font-weight: 600;
-  white-space: nowrap;
-  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
-  cursor: pointer;
-}
-
-.id-login-btn:hover:not(:disabled) {
-  background: var(--bg-hover);
-  color: var(--color-primary);
-}
-
-.id-login-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.sync-message.success {
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #10b981;
-}
-
 .locked-wrap,
 .password-wrap {
   position: relative;
@@ -1684,12 +1332,12 @@ const lightThemes = [
   background: transparent;
   border: none;
   color: var(--text-muted);
-  font-size: 0.7375rem;
+  font-size: var(--fs-meta);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  padding: 0.2rem;
+  padding: var(--space-1);
   transition: color 0.2s ease;
   z-index: 2;
 }
@@ -1709,7 +1357,7 @@ const lightThemes = [
 
 /* 管理成員觸發按鈕 (Personal Settings Panel) */
 .manage-users-block {
-  margin-top: 0.5rem;
+  margin-top: var(--space-2);
 }
 
 .manage-users-trigger-btn {
@@ -1717,14 +1365,14 @@ const lightThemes = [
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.6rem;
-  padding: 0.75rem 1rem;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
   background: var(--bg-hover);
   border: 1px solid var(--border-color-hover);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   color: var(--text-primary);
-  font-size: 0.8175rem;
-  font-weight: 600;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semibold);
   cursor: pointer;
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
@@ -1739,8 +1387,8 @@ const lightThemes = [
   background: var(--glow-primary);
   color: var(--color-primary);
   font-size: var(--fs-meta);
-  font-weight: 700;
-  padding: 0.1rem 0.5rem;
+  font-weight: var(--fw-bold);
+  padding: var(--space-1) var(--space-2);
   border-radius: 999px;
   border: 1px solid var(--border-color);
 }
@@ -1763,19 +1411,19 @@ const lightThemes = [
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.25rem;
-  padding-bottom: 0.85rem;
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-3);
   border-bottom: 1px solid var(--border-color);
 }
 
 .auth-modal .modal-header h3,
 .user-mgmt-modal .modal-header h3 {
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-bold);
   color: var(--text-primary);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .auth-modal .close-btn,
@@ -1787,11 +1435,11 @@ const lightThemes = [
   justify-content: center;
   background: transparent;
   border: none;
-  font-size: 1.188rem;
+  font-size: var(--fs-h2);
   color: var(--text-muted);
   cursor: pointer;
-  padding: 0.2rem;
-  line-height: 1;
+  padding: var(--space-1);
+  line-height: var(--lh-none);
   transition: color 0.18s ease;
 }
 
@@ -1812,9 +1460,9 @@ const lightThemes = [
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 1.25rem;
-  padding-top: 1rem;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
   border-top: 1px solid var(--border-color);
 }
 
@@ -1823,7 +1471,7 @@ const lightThemes = [
   width: 92%;
   max-width: 620px;
   border-radius: var(--modal-radius);
-  padding: 1.5rem;
+  padding: var(--space-6);
   margin: auto;
   max-height: var(--modal-max-height);
 }
@@ -1831,24 +1479,24 @@ const lightThemes = [
 .user-mgmt-body {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: var(--space-5);
   overflow-y: auto;
-  padding-right: 0.25rem;
+  padding-right: var(--space-1);
 }
 
 .um-section-box {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--space-3);
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 1rem;
+  padding: var(--space-4);
 }
 
 .um-section-label {
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-bold);
   color: var(--text-secondary);
   letter-spacing: 0.5px;
 }
@@ -1857,15 +1505,15 @@ const lightThemes = [
 .add-user-modal-form {
   display: grid;
   grid-template-columns: 1fr 1fr 1.15fr auto;
-  gap: 0.6rem;
+  gap: var(--space-2);
   align-items: center;
 }
 
 .add-user-modal-form .field-input,
 .add-user-modal-form .role-select {
   border-radius: var(--radius-sm);
-  padding: 0.55rem 0.85rem;
-  font-size: 0.7875rem;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--fs-label);
   transition: border-color 0.18s ease;
 }
 
@@ -1893,12 +1541,12 @@ const lightThemes = [
 }
 
 .add-member-btn {
-  padding: 0.55rem 1.15rem;
+  padding: var(--space-2) var(--space-5);
   background: var(--color-primary);
   border: 1px solid var(--color-primary);
   color: var(--color-on-primary);
-  font-size: 0.7575rem;
-  font-weight: 600;
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-semibold);
   border-radius: var(--radius-sm);
   cursor: pointer;
   white-space: nowrap;
@@ -1927,7 +1575,7 @@ const lightThemes = [
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem 0.75rem;
+  padding: var(--space-2) var(--space-3);
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--border-color);
@@ -1947,40 +1595,21 @@ const lightThemes = [
   color: var(--color-primary);
 }
 
-.user-modal-card:hover .user-avatar-sm {
-  background: var(--color-primary);
-  color: #ffffff;
-}
-
-.user-avatar-sm {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--glow-primary);
-  color: var(--color-primary);
-  font-weight: 700;
-  font-size: 0.7875rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 0.75rem;
-}
-
 .user-modal-info {
   display: flex;
-  gap: 1rem;
+  gap: var(--space-4);
   flex: 1;
-  line-height: 1;
+  line-height: var(--lh-none);
 }
 
 .user-modal-name {
-  font-size: 0.8175rem;
-  font-weight: 600;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semibold);
   color: var(--text-primary);
 }
 
 .user-modal-handle {
-  font-size: 0.6975rem;
+  font-size: var(--fs-tiny);
   color: var(--text-muted);
   font-family: monospace;
 }
@@ -1988,7 +1617,7 @@ const lightThemes = [
 .user-modal-right {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: var(--space-3);
 }
 
 /* 自訂成員排序按鈕群 (⬆️ 上移 / ⬇️ 下移) */
@@ -1996,14 +1625,14 @@ const lightThemes = [
   display: flex;
   flex-direction: column;
   gap: 2px;
-  margin-right: 0.25rem;
+  margin-right: var(--space-1);
 }
 
 .order-btn {
   background: var(--bg-hover);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   width: 22px;
   height: 18px;
   display: flex;
@@ -2032,7 +1661,7 @@ const lightThemes = [
 .nickname-row {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: var(--space-1);
 }
 
 
@@ -2040,7 +1669,7 @@ const lightThemes = [
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-left: 0.15rem;
+  margin-left: var(--space-1);
 }
 
 .crown-icon-svg {
@@ -2063,105 +1692,17 @@ const lightThemes = [
 }
 
 
-.user-management-section {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.um-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.um-title {
-  font-size: 0.8575rem;
-  font-weight: 700;
-  color: var(--color-primary);
-}
-
-.um-count {
-  font-size: 0.7175rem;
-  color: var(--text-muted);
-}
-
-.add-user-form {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.add-user-inputs {
-  display: flex;
-  gap: 0.5rem;
-  flex: 1;
-}
-
-.field-input.sm {
-  padding: 0.45rem 0.75rem;
-  font-size: 0.7575rem;
-}
-
-.add-user-btn {
-  padding: 0.45rem 0.9rem;
-  background: var(--glow-primary);
-  border: 1px solid var(--color-primary);
-  color: var(--color-primary);
-  border-radius: 8px;
-  font-size: 0.7375rem;
-  font-weight: 600;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-}
-
-.add-user-btn:hover {
-  background: var(--color-primary);
-  color: #ffffff;
-}
-
-.user-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  max-height: 220px;
-  overflow-y: auto;
-}
-
-.user-item-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.6rem 0.85rem;
-  background: var(--bg-hover);
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-}
-
 .user-info {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-}
-
-.user-name {
-  font-size: 0.7875rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.user-id {
-  font-size: 0.7175rem;
-  color: var(--text-muted);
-  font-family: monospace;
+  gap: var(--space-2);
 }
 
 .user-role-tag {
-  font-size: 0.6175rem;
-  font-weight: 600;
-  padding: 0.1rem 0.4rem;
-  border-radius: 4px;
+  font-size: var(--fs-tiny);
+  font-weight: var(--fw-semibold);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-xs);
 }
 .user-role-tag.admin {
   background: var(--glow-primary);
@@ -2175,7 +1716,7 @@ const lightThemes = [
 .del-user-btn {
   background: transparent;
   border: none;
-  font-size: 0.7875rem;
+  font-size: var(--fs-label);
   cursor: pointer;
   opacity: 0.6;
   transition: opacity 0.2s ease;
@@ -2189,211 +1730,66 @@ const lightThemes = [
   color: var(--color-primary);
 }
 
-.name-badge-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
 
-
-
-
-.role-badge {
-  font-size: var(--fs-meta);
-  font-weight: 700;
-  padding: 0.15rem 0.5rem;
-  border-radius: 6px;
-}
-.role-badge.admin {
-  background: var(--glow-primary);
-  color: var(--color-primary);
-  border: 1px solid var(--color-primary);
-}
-.role-badge.user {
-  background: var(--bg-hover);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
-}
-
-.admin-access-block {
-  margin-top: 0.5rem;
-}
-
-.admin-unlock-box {
-  background: var(--bg-hover);
-  border: 1px solid var(--border-color);
-  padding: 1rem;
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.admin-hint {
-  font-size: 0.7375rem;
-  color: var(--text-secondary);
-  line-height: 1.4;
-}
-
-.unlock-admin-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  background: var(--bg-elevated);
-  border: 1px solid var(--color-primary);
-  color: var(--color-primary);
-  padding: 0.6rem 1rem;
-  border-radius: 8px;
-  font-size: 0.7875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-}
-
-.unlock-admin-btn:hover {
-  background: var(--color-primary);
-  color: white;
-}
-
-.admin-unlocked-panel {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color-hover);
-  padding: 1rem;
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.unlocked-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.unlocked-title {
-  font-size: 0.7875rem;
-  font-weight: 700;
-  color: var(--color-primary);
-}
-
-.lock-btn {
-  font-size: var(--fs-meta);
-  color: var(--text-muted);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-/* Auth Modal (管理者驗證彈窗) */
+/* Auth Modal (管理者驗證彈窗)：容器本身的底色/邊框/尺寸跟
+   User Management Modal 不一樣（見下面單獨這條），標頭／關閉鈕的樣式
+   已經跟 User Management Modal 共用同一份（在 .auth-modal, .user-mgmt-modal
+   那組規則裡），這裡不重複寫。 */
 .auth-modal {
   width: 90%;
   max-width: 440px;
   background: var(--bg-card);
   border: 1px solid var(--border-color-hover);
   border-radius: var(--modal-radius);
-  padding: 1.75rem;
+  padding: var(--space-7);
   box-shadow: var(--shadow-lg);
   margin: auto;
   display: flex;
   flex-direction: column;
-}
-
-.auth-modal .modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.25rem;
-  padding-bottom: 0.85rem;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.auth-modal .modal-header h3 {
-  font-size: 1.038rem;
-  font-weight: 700;
   color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.auth-modal .close-btn {
-  background: transparent;
-  border: none;
-  font-size: 1.188rem;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 0.2rem;
-  line-height: 1;
-  transition: color 0.2s ease;
-}
-
-.auth-modal .close-btn:hover {
-  color: var(--text-primary);
+  max-height: var(--modal-max-height);
 }
 
 .auth-modal .modal-body {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .auth-desc {
-  font-size: 0.8175rem;
+  font-size: var(--fs-label);
   color: var(--text-secondary);
-  line-height: 1.55;
+  line-height: var(--lh-normal);
 }
 
 .auth-desc code {
   color: var(--color-primary);
-  font-weight: 600;
-}
-
-.auth-input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  color: var(--text-primary);
-  font-size: 0.8875rem;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-}
-
-.auth-input:focus {
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-sm);
+  font-weight: var(--fw-semibold);
 }
 
 .auth-error-msg {
   color: #ef4444;
-  font-size: 0.7575rem;
-  font-weight: 600;
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-semibold);
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--space-2);
 }
 
+/* 其餘 modal-footer 樣式跟 User Management Modal 共用，這裡只有
+   margin-top 特別留大一點（space-6 而不是共用版的 space-5） */
 .auth-modal .modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 0.75rem;
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border-color);
+  margin-top: var(--space-6);
 }
 
 .auth-modal .cancel-btn {
-  padding: 0.6rem 1.2rem;
-  border-radius: 10px;
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-md);
   background: var(--bg-hover);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
-  font-size: 0.7875rem;
-  font-weight: 600;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semibold);
   cursor: pointer;
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -2404,13 +1800,13 @@ const lightThemes = [
 }
 
 .auth-modal .submit-btn {
-  padding: 0.55rem 1.3rem;
+  padding: var(--space-2) var(--space-5);
   border-radius: var(--radius-sm);
   background: var(--color-primary);
   border: 1px solid var(--color-primary);
   color: var(--color-on-primary);
-  font-size: 0.7875rem;
-  font-weight: 600;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semibold);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
   transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
@@ -2421,12 +1817,6 @@ const lightThemes = [
   color: var(--color-primary);
 }
 
-
-.sync-message.info {
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-}
 
 @media (max-width: 640px) {
   .add-user-modal-form {
@@ -2441,7 +1831,7 @@ const lightThemes = [
   .user-modal-card {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.5rem;
+    gap: var(--space-2);
   }
   .user-modal-right {
     width: 100%;
@@ -2450,7 +1840,7 @@ const lightThemes = [
   .user-mgmt-modal,
   .auth-modal {
     width: 95%;
-    padding: 1.25rem 1rem;
+    padding: var(--space-5) var(--space-4);
   }
 }
 </style>

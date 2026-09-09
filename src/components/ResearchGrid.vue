@@ -45,7 +45,7 @@
 
     <!-- 卡片列表 -->
     <div v-else class="cards-grid">
-      <div v-for="item in filteredList" :key="item.id" class="research-card glass-panel" :class="[`card-type-${crudType.toLowerCase()}`, { highlighted: highlightedId === item.id, 'is-mine': isMyCreatedItem(item) }]" :id="`item-${item.id}`">
+      <div v-for="item in filteredList" :key="item.id" class="card-panel" :class="{ highlighted: highlightedId === item.id, 'is-mine': isMyCreatedItem(item) }" :id="`item-${item.id}`">
         <div
           class="card-media-wrapper"
           role="button"
@@ -77,7 +77,7 @@
         <div class="card-info">
           <div class="card-meta-row" @click.stop>
             <div class="card-meta-left">
-              <span :class="badgeClass" class="clickable-badge" @click="handleBadgeClick(item)" title="點擊切換分類篩選">{{ getBadgeText(item) }}</span>
+              <span :class="[badgeClass, { 'clickable-badge': !badgeLabel }]" @click="handleBadgeClick(item)" :title="badgeLabel ? '' : '點擊切換分類篩選'">{{ getBadgeText(item) }}</span>
             </div>
             <div class="card-actions card-actions-reveal" v-if="!isGuest">
               <ActionIconButton v-if="canEditCardItem(item)" variant="edit" :aria-label="`編輯《${getTitle(item)}》`" @click="$emit('trigger-crud', { type: crudType, item })" title="編輯">
@@ -116,84 +116,104 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
           <div class="lightbox-scroll-area">
-            <div class="lightbox-media-box" :class="{ 'image-lightbox-media': !isVideoSource(getLightboxVideo(lightbox.item)) }" v-if="!hideLightboxMedia && (isVideoSource(getLightboxVideo(lightbox.item)) || getLightboxImage(lightbox.item))">
-              <div
-                v-if="isVideoSource(getLightboxVideo(lightbox.item))"
-                class="clickable-media-box video-media-container"
-              >
-                <video
-                  :src="getLightboxVideo(lightbox.item)"
-                  controls
-                  autoplay
-                  class="lightbox-video"
-                ></video>
-                <button
-                  type="button"
-                  class="media-zoom-overlay video-expand-btn"
-                  @click.stop="openFullscreenMedia(getLightboxVideo(lightbox.item), true)"
-                  title="全螢幕放大播放影片"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
-                  <span>點擊全螢幕檢視</span>
-                </button>
+            <!-- 頂部橫跨全寬：分類 badge（左）＋ 日期（右，關閉鈕另外絕對定位疊在更右邊） -->
+            <div :class="['lightbox-meta-row', lightboxMetaClass]">
+              <span :class="[badgeClass, { 'clickable-badge': !lightboxBadgeLabel && !badgeLabel }]" @click="handleLightboxBadgeClick(lightbox.item)" :title="(lightboxBadgeLabel || badgeLabel) ? '' : '點擊切換分類篩選'">{{ getLightboxBadgeText(lightbox.item) }}</span>
+              <span class="lightbox-date" v-if="lightbox.item.createdAt || lightbox.item.updatedAt">{{ formatDateOnly(lightbox.item.createdAt || lightbox.item.updatedAt) }}</span>
+            </div>
+
+            <!-- 主體兩欄：左欄標題＋媒體，右欄各類型自訂內容（可獨立捲動） -->
+            <div class="lightbox-body-grid">
+              <div class="lightbox-media-col">
+                <h2 :id="`lightbox-title-${lightbox.item?.id}`" class="lightbox-title">{{ getTitle(lightbox.item) }}</h2>
+                <!-- 各類型可選填的額外資訊（例如 AI 工具中心的「工具分類」），
+                     不填就完全不佔位置，其餘 4 種類型不受影響 -->
+                <slot
+                  name="lightbox-left-extra"
+                  :item="lightbox.item"
+                  :toggle-single-filter="toggleSingleFilter"
+                  :is-single-filter-selected="isSingleFilterSelected"
+                  :toggle-tag="toggleTag"
+                  :is-tag-selected="isTagSelected"
+                  :close-lightbox="closeLightbox"
+                />
+                <div class="lightbox-media-box" :class="{ 'image-lightbox-media': !isVideoSource(getLightboxVideo(lightbox.item)) }" v-if="!hideLightboxMedia && (isVideoSource(getLightboxVideo(lightbox.item)) || getLightboxImage(lightbox.item))">
+                  <div
+                    v-if="isVideoSource(getLightboxVideo(lightbox.item))"
+                    class="clickable-media-box video-media-container"
+                  >
+                    <video
+                      :src="getLightboxVideo(lightbox.item)"
+                      controls
+                      autoplay
+                      class="lightbox-video"
+                    ></video>
+                    <button
+                      type="button"
+                      class="media-zoom-overlay video-expand-btn"
+                      @click.stop="openFullscreenMedia(getLightboxVideo(lightbox.item), true)"
+                      title="全螢幕放大播放影片"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                      <span>點擊全螢幕檢視</span>
+                    </button>
+                  </div>
+                  <div
+                    v-else
+                    class="clickable-media-box"
+                    role="button"
+                    tabindex="0"
+                    :aria-label="`放大檢視《${getTitle(lightbox.item)}》圖片`"
+                    @click="openFullscreenMedia(getLightboxImage(lightbox.item), false)"
+                    @keydown.enter.prevent="openFullscreenMedia(getLightboxImage(lightbox.item), false)"
+                    @keydown.space.prevent="openFullscreenMedia(getLightboxImage(lightbox.item), false)"
+                    title="點擊全螢幕放大檢視圖片"
+                  >
+                    <img v-if="getLightboxImage(lightbox.item)" :src="getLightboxImage(lightbox.item)" class="lightbox-img" alt="點擊放大" />
+                    <div v-else class="lightbox-media-placeholder" aria-hidden="true">{{ getTitle(lightbox.item) }}</div>
+                    <div class="media-zoom-overlay">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                      <span>點擊全螢幕檢視</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div
-                v-else
-                class="clickable-media-box"
-                role="button"
-                tabindex="0"
-                :aria-label="`放大檢視《${getTitle(lightbox.item)}》圖片`"
-                @click="openFullscreenMedia(getLightboxImage(lightbox.item), false)"
-                @keydown.enter.prevent="openFullscreenMedia(getLightboxImage(lightbox.item), false)"
-                @keydown.space.prevent="openFullscreenMedia(getLightboxImage(lightbox.item), false)"
-                title="點擊全螢幕放大檢視圖片"
-              >
-                <img v-if="getLightboxImage(lightbox.item)" :src="getLightboxImage(lightbox.item)" class="lightbox-img" alt="點擊放大" />
-                <div v-else class="lightbox-media-placeholder" aria-hidden="true">{{ getTitle(lightbox.item) }}</div>
-                <div class="media-zoom-overlay">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
-                  <span>點擊全螢幕檢視</span>
+              <div class="lightbox-content-col">
+                <div class="lightbox-slot-content">
+                  <slot
+                    name="lightbox-content"
+                    :item="lightbox.item"
+                    :toggle-tag="toggleTag"
+                    :is-tag-selected="isTagSelected"
+                    :selected-tags="selectedTags"
+                    :toggle-single-filter="toggleSingleFilter"
+                    :is-single-filter-selected="isSingleFilterSelected"
+                    :open-fullscreen-media="openFullscreenMedia"
+                  />
                 </div>
               </div>
             </div>
-            <div class="lightbox-detail-content">
-              <div :class="['lightbox-meta-row', lightboxMetaClass]">
-                <span :class="badgeClass" class="clickable-badge" @click="handleBadgeClick(lightbox.item); closeLightbox();" title="點擊切換分類篩選">{{ getBadgeText(lightbox.item) }}</span>
-                <span class="lightbox-date" v-if="lightbox.item.createdAt || lightbox.item.updatedAt">{{ formatDateTime(lightbox.item.createdAt || lightbox.item.updatedAt) }}</span>
+
+            <!-- 底部橫跨全寬：編輯/刪除/發布者（左）＋ 前往連結 CTA（右） -->
+            <div class="lightbox-footer">
+              <div class="lightbox-actions-group" v-if="!isGuest">
+                <button v-if="canEditCardItem(lightbox.item)" type="button" class="lightbox-icon-btn edit" @click="$emit('trigger-crud', { type: crudType, item: lightbox.item }); closeLightbox();" :aria-label="`編輯`" title="編輯">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                </button>
+                <!-- 刪除：管理員或我發佈的才顯示 -->
+                <button v-if="canDeleteCardItem(lightbox.item)" type="button" class="lightbox-icon-btn delete" @click="handleDelete(lightbox.item); closeLightbox();" :aria-label="`刪除`" title="刪除">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>
+                </button>
+                <!-- 發佈者標示：自己發佈顯示「我發佈」，其他人發佈的顯示對方暱稱 -->
+                <span v-if="isMyCreatedItem(lightbox.item) || getPublisherNickname(lightbox.item)" class="mine-lightbox-indicator" :class="{ 'is-others': !isMyCreatedItem(lightbox.item) }">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                  {{ isMyCreatedItem(lightbox.item) ? '我發佈' : getPublisherNickname(lightbox.item) }}
+                </span>
               </div>
-              <h2 :id="`lightbox-title-${lightbox.item?.id}`" class="lightbox-title">{{ getTitle(lightbox.item) }}</h2>
-              <div class="lightbox-slot-content">
-              <slot
-                name="lightbox-content"
-                :item="lightbox.item"
-                :toggle-tag="toggleTag"
-                :is-tag-selected="isTagSelected"
-                :selected-tags="selectedTags"
-                :toggle-single-filter="toggleSingleFilter"
-                :is-single-filter-selected="isSingleFilterSelected"
-                :open-fullscreen-media="openFullscreenMedia"
-              />
-              </div>
-              <div class="lightbox-footer">
-                <div class="lightbox-actions-group" v-if="!isGuest">
-                  <button v-if="canEditCardItem(lightbox.item)" type="button" class="lightbox-icon-btn edit" @click="$emit('trigger-crud', { type: crudType, item: lightbox.item }); closeLightbox();" :aria-label="`編輯`" title="編輯">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
-                  </button>
-                  <!-- 刪除：管理員或我發佈的才顯示 -->
-                  <button v-if="canDeleteCardItem(lightbox.item)" type="button" class="lightbox-icon-btn delete" @click="handleDelete(lightbox.item); closeLightbox();" :aria-label="`刪除`" title="刪除">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>
-                  </button>
-                  <!-- 我發佈的：Lightbox 中以細線 + 帳號名稱呈現 -->
-                  <span v-if="isMyCreatedItem(lightbox.item)" class="mine-lightbox-indicator">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
-                    我發佈
-                  </span>
-                </div>
-                <a v-if="getLightboxLink(lightbox.item)" :href="getLightboxLink(lightbox.item)" target="_blank" rel="noopener noreferrer" class="source-btn">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                  <span>{{ linkBtnLabel }}</span>
-                </a>
-              </div>
+              <a v-if="getLightboxLink(lightbox.item)" :href="getLightboxLink(lightbox.item)" target="_blank" rel="noopener noreferrer" class="source-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                <span>{{ linkBtnLabel }}</span>
+              </a>
             </div>
           </div>
         </div>
@@ -216,7 +236,7 @@ import ActionIconButton from './ActionIconButton.vue';
 import FullscreenMediaOverlay from './FullscreenMediaOverlay.vue';
 import { getStorageData, deleteItem, isMyCreatedItem, checkDeletePermission } from '../utils/storage';
 import { getCurrentUser, isAdminUser } from '../utils/userStore';
-import { formatDateTime } from '../utils/formatters';
+import { formatDateOnly } from '../utils/formatters';
 import NotificationBell from '../components/NotificationBell.vue';
 
 const props = defineProps({
@@ -231,6 +251,10 @@ const props = defineProps({
   badgeClass:   { type: String, default: 'category-badge' },
   badgeField:   { type: String, default: '' },
   badgeLabel:   { type: String, default: '' },
+  // 燈箱頂部的 badge 若要跟卡片列表不同（例如卡片顯示每筆各自的分類，
+  // 但燈箱固定顯示這個類型的名稱，如「AI 工具中心」），填這個欄位即可；
+  // 不填就跟卡片一樣，沿用 badgeLabel／badgeField 的邏輯。
+  lightboxBadgeLabel: { type: String, default: '' },
   titleField:   { type: String, default: 'title' },
   coverField:   { type: String, default: 'cover' },
   linkField:    { type: String, default: 'link' },
@@ -273,6 +297,14 @@ const canDeleteCardItem = (item) => {
 const canEditCardItem = (item) => {
   if (!item) return false;
   return !isGuest.value;
+};
+
+/** 取得該項目發佈者的暱稱（非本人建立時，於 Lightbox 顯示「誰發佈的」用） */
+const getPublisherNickname = (item) => {
+  if (!item) return '';
+  if (item.creatorName) return item.creatorName;
+  const createdBy = item.createdBy || item.updatedBy || '';
+  return createdBy.split(' (')[0].trim();
 };
 
 const creatorOptions = computed(() => {
@@ -426,10 +458,19 @@ const toggleSingleFilter = (field, val) => toggleFilterOption(field, val);
 const isSingleFilterSelected = (field, val) => isOptionSelected(field, val);
 
 const handleBadgeClick = (item) => {
+  // badgeLabel 是固定文字（例如「AI 工具中心」），不是這筆資料自己的欄位值，
+  // 點下去沒有意義可以篩選，直接略過。
+  if (props.badgeLabel) return;
   const badgeText = getBadgeText(item);
   if (!badgeText) return;
   const targetField = props.badgeField || 'category';
   toggleFilterOption(targetField, badgeText);
+};
+/** 燈箱裡的分類 badge 點擊：固定文字（lightboxBadgeLabel／badgeLabel）時不可篩選 */
+const handleLightboxBadgeClick = (item) => {
+  if (props.lightboxBadgeLabel || props.badgeLabel) return;
+  handleBadgeClick(item);
+  closeLightbox();
 };
 
 const getTitle  = (item) => item?.[props.titleField] || item?.title || item?.name || '';
@@ -449,6 +490,7 @@ const getLightboxImage = (item) => {
 };
 const getLightboxLink  = (item) => { if (!item) return ''; return item[props.lightboxLinkField  || props.linkField]  || getLink(item); };
 const getBadgeText = (item) => { if (props.badgeLabel) return props.badgeLabel; if (props.badgeField && item) return item[props.badgeField] || ''; return ''; };
+const getLightboxBadgeText = (item) => props.lightboxBadgeLabel || getBadgeText(item);
 
 const getItemValues = (item, field, optField) => {
   if (!item) return [];
@@ -631,7 +673,7 @@ const handleDelete = (item) => {
 .research-container {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .clickable-badge {
@@ -642,175 +684,12 @@ const handleDelete = (item) => {
   opacity: 0.85;
 }
 
-/* ── 多選標籤選取器 ─────────────────────── */
-.custom-tag-dropdown {
-  position: relative;
-  display: inline-block;
-  z-index: 120;
-}
+/* ── 多選標籤選取器：實際的 UI 已經抽成 FilterToolbar.vue 元件，
+   這裡以前的舊版 CSS（下拉選單、已選標籤 Chip 列）沒有任何模板在用，
+   全部移除；.custom-tag-dropdown 這個 class 字串在下面的
+   closeTagDropdown() 還會用到（抓的是 FilterToolbar 渲染出來的
+   真實 DOM，不是靠這裡的 CSS），只是不需要在這裡定義樣式。 ── */
 
-.tag-dropdown-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  padding: 0.5rem 0.9rem;
-  border-radius: 8px;
-  font-size: 0.7875rem;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
-  font-family: var(--font-body);
-}
-.tag-dropdown-btn:hover,
-.tag-dropdown-btn.active {
-  border-color: var(--color-primary);
-  color: var(--text-primary);
-}
-.tag-dropdown-btn.active {
-  color: var(--color-primary);
-}
-
-.tag-dropdown-menu {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  width: 240px;
-  max-height: 280px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  box-shadow: var(--shadow-lg);
-  z-index: 500;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.tag-dropdown-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.6rem 0.85rem;
-  border-bottom: 1px solid var(--border-color);
-  font-size: var(--fs-meta);
-  font-weight: 700;
-  color: var(--text-muted);
-}
-.clear-btn {
-  color: var(--color-primary);
-  font-size: var(--fs-meta);
-  font-weight: 600;
-  cursor: pointer;
-}
-.clear-btn:hover {
-  text-decoration: underline;
-}
-
-.tag-options-list {
-  overflow-y: auto;
-  padding: 0.4rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.tag-option-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0.6rem;
-  border-radius: 6px;
-  font-size: 0.7375rem;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: color 0.15s ease, background-color 0.15s ease;
-}
-.tag-option-item:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
-.tag-option-item.selected {
-  background: var(--glow-primary);
-  color: var(--color-primary);
-  font-weight: 600;
-}
-.tag-option-item input[type="checkbox"] {
-  accent-color: var(--color-primary);
-  cursor: pointer;
-}
-
-/* ── 已選標籤 Chip 膠囊列 ───────────────── */
-.selected-tags-chips {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding-top: 0.5rem;
-  border-top: 1px dashed var(--border-color);
-  flex-wrap: wrap;
-}
-
-.chips-label {
-  font-size: var(--fs-meta);
-  color: var(--text-muted);
-  font-weight: 600;
-}
-
-.chip-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  align-items: center;
-}
-
-.chip-category-prefix {
-  font-size: 0.5875rem;
-  opacity: 0.75;
-  margin-right: 0.15rem;
-  font-weight: 500;
-}
-.tag-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  background: var(--color-primary);
-  color: #ffffff;
-  border: 1px solid var(--color-primary);
-  box-shadow: var(--shadow-sm);
-  font-size: var(--fs-meta);
-  font-weight: 600;
-  padding: 0.22rem 0.65rem;
-  border-radius: 99px;
-  line-height: 1.2;
-}
-
-.chip-category-prefix {
-  opacity: 0.9;
-  font-weight: 600;
-  color: #ffffff;
-}
-
-.chip-remove-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  font-size: 0.5875rem;
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.25);
-  cursor: pointer;
-  transition: color 0.15s ease, background-color 0.15s ease;
-}
-.chip-remove-btn:hover {
-  background: rgba(255, 255, 255, 0.45);
-  color: #ffffff;
-}
-
-.reset-all-tags-btn,
 .reset-filter-btn {
   font-size: var(--fs-meta);
   color: var(--text-muted);
@@ -818,7 +697,6 @@ const handleDelete = (item) => {
   cursor: pointer;
   transition: color 0.15s ease;
 }
-.reset-all-tags-btn:hover,
 .reset-filter-btn:hover {
   color: var(--color-primary);
 }
@@ -828,20 +706,20 @@ const handleDelete = (item) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-  padding: 4rem 2rem;
+  gap: var(--space-3);
+  padding: 4rem var(--space-8);
   color: var(--text-muted);
-  font-size: 0.8875rem;
+  font-size: var(--fs-body);
 }
 
 .empty-primary-btn {
   min-height: 40px;
-  padding: 0.55rem 0.9rem;
-  border-radius: 10px;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
   background: var(--color-primary);
   color: #ffffff;
-  font-size: 0.7875rem;
-  font-weight: 700;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-bold);
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
@@ -856,48 +734,13 @@ const handleDelete = (item) => {
   z-index: 1;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
-.research-card {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--bg-card) 84%, transparent);
-  border: 1px solid var(--border-color);
-  /* box-shadow: var(--shadow-sm); */
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-.research-card:hover {
-  border-color: var(--border-color-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-.research-card.highlighted {
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-md);
-  animation: pulse-border 2s infinite;
-}
-
-/* Same card shell, with a small content cue per module. The cue uses the
-   existing theme tokens so themes remain responsible for the actual colour. */
-.research-card.card-type-motion_research .card-media-wrapper {
-  background: color-mix(in srgb, var(--color-secondary) 12%, var(--bg-hover));
-}
-
-.research-card.card-type-ai_center .card-media-wrapper {
-  background: color-mix(in srgb, var(--color-accent) 10%, var(--bg-hover));
-}
-
-.research-card.card-type-competitors .card-media-wrapper {
-  background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-hover));
-}
-
-@keyframes pulse-border {
-  0%, 100% { border-color: var(--border-color); }
-  50% { border-color: var(--color-primary); }
-}
+/* .card-panel、.card-media-wrapper 等卡片外殼共用 class 已經搬到
+   src/styles/components.css（全域），Dashboard.vue 的卡片也是靠那邊
+   才套得到樣式——Vue 的 scoped style 只在原本那個元件裡有效，寫在這裡
+   的話別的頁面用同樣的 class name 是吃不到樣式的。 */
 
 /* ── 我發佈的 Avatar Dot（圖片左上角） ─ */
 .mine-avatar-dot {
@@ -917,60 +760,40 @@ const handleDelete = (item) => {
   box-shadow: var(--shadow-sm);
   transition: transform 0.18s ease;
 }
-.research-card:hover .mine-avatar-dot {
+.card-panel:hover .mine-avatar-dot {
   transform: scale(1.08);
 }
 
-/* ── Lightbox 中「我發佈」指示器 ─── */
+/* ── Lightbox 中發佈者指示器：自己發佈用主色強調，他人發佈則以次要文字色顯示暱稱 ─── */
 .mine-lightbox-indicator {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  font-size: 0.6575rem;
-  font-weight: 600;
+  gap: var(--space-1);
+  font-size: var(--fs-tiny);
+  font-weight: var(--fw-semibold);
   color: var(--color-primary);
   opacity: 0.85;
-  margin-left: 0.5rem;
+  margin-left: var(--space-2);
 }
 
-/* ── Card Media (恢復原始媒體區) ────────── */
-.card-media-wrapper {
-  position: relative;
-  width: 100%;
-  padding-top: 56.25%;
-  overflow: hidden;
-  background: var(--bg-hover);
-  cursor: pointer;
-  outline: none;
-}
-.card-media-wrapper:focus-visible {
-  box-shadow: inset 0 0 0 2px var(--color-primary);
-}
-.card-media {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  object-fit: cover;
-  transition: transform 0.35s ease;
+.mine-lightbox-indicator.is-others {
+  color: var(--text-secondary);
 }
 
-.card-media-placeholder,
+/* ── Card Media：.card-media-wrapper／.card-media／.card-media-placeholder
+   本體已搬到全域 components.css，這裡只留燈箱專用的 placeholder 樣式 ── */
 .lightbox-media-placeholder {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
-  padding: 1.5rem;
+  padding: var(--space-6);
   background: linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
   color: var(--text-secondary);
   font-size: var(--fs-h2);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   text-align: center;
 }
-.card-media-wrapper:hover .card-media {
-  transform: scale(1.05);
-}
-
 
 .ext-link-wrapper {
   position: absolute;
@@ -1027,80 +850,11 @@ const handleDelete = (item) => {
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 0.7875rem;
-  gap: 0.5rem;
+  font-size: var(--fs-label);
+  gap: var(--space-2);
   transition: opacity 0.22s ease;
 }
 .card-media-wrapper:hover .hover-overlay { opacity: 1; }
-
-
-
-/* ── Card Body & Info ── */
-.card-info {
-  padding: 0.75rem 1rem 1rem;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  gap: 0.1rem;
-}
-
-.card-meta-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.15rem;
-}
-
-.card-meta-left {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-}
-
-.card-time-text {
-  font-size: 0.7375rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.card-title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  line-height: 1.4;
-  color: var(--text-primary);
-  letter-spacing: -0.015em;
-  margin: 0.1rem 0 0.15rem;
-  word-break: break-word;
-}
-
-.card-footer {
-  margin-top: auto;
-  display: flex;
-  justify-content: flex-start;
-}
-
-.detail-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: var(--control-height-md);
-  padding: 0.55rem 0.9rem;
-  border-radius: 10px;
-  background: var(--bg-hover);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  font-size: 0.7575rem;
-  font-weight: 700;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
-}
-
-.detail-btn:hover,
-.detail-btn:focus-visible {
-  background: var(--glow-primary);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
 
 /* ── Lightbox Modal ─────────────────────── */
 .lightbox-backdrop {
@@ -1109,12 +863,12 @@ const handleDelete = (item) => {
   backdrop-filter: blur(12px);
   display: flex; align-items: center; justify-content: center;
   z-index: var(--z-lightbox);
-  padding: 1.5rem;
+  padding: var(--space-6);
 }
 .lightbox-container {
   position: relative;
   width: 100%;
-  max-width: 760px;
+  max-width: 1040px;
   max-height: 88vh;
   background: var(--bg-elevated);
   border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
@@ -1145,19 +899,18 @@ const handleDelete = (item) => {
 
 .lightbox-scroll-area {
   overflow-y: auto;
-  padding: 1.5rem 1.75rem 1.75rem;
+  padding: var(--space-6) var(--space-7) var(--space-7);
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
 }
 
-/* ── 可點擊放大圖片與 Zoom 提示 ──────────── */
+/* ── 可點擊放大圖片與 Zoom 提示 ──────────────────────
+   統一用 16:9 比例，避免每筆資料的封面圖尺寸不一造成版面跳動 ── */
 .lightbox-media-box {
   position: relative;
   width: 100%;
-  height: 300px;
-  aspect-ratio: auto;
-  max-height: none;
+  height: auto;
+  aspect-ratio: 16 / 9;
   border-radius: 12px;
   overflow: hidden;
   background: #000000;
@@ -1167,14 +920,13 @@ const handleDelete = (item) => {
 }
 
 .image-lightbox-media {
-  aspect-ratio: auto;
-  height: 300px;
-  max-height: none;
+  aspect-ratio: 16 / 9;
+  height: auto;
   background: var(--bg-input);
 }
 
 .image-lightbox-media .clickable-media-box {
-  aspect-ratio: auto;
+  aspect-ratio: 16 / 9;
   height: 100%;
   min-height: 0;
   background: var(--bg-input);
@@ -1217,13 +969,13 @@ const handleDelete = (item) => {
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.25);
   color: #ffffff;
-  padding: 0.4rem 0.85rem;
+  padding: var(--space-2) var(--space-3);
   border-radius: 8px;
-  font-size: 0.7175rem;
-  font-weight: 600;
+  font-size: var(--fs-tiny);
+  font-weight: var(--fw-semibold);
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--space-2);
   opacity: 0;
   transform: translateY(0);
   transition: opacity 0.22s ease, transform 0.22s ease;
@@ -1253,23 +1005,6 @@ const handleDelete = (item) => {
   height: 100%;
 }
 
-.fullscreen-media-content {
-  max-width: 90vw;
-  max-height: 85vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 3005;
-}
-
-.fullscreen-video-element {
-  max-width: 90vw;
-  max-height: 85vh;
-  border-radius: 12px;
-  outline: none;
-  box-shadow: var(--shadow-surface);
-}
-
 .lightbox-img {
   width: 100%;
   height: 100%;
@@ -1287,60 +1022,26 @@ const handleDelete = (item) => {
   transform: scale(1.02);
 }
 
-/* ── 全螢幕圖片放大檢視 Overlay ───────────── */
-.fullscreen-image-backdrop {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.92);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-fullscreen);
-  padding: 1.5rem;
-  cursor: zoom-out;
+/* ── 全螢幕放大檢視：實際 UI 已經抽成 FullscreenMediaOverlay.vue 元件，
+   這裡以前的舊版 .fullscreen-* CSS 沒有任何模板在用，移除 ── */
+/* ── 主體兩欄排版：左欄標題＋媒體／右欄各類型自訂內容 ── */
+.lightbox-body-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: var(--space-6);
+  align-items: start;
 }
-
-.fullscreen-img {
-  max-width: 95vw;
-  max-height: 95vh;
-  object-fit: contain;
-  border-radius: 12px;
-  box-shadow: var(--shadow-surface);
-  cursor: default;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.fullscreen-close-btn {
-  position: absolute;
-  top: 1.25rem;
-  right: 1.25rem;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: calc(var(--z-fullscreen) + 10);
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-}
-.fullscreen-close-btn:hover {
-  background: rgba(255, 255, 255, 0.35);
-  transform: scale(1.1);
-}
-.lightbox-detail-content {
+.lightbox-media-col {
   display: flex;
   flex-direction: column;
+}
+.lightbox-content-col {
+  min-width: 0;
 }
 .lightbox-slot-content {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 .lightbox-slot-content :deep(.card-tags),
 .lightbox-slot-content :deep(.card-tools) {
@@ -1348,16 +1049,16 @@ const handleDelete = (item) => {
 }
 .lightbox-slot-content :deep(.lightbox-section) {
   margin: 0;
-  padding: 0.85rem 1rem;
+  padding: var(--space-3) var(--space-4);
   background: color-mix(in srgb, var(--bg-subtle) 78%, transparent);
   border: 0;
   border-left: 3px solid var(--color-primary);
   border-radius: var(--radius-sm);
 }
 .lightbox-slot-content :deep(.section-title) {
-  margin: 0 0 0.35rem;
+  /* line-height 跟 h1~h6 共用規則一樣，不重複寫 */
+  margin: 0 0 var(--space-1);
   font-size: var(--fs-label);
-  line-height: 1.35;
 }
 .lightbox-slot-content :deep(.section-desc) {
   margin: 0;
@@ -1366,15 +1067,12 @@ const handleDelete = (item) => {
   line-height: var(--lh-relaxed);
   white-space: pre-line;
 }
-.lightbox-detail-content .card-tags {
-  margin-top: 0;
-  margin-bottom: 1rem;
-}
 .lightbox-meta-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
+  padding-right: 2.75rem; /* 保留給右上角絕對定位的關閉鈕，避免日期被蓋住 */
 }
 .lightbox-date {
   font-size: var(--fs-meta);
@@ -1382,27 +1080,26 @@ const handleDelete = (item) => {
   white-space: nowrap;
 }
 .lightbox-title {
-  font-size: 1.288rem;
-  font-weight: 800;
-  line-height: 1.3;
-  color: var(--text-primary);
-  margin: 0.55rem 0 0.75rem;
+  /* 這是 h2，line-height／color 跟 h1~h6 共用規則一樣，不重複寫 */
+  font-size: var(--fs-h1);
+  font-weight: var(--fw-black);
+  margin: var(--space-4) 0;
 }
 .lightbox-footer { 
-  margin-top: 1.25rem;
-  padding-top: 1rem;
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
   border-top: 1px solid color-mix(in srgb, var(--border-color) 65%, transparent);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--space-4);
   flex-wrap: wrap;
 }
 
 .lightbox-actions-group {
   display: flex;
   align-items: center;
-  gap: 0.2rem;
+  gap: var(--space-1);
 }
 
 /* Lightbox 編輯 / 刪除 — 純 icon 圓形按鈕 */
@@ -1412,7 +1109,7 @@ const handleDelete = (item) => {
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   background: var(--bg-hover);
   border: 1px solid var(--border-color);
@@ -1436,14 +1133,14 @@ const handleDelete = (item) => {
 .source-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: var(--space-2);
   background: var(--color-primary);
   border: 1px solid var(--color-primary);
   color: #fff;
-  padding: 0.55rem 1.1rem;
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-sm);
-  font-weight: 600;
-  font-size: 0.7575rem;
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-meta);
   transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
   text-decoration: none;
   flex-shrink: 0;
@@ -1461,7 +1158,11 @@ const handleDelete = (item) => {
 @media (min-width: 1440px) { .cards-grid { grid-template-columns: repeat(4, 1fr); } }
 @media (min-width: 1920px) { .cards-grid { grid-template-columns: repeat(5, 1fr); } }
 @media (max-width: 1280px) { .cards-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 768px)  { 
+@media (max-width: 860px) {
+  /* 燈箱兩欄排版在窄螢幕（含平板直向）收合成單欄：媒體在上、內容在下 */
+  .lightbox-body-grid { grid-template-columns: 1fr; gap: var(--space-5); }
+}
+@media (max-width: 768px)  {
   .cards-grid { grid-template-columns: 1fr; }
   .media-ext-link {
     opacity: 1;
@@ -1473,12 +1174,10 @@ const handleDelete = (item) => {
   }
 
   .filter-select { flex: 1; }
-  .lightbox-backdrop { padding: 0.75rem; }
+  .lightbox-backdrop { padding: var(--space-3); }
   .lightbox-container { max-height: calc(100dvh - 1.5rem); border-radius: 16px; }
-  .lightbox-scroll-area { padding: 1rem; -webkit-overflow-scrolling: touch; }
+  .lightbox-scroll-area { padding: var(--space-4); -webkit-overflow-scrolling: touch; }
   .lightbox-media-box { max-height: 38vh; }
-  .lightbox-media-box,
-  .image-lightbox-media { height: 220px; max-height: 220px; }
   .lightbox-footer { align-items: stretch; flex-direction: column; }
   .lightbox-actions-group { width: 100%; flex-wrap: wrap; }
   .source-btn { width: 100%; justify-content: center; }

@@ -501,8 +501,8 @@ const handleSubmit = () => {
 }
 
 .modal-header h2 {
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-bold);
 }
 
 .close-btn {
@@ -548,13 +548,13 @@ const handleSubmit = () => {
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: var(--space-2);
 }
 
 .form-group.full-width {
@@ -562,8 +562,8 @@ const handleSubmit = () => {
 }
 
 label {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-semibold);
   color: var(--text-primary);
 }
 
@@ -578,12 +578,12 @@ label {
   justify-content: center;
   width: 16px;
   height: 16px;
-  margin-left: 0.35rem;
+  margin-left: var(--space-1);
   border-radius: 50%;
   background: var(--color-primary);
   color: var(--color-on-primary);
-  font-size: 0.68rem;
-  font-weight: 800;
+  font-size: var(--fs-tiny);
+  font-weight: var(--fw-black);
   cursor: help;
   vertical-align: middle;
 }
@@ -599,15 +599,15 @@ label {
   top: 10px;
   z-index: 30;
   width: min(360px, 72vw);
-  padding: 0.8rem 0.9rem;
+  padding: var(--space-3) var(--space-4);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   background: var(--bg-elevated);
   color: var(--text-primary);
   box-shadow: var(--shadow-surface);
-  font-size: 0.72rem;
-  font-weight: 500;
-  line-height: 1.55;
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-normal);
   white-space: nowrap;
   opacity: 0;
   visibility: hidden;
@@ -632,9 +632,9 @@ label {
 input, select, textarea {
   background: var(--bg-input);
   border: 1px solid var(--border-color);
-  padding: 0.55rem 0.85rem;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
-  font-size: 0.8125rem;
+  font-size: var(--fs-label);
   color: var(--text-primary);
   transition: border-color 0.18s ease;
 }
@@ -666,9 +666,9 @@ textarea {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
   border-top: 1px solid var(--border-color);
-  padding: 0.875rem var(--modal-padding);
+  padding: var(--space-3) var(--modal-padding);
   background: var(--bg-elevated);
   backdrop-filter: blur(12px);
   flex-shrink: 0;
@@ -676,13 +676,13 @@ textarea {
 }
 
 .btn-cancel {
-  padding: 0.55rem 1.15rem;
+  padding: var(--space-2) var(--space-5);
   border-radius: var(--radius-md);
   background: var(--bg-subtle);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
-  font-size: 0.8125rem;
-  font-weight: 600;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semibold);
   transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
@@ -716,14 +716,14 @@ textarea {
 
 @media (max-width: 640px) {
   .modal-backdrop {
-    padding: 0.75rem;
+    padding: var(--space-3);
   }
   .modal-container {
     max-height: calc(100dvh - 1.5rem);
     border-radius: 16px;
   }
   .modal-body {
-    padding: 1rem;
+    padding: var(--space-4);
     -webkit-overflow-scrolling: touch;
   }
   .form-grid {

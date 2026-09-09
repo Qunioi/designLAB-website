@@ -246,7 +246,7 @@ const getFilterButtonLabel = (f) => {
 .filter-toolbar-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--space-3);
   width: 100%;
 }
 
@@ -256,11 +256,11 @@ const getFilterButtonLabel = (f) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.65rem 0.85rem;
+  padding: var(--space-3) var(--space-3);
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 14px;
-  gap: 0.75rem;
+  border-radius: var(--radius-lg);
+  gap: var(--space-3);
   width: 100%;
   box-sizing: border-box;
 }
@@ -269,12 +269,12 @@ const getFilterButtonLabel = (f) => {
 .search-box {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: var(--space-2);
   background: var(--bg-input);
   border: 1px solid var(--border-color);
   height: 36px;
-  padding: 0.35rem 0.75rem;
-  border-radius: 10px;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
   width: 260px;
   flex: 0 1 260px;
   min-width: 140px;
@@ -304,7 +304,7 @@ const getFilterButtonLabel = (f) => {
 /* 篩選按鈕區塊 */
 .filter-options {
   display: flex;
-  gap: 0.45rem;
+  gap: var(--space-2);
   align-items: center;
   flex-wrap: wrap;
   justify-content: flex-end;
@@ -320,10 +320,10 @@ const getFilterButtonLabel = (f) => {
 .filter-dropdown-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.1rem;
+  gap: var(--space-1);
   background: var(--bg-input);
   border: 1px solid var(--border-color);
-  padding: 0.35rem 0.65rem;
+  padding: var(--space-1) var(--space-3);
   border-radius: 9px;
   font-size: 12px;
   color: var(--text-secondary);
@@ -366,12 +366,12 @@ const getFilterButtonLabel = (f) => {
   background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: 0.75rem;
+  padding: var(--space-3);
   z-index: 500;
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-2);
   box-sizing: border-box;
 }
 
@@ -379,10 +379,10 @@ const getFilterButtonLabel = (f) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.7175rem;
+  font-size: var(--fs-tiny);
   color: var(--text-muted);
-  font-weight: 600;
-  padding-bottom: 0.4rem;
+  font-weight: var(--fw-semibold);
+  padding-bottom: var(--space-2);
   white-space: nowrap;
   border-bottom: 1px solid var(--border-color);
 }
@@ -404,18 +404,18 @@ const getFilterButtonLabel = (f) => {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: var(--space-1);
   max-height: 240px;
 }
 
 .tag-option-item {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: var(--space-2);
   min-height: 32px;
-  padding: 0.2rem 0.5rem;
-  border-radius: 6px;
-  font-size: 0.7625rem;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-meta);
   color: var(--text-primary);
   cursor: pointer;
   transition: background 0.15s ease;
@@ -427,7 +427,7 @@ const getFilterButtonLabel = (f) => {
 
 .tag-option-item.selected {
   color: var(--color-primary);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
 }
 
 .tag-option-item input[type="checkbox"] {
@@ -442,21 +442,21 @@ const getFilterButtonLabel = (f) => {
 .adv-filter-panel {
   width: 280px;
   max-width: min(300px, 90vw);
-  padding: 0.85rem;
+  padding: var(--space-3);
 }
 
 .adv-panel-section {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .adv-section-title {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.7175rem;
-  font-weight: 700;
+  gap: var(--space-2);
+  font-size: var(--fs-tiny);
+  font-weight: var(--fw-bold);
   color: var(--text-muted);
   letter-spacing: 0.02em;
 }
@@ -468,23 +468,23 @@ const getFilterButtonLabel = (f) => {
 .title-left {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--space-2);
 }
 
 .sort-grid-options {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.35rem;
+  gap: var(--space-1);
 }
 
 .sort-chip-btn {
-  padding: 0.45rem 0.6rem;
-  font-size: 0.7175rem;
-  font-weight: 500;
+  padding: var(--space-2) var(--space-2);
+  font-size: var(--fs-tiny);
+  font-weight: var(--fw-medium);
   color: var(--text-secondary);
   background: var(--bg-hover);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
   text-align: center;
@@ -499,14 +499,14 @@ const getFilterButtonLabel = (f) => {
   background: var(--color-primary);
   color: #ffffff;
   border-color: var(--color-primary);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   box-shadow: var(--shadow-sm);
 }
 
 .adv-panel-divider {
   height: 1px;
   background: var(--border-color);
-  margin: 0.75rem 0;
+  margin: var(--space-3) 0;
   opacity: 0.6;
 }
 
@@ -520,51 +520,51 @@ const getFilterButtonLabel = (f) => {
   background: var(--color-primary);
   color: #ffffff;
   font-size: var(--fs-meta);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   border-radius: 99px;
 }
 
 .selected-tags-chips {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
   flex-wrap: wrap;
-  padding: 0.5rem 0.75rem;
+  padding: var(--space-2) var(--space-3);
   background: var(--bg-subtle);
   border: 1px dashed var(--border-color);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
 }
 
 .chips-label {
-  font-size: 0.7875rem;
-  font-weight: 600;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semibold);
   color: var(--text-muted);
 }
 
 .chip-list {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
 .tag-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: var(--space-1);
   background: var(--color-primary);
   color: #ffffff;
   border: 1px solid var(--color-primary);
   box-shadow: var(--shadow-sm);
-  font-size: 0.7375rem;
-  font-weight: 600;
-  padding: 0.22rem 0.65rem;
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-semibold);
+  padding: var(--space-1) var(--space-3);
   border-radius: 99px;
-  line-height: 1.2;
+  line-height: var(--lh-tight);
 }
 
 .chip-category-prefix {
   opacity: 0.9;
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   color: #ffffff;
 }
 
@@ -575,7 +575,7 @@ const getFilterButtonLabel = (f) => {
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  font-size: 0.5875rem;
+  font-size: var(--fs-tiny);
   color: #ffffff;
   background: rgba(255, 255, 255, 0.25);
   cursor: pointer;
@@ -589,7 +589,7 @@ const getFilterButtonLabel = (f) => {
 }
 
 .reset-all-tags-btn {
-  font-size: 0.7375rem;
+  font-size: var(--fs-meta);
   color: var(--text-secondary);
   cursor: pointer;
   margin-left: auto;
@@ -607,8 +607,8 @@ const getFilterButtonLabel = (f) => {
   .filter-toolbar {
     flex-direction: column;
     align-items: stretch;
-    gap: 0.6rem;
-    padding: 0.75rem;
+    gap: var(--space-2);
+    padding: var(--space-3);
   }
   .search-box {
     width: 100%;
@@ -619,11 +619,11 @@ const getFilterButtonLabel = (f) => {
     width: 100%;
     margin-left: 0;
     justify-content: flex-start;
-    gap: 0.4rem;
+    gap: var(--space-2);
   }
   .filter-dropdown-btn {
-    font-size: 0.7375rem;
-    padding: 0.35rem 0.55rem;
+    font-size: var(--fs-meta);
+    padding: var(--space-1) var(--space-2);
   }
   .search-box,
   .filter-dropdown-btn {
@@ -646,7 +646,7 @@ const getFilterButtonLabel = (f) => {
   .filter-options {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.4rem;
+    gap: var(--space-2);
   }
   .custom-tag-dropdown {
     width: 100%;

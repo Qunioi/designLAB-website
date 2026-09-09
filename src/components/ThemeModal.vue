@@ -115,7 +115,7 @@ const selectTheme = (themeClass) => {
   align-items: center;
   justify-content: center;
   z-index: var(--z-overlay);
-  padding: 1.5rem;
+  padding: var(--space-6);
 }
 
 .theme-modal-container {
@@ -140,8 +140,8 @@ const selectTheme = (themeClass) => {
 }
 
 .theme-modal-header h2 {
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-bold);
 }
 
 .close-btn {
@@ -150,7 +150,7 @@ const selectTheme = (themeClass) => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.188rem;
+  font-size: var(--fs-h2);
   color: var(--text-muted);
   transition: color 0.18s ease;
 }
@@ -168,22 +168,22 @@ const selectTheme = (themeClass) => {
   padding: var(--modal-padding);
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: var(--space-3);
   overflow-y: auto;
 }
 
 .theme-intro {
-  font-size: 0.8125rem;
+  font-size: var(--fs-label);
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: var(--lh-normal);
 }
 
 /* Theme Grid */
 .theme-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.85rem;
-  margin-top: 0.25rem;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
 }
 
 .theme-card {
@@ -213,7 +213,7 @@ const selectTheme = (themeClass) => {
   height: 64px;
   background-color: var(--bg-primary);
   border-bottom: 1px solid var(--border-color);
-  padding: 0.65rem;
+  padding: var(--space-3);
   position: relative;
   display: flex;
   align-items: center;
@@ -222,7 +222,7 @@ const selectTheme = (themeClass) => {
 
 .color-dots {
   display: flex;
-  gap: 0.35rem;
+  gap: var(--space-1);
 }
 
 .color-dot {
@@ -243,16 +243,16 @@ const selectTheme = (themeClass) => {
   height: 36px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
 }
 
 /* Theme Details */
 .theme-card-info {
-  padding: 0.85rem;
+  padding: var(--space-3);
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: var(--space-1);
   flex: 1;
 }
 
@@ -263,18 +263,18 @@ const selectTheme = (themeClass) => {
 }
 
 .theme-name-row h4 {
-  font-size: 0.8125rem;
-  font-weight: 700;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-bold);
   color: var(--text-primary);
 }
 
 .active-badge {
   font-size: var(--fs-tiny);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   color: #ffffff;
   background: var(--color-primary);
-  padding: 0.12rem 0.4rem;
-  border-radius: 4px;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-xs);
 }
 
 /* Animations */
@@ -302,10 +302,10 @@ const selectTheme = (themeClass) => {
 }
 
 @media (max-width: 640px) {
-  .theme-modal-backdrop { padding: 0.75rem; }
+  .theme-modal-backdrop { padding: var(--space-3); }
   .theme-modal-container { max-height: calc(100dvh - 1.5rem); border-radius: 16px; }
   .theme-modal-header,
-  .theme-modal-body { padding-left: 1rem; padding-right: 1rem; }
+  .theme-modal-body { padding-left: var(--space-4); padding-right: var(--space-4); }
   .theme-grid {
     grid-template-columns: 1fr;
   }

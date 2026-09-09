@@ -107,5 +107,5 @@ const filters = computed(() => [
 </script>
 
 <style scoped>
-/* 所有相依樣式已統一由 style.css & ResearchGrid 繼承 */
+/* 所有相依樣式已統一由 styles/base.css、styles/components.css & ResearchGrid 繼承 */
 </style>

@@ -151,10 +151,10 @@ const filteredSuggestions = computed(() => {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--space-2);
   background: var(--bg-input);
   border: 1px solid var(--border-color);
-  padding: 0.45rem 0.65rem;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   min-height: 40px;
   transition: border-color 0.18s ease;
@@ -168,15 +168,15 @@ const filteredSuggestions = computed(() => {
 .tag-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: var(--space-1);
   color: var(--text-secondary);
   background: var(--bg-subtle);
   border: 1px solid var(--border-color);
-  font-size: 0.7175rem;
-  font-weight: 600;
-  padding: 0.2rem 0.55rem;
+  font-size: var(--fs-tiny);
+  font-weight: var(--fw-semibold);
+  padding: var(--space-1) var(--space-2);
   border-radius: 16px;
-  line-height: 1.2;
+  line-height: var(--lh-tight);
   transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
 }
 
@@ -193,7 +193,7 @@ const filteredSuggestions = computed(() => {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  font-size: 0.5875rem;
+  font-size: var(--fs-tiny);
   color: var(--text-muted);
   cursor: pointer;
   transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
@@ -209,9 +209,9 @@ const filteredSuggestions = computed(() => {
   background: transparent;
   border: none;
   outline: none;
-  font-size: 0.7875rem;
+  font-size: var(--fs-label);
   color: var(--text-primary);
-  padding: 0.1rem 0.2rem;
+  padding: var(--space-1) var(--space-1);
 }
 
 .chip-input::placeholder {
@@ -234,18 +234,18 @@ const filteredSuggestions = computed(() => {
 }
 
 .dropdown-header {
-  padding: 0.5rem 0.75rem;
+  padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--border-color);
-  font-size: 0.6625rem;
-  font-weight: 700;
+  font-size: var(--fs-tiny);
+  font-weight: var(--fw-bold);
   color: var(--text-muted);
 }
 
 .suggestions-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
-  padding: 0.6rem;
+  gap: var(--space-1);
+  padding: var(--space-2);
   max-height: 160px;
   overflow-y: auto;
 }
@@ -253,13 +253,13 @@ const filteredSuggestions = computed(() => {
 .suggestion-item {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: var(--space-1);
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
-  font-size: 0.7125rem;
-  font-weight: 500;
-  padding: 0.25rem 0.6rem;
+  font-size: var(--fs-tiny);
+  font-weight: var(--fw-medium);
+  padding: var(--space-1) var(--space-2);
   border-radius: 16px;
   cursor: pointer;
   transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;

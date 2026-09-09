@@ -166,7 +166,7 @@ const menuItems = [
     view: 'UIResearch', 
     labelZh: 'UI 設計研究', 
     labelEn: 'UI Research', 
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>`
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2.05V18h6v-1.25c0-.85.4-1.55 1-2.05A7 7 0 0 0 12 2Z"></path></svg>`
   },
   { 
     view: 'MotionResearch', 
@@ -178,7 +178,7 @@ const menuItems = [
     view: 'Competitor', 
     labelZh: '競品分析',
     labelEn: 'Competitor Research', 
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 1 0 7.75"></path></svg>`
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="14"></line><line x1="12" y1="20" x2="12" y2="8"></line><line x1="18" y1="20" x2="18" y2="4"></line></svg>`
   },
   { 
     view: 'AICenter', 
@@ -190,7 +190,7 @@ const menuItems = [
     view: 'Resources', 
     labelZh: '設計資源',
     labelEn: 'Resources', 
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5v-15Z"></path><path d="M4 20.5A2.5 2.5 0 0 1 6.5 18H20"></path><path d="M8 7h8M8 10h6"></path></svg>`
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path></svg>`
   }
   // ,
   // { 
@@ -236,21 +236,21 @@ watch(() => props.currentView, () => {
   width: calc(var(--sidebar-width) - 1.25rem);
   display: flex;
   flex-direction: column;
-  border-radius: 22px;
+  border-radius: var(--radius-2xl);
   background: var(--sidebar-bg);
   border: 1px solid var(--border-color);
   /* box-shadow: var(--shadow-sm); */
   z-index: 100;
-  padding: 0.5rem 0.25rem;
+  padding: var(--space-2) var(--space-1);
 }
 
 .logo-area {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.85rem 0.85rem 1.15rem;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3) var(--space-5);
   border-bottom: 1px solid var(--border-color);
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-2);
 }
 
 .logo-icon {
@@ -262,16 +262,16 @@ watch(() => props.currentView, () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
-  font-size: 0.8125rem;
+  font-weight: var(--fw-black);
+  font-size: var(--fs-label);
   font-family: var(--font-title);
   box-shadow: var(--shadow-sm);
 }
 
 .logo-text {
   font-family: var(--font-title);
-  font-size: 1.125rem;
-  font-weight: 800;
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-black);
   letter-spacing: -0.02em;
 }
 
@@ -283,17 +283,17 @@ watch(() => props.currentView, () => {
 .menu-links {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--space-1);
   flex: 1;
-  padding: 0 0.25rem;
+  padding: 0 var(--space-1);
 }
 
 .menu-item {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  padding: 0.65rem 0.85rem;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3);
   color: var(--text-secondary);
   transition: color 0.18s ease, background-color 0.18s ease;
   width: 100%;
@@ -311,7 +311,7 @@ watch(() => props.currentView, () => {
   color: var(--color-primary);
   background: var(--bg-hover);
   border-color: var(--border-color);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
 }
 
 .menu-item.active .menu-icon {
@@ -334,12 +334,12 @@ watch(() => props.currentView, () => {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  line-height: 1.2;
+  line-height: var(--lh-tight);
 }
 
 .menu-title-zh {
-  font-size: 0.8175rem;
-  font-weight: 500;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-medium);
   color: var(--text-primary);
   transition: color 0.18s ease;
 }
@@ -348,13 +348,13 @@ watch(() => props.currentView, () => {
   font-size: var(--fs-tiny);
   color: var(--text-muted);
   letter-spacing: 0.02em;
-  margin-top: 0.1rem;
+  margin-top: var(--space-1);
   transition: color 0.18s ease;
 }
 
 .menu-item.active .menu-title-zh {
   color: var(--color-primary);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
 }
 
 .menu-item.active .menu-subtitle-en {
@@ -364,7 +364,7 @@ watch(() => props.currentView, () => {
 .sidebar-footer {
   display: flex;
   align-items: center;
-  padding: 0.75rem 0.85rem;
+  padding: var(--space-3) var(--space-3);
   border-radius: 12px;
   border: 1px solid transparent;
   cursor: pointer;
@@ -391,7 +391,7 @@ watch(() => props.currentView, () => {
 .user-avatar-group {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
   width: 100%;
 }
 
@@ -404,7 +404,7 @@ watch(() => props.currentView, () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.087rem;
+  font-size: var(--fs-h3);
   transition: color 0.25s ease, background-color 0.25s ease, border-color 0.25s ease;
   flex-shrink: 0;
 }
@@ -413,17 +413,17 @@ watch(() => props.currentView, () => {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  line-height: 1.2;
+  line-height: var(--lh-tight);
 }
 
 .user-name {
-  font-size: 0.7875rem;
-  font-weight: 600;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semibold);
   color: var(--text-primary);
 }
 
 .user-role {
-  font-size: 0.6875rem;
+  font-size: var(--fs-tiny);
   color: var(--text-muted);
 }
 
@@ -441,7 +441,7 @@ watch(() => props.currentView, () => {
 @media (max-width: 1024px) {
   .navigation-sidebar {
     width: 60px;
-    padding: 1.5rem 0.5rem;
+    padding: var(--space-6) var(--space-2);
     left: 0.75rem;
     top: 0.75rem;
     bottom: 0.75rem;
@@ -458,13 +458,13 @@ watch(() => props.currentView, () => {
     top: 50%;
     z-index: 300;
     display: block;
-    padding: 0.45rem 0.65rem;
+    padding: var(--space-2) var(--space-3);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     background: var(--bg-elevated);
     color: var(--text-primary);
-    font-size: 0.7375rem;
-    line-height: 1.2;
+    font-size: var(--fs-meta);
+    line-height: var(--lh-tight);
     white-space: nowrap;
     opacity: 0;
     pointer-events: none;
@@ -480,25 +480,25 @@ watch(() => props.currentView, () => {
   }
 
   .logo-area {
-    padding: 0 0 1.5rem 0;
+    padding: 0 0 var(--space-6) 0;
     justify-content: center;
   }
   .menu-item {
     justify-content: center;
-    padding: 0.75rem;
+    padding: var(--space-3);
   }
   .menu-item.active {
-    padding-left: 0.75rem;
+    padding-left: var(--space-3);
     border-left: none;
     background: var(--bg-hover);
     border-radius: 12px;
   }
   .sidebar-footer {
     justify-content: center;
-    padding: 0.5rem;
+    padding: var(--space-2);
   }
   .menu-links {
-    margin-top: 1rem;
+    margin-top: var(--space-4);
   }
 }
 
@@ -520,8 +520,8 @@ watch(() => props.currentView, () => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    padding: 0.25rem .5rem 0.25rem 1rem;
+    gap: var(--space-4);
+    padding: var(--space-1) var(--space-2) var(--space-1) var(--space-4);
     background: var(--sidebar-bg);
     border: 1px solid var(--border-color);
     border-radius: 16px;
@@ -531,7 +531,7 @@ watch(() => props.currentView, () => {
   .mobile-nav-brand {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--space-3);
     min-width: 0;
   }
 
@@ -543,13 +543,13 @@ watch(() => props.currentView, () => {
   }
 
   .mobile-brand-text {
-    font-size: 0.9375rem;
-    font-weight: 800;
+    font-size: var(--fs-body-lg);
+    font-weight: var(--fw-black);
     color: var(--text-primary);
   }
 
   .mobile-current-view {
-    font-size: 0.6575rem;
+    font-size: var(--fs-tiny);
     color: var(--text-secondary);
     white-space: nowrap;
     overflow: hidden;
@@ -560,7 +560,7 @@ watch(() => props.currentView, () => {
   .mobile-header-actions {
     display: flex;
     align-items: center;
-    gap: 0.65rem;
+    gap: var(--space-3);
     flex-shrink: 0;
   }
 
@@ -570,7 +570,7 @@ watch(() => props.currentView, () => {
     justify-content: center;
     width: 44px;
     height: 44px;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     /* background: var(--bg-subtle); */
     /* border: 1px solid var(--border-color); */
     color: var(--text-primary);
@@ -619,27 +619,27 @@ watch(() => props.currentView, () => {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 1rem;
-    padding: 1rem;
+    gap: var(--space-4);
+    padding: var(--space-4);
     border-bottom: 1px solid var(--border-color);
   }
 
   .mobile-drawer-title {
-    font-size: 0.8875rem;
-    font-weight: 700;
+    font-size: var(--fs-body);
+    font-weight: var(--fw-bold);
     color: var(--text-primary);
   }
 
   .mobile-drawer-subtitle {
-    font-size: 0.6875rem;
+    font-size: var(--fs-tiny);
     color: var(--text-muted);
-    margin-top: 0.2rem;
+    margin-top: var(--space-1);
   }
 
   .mobile-drawer-close {
     width: 44px;
     height: 44px;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     background: var(--bg-subtle);
     border: 1px solid var(--border-color);
     color: var(--text-primary);
@@ -652,8 +652,8 @@ watch(() => props.currentView, () => {
   .mobile-menu-links {
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
-    padding: 0.8rem;
+    gap: var(--space-1);
+    padding: var(--space-3);
     overflow-y: auto;
   }
 
@@ -661,9 +661,9 @@ watch(() => props.currentView, () => {
     width: 100%;
     display: flex;
     align-items: center;
-    gap: 0.85rem;
-    padding: 0.9rem 0.95rem;
-    border-radius: 14px;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-4);
+    border-radius: var(--radius-lg);
     color: var(--text-secondary);
     text-align: left;
     transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
@@ -720,12 +720,12 @@ watch(() => props.currentView, () => {
   }
 
   .mobile-settings-entry {
-    margin: 0.2rem 0.8rem 0.8rem;
+    margin: var(--space-1) var(--space-3) var(--space-3);
     width: calc(100% - 1.6rem);
     display: flex;
     align-items: center;
-    padding: 0.9rem;
-    border-radius: 14px;
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
     background: var(--bg-subtle);
     border: 1px solid var(--border-color);
     transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
@@ -741,51 +741,5 @@ watch(() => props.currentView, () => {
     opacity: 0;
   }
 
-  .mobile-bottom-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 210;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    padding: 0.5rem 0.25rem calc(env(safe-area-inset-bottom, 0px) + 0.35rem);
-    background: var(--bg-elevated);
-    border-top: 1px solid var(--border-color);
-    box-shadow: var(--shadow-up);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-  }
-
-  .bottom-bar-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.2rem;
-    flex: 1;
-    padding: 0.35rem 0;
-    color: var(--text-secondary);
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-  }
-
-  .bottom-bar-item.active {
-    color: var(--color-primary);
-  }
-
-  .bottom-bar-item .bottom-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .bottom-bar-item .bottom-label {
-    font-size: 0.6175rem;
-    font-weight: 600;
-  }
 }
 </style>

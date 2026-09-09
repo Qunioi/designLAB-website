@@ -94,3 +94,24 @@ export function formatDateTime(dateVal) {
 
   return `${year}-${month}-${day} ${hours}:${mins}:${secs}`;
 }
+
+/**
+ * 格式化日期字串為「YYYY-MM-DD」(僅年月日，不含時分秒)。
+ * 專供畫面顯示使用——底層資料仍保留完整的時分秒，只是不在畫面上
+ * 顯示出來；需要完整時間請改用 formatDateTime()。
+ * @param {string|Date|number} dateVal
+ * @returns {string}
+ */
+export function formatDateOnly(dateVal) {
+  if (!dateVal) return '';
+  let d = new Date(dateVal);
+  if (isNaN(d.getTime())) {
+    d = new Date(String(dateVal).replace(/-/g, '/'));
+    if (isNaN(d.getTime())) return String(dateVal);
+  }
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}

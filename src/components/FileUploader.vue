@@ -694,7 +694,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 <style scoped>
 .file-uploader-box {
   width: 100%;
-  font-family: var(--font-sans, inherit);
+  font-family: var(--font-body, inherit);
 }
 
 .hidden-file-input {
@@ -709,7 +709,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0.6rem 0.85rem;
+  padding: var(--space-2) var(--space-3);
   background: var(--bg-input, rgba(15, 23, 42, 0.03));
   border: 1.5px dashed var(--border-color, rgba(15, 23, 42, 0.12));
   border-radius: var(--radius-lg, 12px);
@@ -729,7 +729,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.3rem;
+  gap: var(--space-1);
   max-width: 380px;
 }
 
@@ -738,7 +738,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   align-items: center;
   justify-content: center;
   width: 34px;
-  height: 34px;
+  height: var(--control-height-sm);
   border-radius: 50%;
   /* background: var(--bg-card, #ffffff); */
   color: var(--color-primary, #6366f1);
@@ -753,25 +753,25 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 .dropzone-text-group {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: var(--space-1);
 }
 
 .dropzone-primary-text {
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-medium);
   color: var(--text-primary, #0f172a);
   margin: 0;
 }
 
 .click-highlight {
   /* color: var(--color-primary, #6366f1); */
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
 .dropzone-sub-text {
-  font-size: 0.72rem;
+  font-size: var(--fs-meta);
   color: var(--text-secondary, #475569);
   opacity: 0.95;
   margin: 0;
@@ -780,9 +780,9 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 .dropzone-divider-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
   width: 100%;
-  margin: 0.1rem 0;
+  margin: var(--space-1) 0;
 }
 
 .uploader-dropzone-box .dropzone-divider-row {
@@ -796,7 +796,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 }
 
 .divider-text {
-  font-size: 0.7rem;
+  font-size: var(--fs-tiny);
   color: var(--text-muted, #64748b);
   text-transform: uppercase;
 }
@@ -804,10 +804,10 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 .open-library-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem 0.65rem;
-  font-size: 0.75rem;
-  font-weight: 600;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-semibold);
   color: var(--text-primary, #0f172a);
   background: var(--bg-card, #ffffff);
   border: 1px solid var(--border-color, rgba(15, 23, 42, 0.1));
@@ -827,19 +827,19 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
    上傳中進度卡片
    ============================================================ */
 .uploader-uploading-card {
-  padding: 1rem 1.2rem;
+  padding: var(--space-4) var(--space-5);
   background: var(--bg-card, #ffffff);
   border: 1px solid var(--border-color, rgba(15, 23, 42, 0.08));
   border-radius: var(--radius-md, 10px);
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
 .uploading-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
 .uploading-icon-spinner {
@@ -854,8 +854,8 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 }
 
 .uploading-filename {
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semibold);
   color: var(--text-primary, #0f172a);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -863,7 +863,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 }
 
 .uploading-meta {
-  font-size: 0.72rem;
+  font-size: var(--fs-meta);
   color: var(--text-muted, #64748b);
 }
 
@@ -887,8 +887,8 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 .media-preview-card {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  padding: 0.65rem 0.85rem;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3);
   background: var(--bg-input);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm, 6px);
@@ -905,7 +905,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   width: 84px;
   height: 58px;
   flex-shrink: 0;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   overflow: hidden;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -930,9 +930,9 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.2rem;
+  gap: var(--space-1);
   color: #94a3b8;
-  font-size: 0.65rem;
+  font-size: var(--fs-tiny);
   background: #1e293b;
 }
 
@@ -961,9 +961,9 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   gap: 2px;
   background: rgba(0, 0, 0, 0.7);
   color: #ffffff;
-  font-size: 0.62rem;
+  font-size: var(--fs-tiny);
   padding: 1px 5px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   backdrop-filter: blur(4px);
 }
 
@@ -973,7 +973,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   min-width: 0;
   flex-direction: column;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .file-header-row {
@@ -989,9 +989,9 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 }
 
 .clean-file-name {
-  margin: 0 0 0.25rem 0;
-  font-size: 0.82rem;
-  font-weight: 600;
+  margin: 0 0 var(--space-1) 0;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semibold);
   color: var(--text-primary, #0f172a);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1002,16 +1002,16 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.35rem;
+  gap: var(--space-1);
 }
 
 .badge {
   display: inline-flex;
   align-items: center;
-  font-size: 0.65rem;
+  font-size: var(--fs-tiny);
   padding: 2px 7px;
-  border-radius: 4px;
-  font-weight: 500;
+  border-radius: var(--radius-xs);
+  font-weight: var(--fw-medium);
 }
 
 .badge-type,
@@ -1024,7 +1024,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 .badge-status {
   background: rgba(16, 185, 129, 0.1);
   color: #059669;
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   gap: 4px;
 }
 
@@ -1039,17 +1039,17 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: var(--space-2);
 }
 
 .action-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.3rem 0.6rem;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-xs, 4px);
-  font-size: 0.72rem;
-  font-weight: 500;
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-medium);
   cursor: pointer;
   transition: all 0.15s ease;
   border: 1px solid transparent;
@@ -1087,7 +1087,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.25rem;
+  padding: var(--space-5);
   background: var(--modal-backdrop, rgba(3, 7, 18, 0.65));
   backdrop-filter: blur(8px);
 }
@@ -1109,7 +1109,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.4rem;
+  padding: var(--space-4) var(--space-6);
   border-bottom: 1px solid var(--border-color, rgba(15, 23, 42, 0.08));
   background: var(--bg-card, #ffffff);
 }
@@ -1117,7 +1117,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 .header-title-box {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
 .header-icon-box {
@@ -1133,14 +1133,14 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 
 .header-title-box h3 {
   margin: 0;
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size: var(--fs-body-lg);
+  font-weight: var(--fw-bold);
   color: var(--text-primary, #0f172a);
 }
 
 .header-title-box p {
-  margin: 0.15rem 0 0 0;
-  font-size: 0.72rem;
+  margin: var(--space-1) 0 0 0;
+  font-size: var(--fs-meta);
   color: var(--text-muted, #64748b);
 }
 
@@ -1168,8 +1168,8 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.75rem 1.4rem;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-6);
   border-bottom: 1px solid var(--border-color, rgba(15, 23, 42, 0.06));
   background: var(--bg-card, #ffffff);
 }
@@ -1178,7 +1178,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 .toolbar-right {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: var(--space-2);
 }
 
 .filter-pill-group {
@@ -1193,9 +1193,9 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   border: 0;
   background: transparent;
   color: var(--text-secondary, #64748b);
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 0.35rem 0.75rem;
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-semibold);
+  padding: var(--space-1) var(--space-3);
   border-radius: 5px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -1221,8 +1221,8 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 }
 
 .search-input-wrapper input {
-  padding: 0.45rem 0.65rem 0.45rem 2rem;
-  font-size: 0.75rem;
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-8);
+  font-size: var(--fs-meta);
   border: 1px solid var(--border-color, rgba(15, 23, 42, 0.1));
   border-radius: var(--radius-sm, 6px);
   background: var(--bg-input, rgba(15, 23, 42, 0.03));
@@ -1240,14 +1240,14 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 .manager-upload-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.45rem 0.85rem;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
   border: 0;
   border-radius: var(--radius-sm, 6px);
   background: var(--color-primary, #6366f1);
   color: #ffffff;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-semibold);
   cursor: pointer;
   transition: opacity 0.15s ease;
 }
@@ -1265,17 +1265,17 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 3rem 1.5rem;
+  padding: 3rem var(--space-6);
   text-align: center;
-  gap: 0.6rem;
+  gap: var(--space-2);
   color: var(--text-muted, #64748b);
-  font-size: 0.8rem;
+  font-size: var(--fs-label);
 }
 
 .file-manager-empty-box h4 {
   margin: 0;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: var(--fs-body-lg);
+  font-weight: var(--fw-semibold);
   color: var(--text-primary, #0f172a);
 }
 
@@ -1288,14 +1288,14 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   align-items: center;
   justify-content: center;
   color: var(--text-muted, #94a3b8);
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-2);
 }
 
 .empty-cta-btn {
-  margin-top: 0.5rem;
-  padding: 0.5rem 1.2rem;
-  font-size: 0.78rem;
-  font-weight: 600;
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-semibold);
   background: var(--color-primary, #6366f1);
   color: #ffffff;
   border: 0;
@@ -1307,7 +1307,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   background: transparent;
   border: 0;
   color: var(--color-primary, #6366f1);
-  font-size: 0.75rem;
+  font-size: var(--fs-meta);
   cursor: pointer;
   text-decoration: underline;
 }
@@ -1316,8 +1316,8 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.35rem;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
 }
 
 /* 媒體網格 */
@@ -1327,8 +1327,8 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
   align-content: start;
-  gap: 1rem;
-  padding: 1.25rem 1.4rem;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
   overflow-y: auto;
 }
 
@@ -1380,13 +1380,13 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 }
 
 .use-btn {
-  padding: 0.4rem 0.85rem;
+  padding: var(--space-2) var(--space-3);
   background: var(--color-primary, #6366f1);
   color: #ffffff;
   border: 0;
   border-radius: var(--radius-sm, 6px);
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-semibold);
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
@@ -1403,17 +1403,17 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   left: 4px;
   background: rgba(0, 0, 0, 0.65);
   color: #ffffff;
-  font-size: 0.6rem;
+  font-size: var(--fs-tiny);
   padding: 1px 5px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
 }
 
 .card-info-wrap {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.6rem 0.75rem;
-  gap: 0.4rem;
+  padding: var(--space-2) var(--space-3);
+  gap: var(--space-2);
   border-top: 1px solid var(--border-color, rgba(15, 23, 42, 0.05));
 }
 
@@ -1424,8 +1424,8 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 
 .card-title-col strong {
   display: block;
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-semibold);
   color: var(--text-primary, #0f172a);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1434,7 +1434,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 
 .card-title-col small {
   display: block;
-  font-size: 0.65rem;
+  font-size: var(--fs-tiny);
   color: var(--text-muted, #64748b);
 }
 
@@ -1443,7 +1443,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   background: transparent;
   color: var(--text-muted, #94a3b8);
   padding: 4px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -1463,7 +1463,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: var(--space-8);
   background: rgba(0, 0, 0, 0.92);
   backdrop-filter: blur(10px);
 }

@@ -7,11 +7,12 @@
 // 一律呼叫後端的對應 action，並附帶登入後取得的 Session Token——
 // 實際的權限判斷全部在後端完成，前端這裡只是轉送與呈現錯誤訊息。
 
-const SHEETS_URL_KEY = 'design_lab_sheets_url';
 const SESSION_KEY = 'design_lab_session';
 
-const DEFAULT_SHEETS_URL =
-  'https://script.google.com/macros/s/AKfycbx3rXEbJFV4UTOaQkMpWjgkUEjymFUjK1F6ZjJIn4CCLd1RD0cT-RLTx9yvvhKH-B1a2g/exec';
+// Apps Script Web App 網址，一律由建置期環境變數 VITE_SHEETS_URL 提供（見 .env.example）。
+// 不支援執行期覆寫——每個環境（本機開發／正式站）的網址跟著 .env 走，
+// 與後端部署（apps-script/README.md 的 clasp 流程）綁在一起維護，避免兩邊各自為政。
+const SHEETS_URL = import.meta.env.VITE_SHEETS_URL || '';
 
 // Storage key → Google Sheet Tab Name
 const KEY_MAP = {
@@ -39,19 +40,50 @@ const STORAGE_KEY_MAP = {
 
 const ALL_KEYS = Object.keys(KEY_MAP);
 
-/** 取得目前設定的 Apps Script URL（如未設定則回傳預設） */
-export function getSheetsUrl() {
-  return localStorage.getItem(SHEETS_URL_KEY) || DEFAULT_SHEETS_URL;
+// 同一個 session 內，「完整資料 (JSON)」解析失敗只印一次警告，
+// 避免每筆舊資料都各印一次、洗版 console（fallback 邏輯不受影響，照樣逐筆執行）。
+let hasWarnedLegacyJsonParse = false;
+
+/**
+ * 相容舊版試算表欄位：舊資料會把完整內容包在「完整資料 (JSON)」，
+ * 並使用大寫 ID 與中文時間欄名。所有讀取入口先在這裡還原成目前 schema。
+ */
+export function normalizeSheetRecord(record) {
+  if (!record || typeof record !== 'object' || Array.isArray(record)) return record;
+
+  let embedded = {};
+  const rawJson = record['完整資料 (JSON)'];
+  if (rawJson && typeof rawJson === 'object') {
+    embedded = rawJson;
+  } else if (typeof rawJson === 'string' && rawJson.trim()) {
+    try {
+      const parsed = JSON.parse(rawJson);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) embedded = parsed;
+    } catch (error) {
+      if (!hasWarnedLegacyJsonParse) {
+        hasWarnedLegacyJsonParse = true;
+        console.warn('[SheetsAPI] 無法解析舊版完整資料 JSON（僅顯示一次，其餘同類警告已略過）:', error);
+      }
+    }
+  }
+
+  const normalized = { ...record, ...embedded };
+  normalized.id = normalized.id || record.ID || record.Id || '';
+  normalized.createdAt = normalized.createdAt || record['建立時間 (createdAt)'] || '';
+  normalized.updatedAt = normalized.updatedAt || record['最後更新時間 (updatedAt)'] || '';
+  normalized.updatedBy = normalized.updatedBy || record['最後操作者 (updatedBy)'] || '';
+  normalized.createdBy = normalized.createdBy || record['建立者 (createdBy)'] || '';
+  return normalized;
 }
 
-/** 儲存新的 Apps Script URL */
-export function setSheetsUrl(url) {
-  localStorage.setItem(SHEETS_URL_KEY, url.trim());
+/** 取得目前設定的 Apps Script URL（由 VITE_SHEETS_URL 環境變數提供） */
+export function getSheetsUrl() {
+  return SHEETS_URL;
 }
 
 /** 是否已啟用 Sheets 整合 */
 export function hasSheetsIntegration() {
-  return !!getSheetsUrl();
+  return !!SHEETS_URL;
 }
 
 // ------------------------------------------------------------
@@ -182,7 +214,7 @@ export async function fetchSheetData(key) {
     }
     const json = await res.json();
     if (!json.success) throw new Error(json.error || '讀取失敗');
-    return json.data || [];
+    return (json.data || []).map(normalizeSheetRecord);
   } catch (err) {
     console.warn(`[SheetsAPI] 擷取 ${sheetName} 發生例外:`, err);
     return [];
@@ -220,26 +252,6 @@ export async function pushAllUsersToSheet(profiles) {
   return result;
 }
 
-/** 觸發 Google Sheets 後端全量修復標頭與格式化（管理員限定）。 */
-export async function forceFormatAllSheets() {
-  const result = await callAction_('force_format_all', { token: getToken(), sheet: 'UI_RESEARCH' });
-  if (!result.success) console.warn('[SheetsAPI] Format failed:', result.error);
-  return result;
-}
-
-/** 測試連線（回傳 { ok, error }） */
-export async function testSheetsConnection() {
-  try {
-    const url = getSheetsUrl();
-    if (!url) return { ok: false, error: 'URL 未設定' };
-    const res = await fetch(`${url}?sheet=UI_RESEARCH`);
-    const json = await res.json();
-    return { ok: json.success === true, error: json.error || null };
-  } catch (e) {
-    return { ok: false, error: e.message };
-  }
-}
-
 /** 從 Sheets 全量同步到 localStorage */
 export async function syncAllFromSheets(onProgress) {
   const url = getSheetsUrl();
@@ -258,7 +270,7 @@ export async function syncAllFromSheets(onProgress) {
         const localRaw = localStorage.getItem(STORAGE_KEY_MAP[key]);
         let localData = [];
         try {
-          localData = localRaw ? JSON.parse(localRaw) : [];
+          localData = localRaw ? JSON.parse(localRaw).map(normalizeSheetRecord) : [];
         } catch (e) {
           localData = [];
         }
@@ -311,24 +323,4 @@ export async function syncAllFromSheets(onProgress) {
     counts,
     errors
   };
-}
-
-/** 把目前全量內容資料推送到 Sheets 並自動矯正標頭與時間格式（管理員限定） */
-export async function pushAllToSheets() {
-  await forceFormatAllSheets();
-
-  for (const key of ALL_KEYS) {
-    if (key === 'USERS') continue; // 成員帳號一律透過專用的成員管理動作異動，不整批覆寫
-    const raw = localStorage.getItem(STORAGE_KEY_MAP[key]);
-    if (!raw) continue;
-    try {
-      const items = JSON.parse(raw);
-      for (const item of items) {
-        await pushToSheet(key, item);
-        await new Promise(r => setTimeout(r, 120));
-      }
-    } catch (e) {
-      console.warn(`[SheetsAPI] Push all failed for ${key}:`, e);
-    }
-  }
 }

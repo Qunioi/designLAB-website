@@ -26,7 +26,7 @@
   >
     <!-- Extra card content: description -->
     <template #card-extra="{ item }">
-      <p class="resource-desc-text" v-if="item.desc">{{ item.desc }}</p>
+      <p class="card-desc" v-if="item.desc">{{ item.desc }}</p>
     </template>
 
     <!-- Lightbox content: description -->
@@ -58,35 +58,13 @@ const filters = computed(() => [
 </script>
 
 <style scoped>
-.resource-desc-text {
-  font-size: 0.7875rem;
-  color: var(--text-secondary);
-  line-height: 1.55;
-  margin-top: 0.4rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
 .category-badge {
-  font-size: 0.5875rem;
-  font-weight: 600;
+  font-size: var(--fs-tiny);
+  font-weight: var(--fw-semibold);
   color: var(--color-accent);
   background: color-mix(in srgb, var(--color-success) 12%, transparent);
-  padding: 0.15rem 0.4rem;
-  border-radius: 4px;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-xs);
 }
 
-@media (max-width: 1024px) {
-  .resources-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 640px) {
-  .resources-grid {
-    grid-template-columns: 1fr;
-  }
-}
 </style>

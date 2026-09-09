@@ -173,9 +173,9 @@ onUnmounted(() => {
   width: 100%;
   /* background: var(--bg-input);
   border: 1px solid transparent;
-  padding: 0.6rem 2.2rem 0.6rem 0.85rem;
+  padding: var(--space-2) var(--space-8) var(--space-2) var(--space-3);
   border-radius: 8px;
-  font-size: 0.7875rem;
+  font-size: var(--fs-label);
   color: var(--text-primary); */
   font-family: var(--font-body);
   font-size: var(--fs-body);
@@ -183,7 +183,7 @@ onUnmounted(() => {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
-  padding: 0.5rem 0.85rem;
+  padding: var(--space-2) var(--space-3);
   outline: none;
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   font-family: var(--font-body);
@@ -211,17 +211,12 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  padding: 0.25rem;
+  padding: var(--space-1);
   transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .dropdown-toggle-btn:hover {
   color: var(--text-primary);
-}
-
-.dropdown-toggle-btn.is-open {
-  transform: rotate(180deg);
-  color: var(--color-primary);
 }
 
 .category-dropdown-menu {
@@ -240,16 +235,16 @@ onUnmounted(() => {
 }
 
 .dropdown-header {
-  padding: 0.5rem 0.75rem;
-  font-size: 0.6875rem;
-  font-weight: 700;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--fs-tiny);
+  font-weight: var(--fw-bold);
   color: var(--text-muted);
   border-bottom: 1px solid var(--border-color);
 }
 
 .options-list {
   list-style: none;
-  padding: 0.25rem;
+  padding: var(--space-1);
   margin: 0;
 }
 
@@ -258,9 +253,9 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   min-height: 40px;
-  padding: 0.55rem 0.75rem;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
-  font-size: 0.7875rem;
+  font-size: var(--fs-label);
   color: var(--text-secondary);
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
@@ -279,7 +274,7 @@ onUnmounted(() => {
 .option-item.active {
   background: var(--bg-hover);
   color: var(--color-primary);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
 }
 
 .check-icon {
@@ -287,11 +282,11 @@ onUnmounted(() => {
 }
 
 .no-options-item {
-  padding: 0.85rem;
+  padding: var(--space-3);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  font-size: 0.7375rem;
+  gap: var(--space-2);
+  font-size: var(--fs-meta);
   color: var(--text-muted);
 }
 
@@ -299,10 +294,10 @@ onUnmounted(() => {
   background: var(--bg-subtle);
   color: var(--color-primary);
   border: 1px solid var(--border-color);
-  padding: 0.4rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.7375rem;
-  font-weight: 600;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-semibold);
   cursor: pointer;
   transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
   text-align: center;

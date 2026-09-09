@@ -7,7 +7,7 @@ import {
   initialProposals
 } from '../data/mockData';
 
-import { hasSheetsIntegration, pushToSheet, deleteFromSheet } from './sheetsAPI';
+import { hasSheetsIntegration, pushToSheet, deleteFromSheet, normalizeSheetRecord } from './sheetsAPI';
 import { notifyItemEdit, notifyItemAdd, notifyItemDelete } from './notifications';
 
 const KEYS = {
@@ -22,7 +22,7 @@ const KEYS = {
 // Keep the persisted schema predictable while accepting records created by
 // older versions of the app.
 function normalizeItem(key, item) {
-  const normalized = { ...item };
+  const normalized = { ...normalizeSheetRecord(item) };
 
   if (key === 'UI_RESEARCH' || key === 'MOTION_RESEARCH') {
     normalized.sourceUrl = normalized.sourceUrl || normalized.source || normalized.link || '';

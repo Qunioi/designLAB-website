@@ -1,3 +1,10 @@
+/* ============================================================
+   DESIGN TOKENS — 字體載入、Tailwind 主題 token、CSS 變數、8 套主題
+
+   這份檔案只放「值」，不放任何選擇器的實際排版/樣式規則——
+   排版規則屬於 base.css（全域基礎元素）或 components.css（跨頁共用元件）。
+   ============================================================ */
+
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
@@ -5,31 +12,12 @@
    TAILWIND CSS v4.3.3 — DESIGN TOKEN ARCHITECTURE
    ============================================================ */
 @theme {
-  /* 品牌字體系統 (思源黑體 繁體中文 + Outfit 西文無襯線) */
-  --font-sans: 'Outfit', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-display: 'Outfit', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-body: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  /* 字體家族一律以下面 :root 區塊的 --font-title / --font-body / --font-code
+     為準（全站實際用 var() 引用的也是這 3 個）。這裡不再重複宣告
+     --font-sans / --font-display / --font-mono / --font-body，避免同一個
+     字體 token 在 @theme 與 :root 兩處各自維護一份、數值卻不一致。 */
 
-  /* 語義化色彩 (Semantic Color Tokens) */
-  --color-brand: var(--color-primary);
-  --color-brand-secondary: var(--color-secondary);
-  --color-brand-accent: var(--color-accent);
-
-  --color-surface-base: var(--bg-primary);
-  --color-surface-card: var(--bg-card);
-  --color-surface-elevated: var(--bg-elevated);
-  --color-surface-hover: var(--bg-hover);
-  --color-surface-subtle: var(--bg-subtle);
-
-  --color-ink-primary: var(--text-primary);
-  --color-ink-secondary: var(--text-secondary);
-  --color-ink-muted: var(--text-muted);
-
-  --color-border-hairline: var(--border-color);
-  --color-border-strong: var(--border-color-hover);
-
-  /* 幾何與排版比例 */
+  /* 幾何與排版比例（--radius-sm/md/lg/xl 全站大量使用，:root 不再重複宣告） */
   --radius-xs: 4px;
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -71,7 +59,7 @@
   --fs-label: 0.8125rem;
   --fs-meta: 0.75rem;
   --fs-caption: 0.75rem;
-  --fs-tiny: 0.6875rem;
+  --fs-tiny: 0.625rem;
 
   /* Font Weights */
   --fw-light: 300;
@@ -87,28 +75,29 @@
   --lh-relaxed: 1.7;
 
   /* Spacing Scale */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
+  /* 全站 440 處左右的 padding/margin/gap 幾乎都是用 rem 寫的，這裡也
+     改成 rem（跟原本的 px 是同一個實際大小，root font-size 沒被覆寫過），
+     這樣才吃得到瀏覽器「僅放大字級」這類無障礙設定，不會跟其他都用
+     rem 的間距不同步。 */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-7: 1.75rem; /* 全站有 3 處剛好卡在 1.5rem 跟 2rem 中間，補上這一階 */
+  --space-8: 2rem;
   --space-container: clamp(16px, 2vw, 32px);
 
   /* Font Families */
   --font-title: 'Outfit', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-body: 'Outfit', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  /* --font-body: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; */
   --font-code: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
 
   /* Layout */
   --sidebar-width: 260px;
   --header-height: 64px;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
+  /* --radius-sm/md/lg/xl 已在上面的 @theme 區塊定義過，這裡不重複宣告 */
   --control-height-sm: 34px;
   --control-height-md: 38px;
   --control-height-lg: 42px;
@@ -177,9 +166,10 @@
    8 THEME SPECIFICATIONS (CALIBRATED & CONTRAST-CERTIFIED)
    ============================================================ */
 
-/* DARK 1 — Midnight Indigo (Palenight-inspired Purple Slate) */
-.theme-midnight-indigo,
-.theme-midnight-slate {
+/* DARK 1 — Midnight Indigo (Palenight-inspired Purple Slate)
+   舊名 .theme-midnight-slate 已在 userStore.js 的 getUserTheme() 做一次性
+   轉換，畫面上不會再套用這個 class，所以這裡不用留別名選擇器。 */
+.theme-midnight-indigo {
   --bg-primary: #0e0f14;
   --bg-secondary: #1f2231;
   --bg-card: #292d42;
@@ -202,8 +192,8 @@
   --shadow-surface: rgba(0, 0, 0, 0.36) 0px 4px 12px;
 }
 
-/* DARK 2 — GitHub Dark / Graphite Workshop */
-.theme-charcoal-ember,
+/* DARK 2 — GitHub Dark / Graphite Workshop
+   舊名 .theme-charcoal-ember 同樣已在 getUserTheme() 轉換，不再需要別名。 */
 .theme-github-dark {
   --bg-primary: #17191f;
   --bg-secondary: #1d2028;
@@ -370,8 +360,6 @@
    CSS custom properties declared on :root are otherwise resolved before a
    descendant theme class can override --shadow-color. */
 .theme-midnight-indigo,
-.theme-midnight-slate,
-.theme-charcoal-ember,
 .theme-github-dark,
 .theme-obsidian-neon,
 .theme-nord-dark,
@@ -385,307 +373,4 @@
   --shadow-media: 0 20px 50px color-mix(in srgb, var(--shadow-color) 42%, transparent);
   --shadow-up: 0 -4px 20px color-mix(in srgb, var(--shadow-color) 24%, transparent);
   --shadow-inset: inset 0 0 10px color-mix(in srgb, var(--shadow-color) 10%, transparent);
-}
-
-/* ============================================================
-   RESET & GLOBAL BASE STYLES
-   ============================================================ */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  overflow-x: clip;
-  text-rendering: optimizeLegibility;
-}
-
-body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: var(--font-body);
-  font-size: var(--fs-body);
-  line-height: var(--lh-normal);
-  overflow-x: clip;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.25s ease, color 0.25s ease;
-}
-
-/* ============================================================
-   GLOBAL SLIM SCROLLBARS (極簡精緻捲軸)
-   ============================================================ */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 99px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--border-color-hover);
-}
-
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--border-color) transparent;
-}
-
-/* Tabular numbers for dates, metrics, and counters */
-.stat-val,
-.prop-stat .num,
-.column-count,
-.date,
-.lightbox-date,
-.prop-date,
-.user-count-badge,
-.badge-count,
-.adv-active-count {
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum";
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-title);
-  color: var(--text-primary);
-  line-height: var(--lh-tight);
-  font-style: normal;
-}
-
-h1 {
-  font-size: var(--fs-h1);
-  font-weight: var(--fw-black);
-  letter-spacing: -0.02em;
-}
-
-h2 {
-  font-size: var(--fs-h2);
-  font-weight: var(--fw-bold);
-  letter-spacing: -0.01em;
-}
-
-h3 {
-  font-size: var(--fs-h3);
-  font-weight: var(--fw-semibold);
-}
-
-p {
-  line-height: var(--lh-relaxed);
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-button {
-  font-family: var(--font-body);
-  font-size: var(--fs-body);
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: inherit;
-}
-
-button:focus-visible,
-a:focus-visible,
-textarea:focus-visible,
-select:focus-visible,
-input:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
-/* ============================================================
-   BUTTONS — SOLID INK & TACTILE ELEVATION
-   ============================================================ */
-.add-btn,
-.btn-save,
-.empty-primary-btn {
-  background: var(--color-primary);
-  color: var(--color-on-primary);
-  padding: 0.55rem 1.15rem;
-  border-radius: var(--radius-md);
-  font-weight: 600;
-  font-size: 0.8125rem;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid transparent;
-  cursor: pointer;
-  min-height: var(--control-height-md);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  transition: background-color 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease;
-}
-
-.add-btn:hover,
-.btn-save:hover,
-.empty-primary-btn:hover {
-  background: var(--color-secondary);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
-}
-
-.add-btn:active,
-.btn-save:active,
-.empty-primary-btn:active {
-  transform: translateY(0);
-}
-
-/* ============================================================
-   FORMS, INPUTS & SELECTS
-   ============================================================ */
-input,
-textarea,
-select {
-  font-family: var(--font-body);
-  font-size: var(--fs-body);
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  outline: none;
-  transition: border-color 0.18s ease, background-color 0.18s ease;
-}
-
-input:focus,
-textarea:focus,
-select:focus {
-  border-color: var(--color-primary);
-}
-
-label,
-.form-group label {
-  color: var(--text-primary);
-  font-weight: 600;
-  font-size: var(--fs-label);
-}
-
-input::placeholder,
-textarea::placeholder,
-select::placeholder {
-  color: var(--text-muted);
-  opacity: 1;
-}
-
-select {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.85rem center;
-  background-size: 12px 12px;
-  padding-right: 2.2rem;
-  cursor: pointer;
-}
-
-/* ============================================================
-   LAYOUT ARCHITECTURE
-   ============================================================ */
-.app-container {
-  display: flex;
-  min-height: 100vh;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  transition: background-color 0.25s ease, color 0.25s ease;
-}
-
-.main-content {
-  flex: 1;
-  min-width: 0;
-  margin-left: var(--sidebar-width);
-  padding: var(--space-container);
-  max-width: 1720px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* ============================================================
-   BENTO GRID
-   ============================================================ */
-.bento-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-}
-
-/* ============================================================
-   TRANSITIONS & ACCESSIBILITY
-   ============================================================ */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.fade-enter-from {
-  opacity: 0;
-  transform: translateY(6px);
-}
-
-.fade-leave-to {
-  opacity: 0;
-  transform: translateY(-6px);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* ============================================================
-   RESPONSIVE LAYOUT
-   ============================================================ */
-@media (max-width: 1024px) {
-  :root {
-    --sidebar-width: 72px;
-  }
-
-  .bento-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  :root {
-    --sidebar-width: 0px;
-    --fs-display: 2rem;
-    --fs-h1: 1.5rem;
-    --fs-h2: 1.15rem;
-  }
-
-  .main-content {
-    margin-left: 0;
-    padding: calc(env(safe-area-inset-top, 0px) + 5.5rem) var(--space-8) calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
-  }
-
-  .page-title {
-    overflow-wrap: anywhere;
-  }
-
-  .bento-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 640px) {
-  .main-content {
-    padding: calc(env(safe-area-inset-top, 0px) + 5.5rem) var(--space-5) calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
-  }
 }

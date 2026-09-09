@@ -27,3 +27,8 @@ dist-ssr
 .gitmessage.txt
 
 .env
+
+# clasp（Apps Script CLI）：.clasp.json 內含各人／各環境專屬的 scriptId，
+# 不進版控，改以 apps-script/.clasp.json.example 記錄格式。
+.clasp.json
+.clasprc.json

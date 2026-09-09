@@ -8,12 +8,12 @@
     searchPlaceholder="搜尋 AI 工具、分類、Prompt..."
     badgeClass="category-badge"
     badgeField="category"
+    lightboxBadgeLabel="AI 工具中心"
     titleField="name"
     coverField="cover"
     linkField="url"
     linkBtnLabel="開啟工具網站 ↗"
     researchContext="AI 工具中心"
-    hideLightboxMedia
     lightboxMetaClass="ai-lightbox-meta-row"
     emptyText="目前還沒有 AI 工具。點選右上角新增一筆！"
     deleteConfirmPrefix="確定要刪除《"
@@ -28,54 +28,62 @@
     ref="gridRef"
   >
     <template #card-extra="{ item }">
-      <p v-if="item.useCase" class="ai-card-summary">{{ item.useCase }}</p>
-      <div v-if="parseList(item.tags).length" class="card-tags">
-        <span v-for="tag in parseList(item.tags)" :key="tag" class="tag"># {{ tag }}</span>
-      </div>
+      <p v-if="item.useCase" class="card-desc">{{ item.useCase }}</p>
     </template>
 
-    <template #lightbox-content="{ item, openFullscreenMedia }">
-      <div v-if="item.cover || item.useCase" class="ai-usecase-row">
-        <div
-          v-if="item.cover"
-          class="ai-usecase-image"
-          role="button"
-          tabindex="0"
-          :aria-label="`放大檢視《${item.name}》圖片`"
-          title="點擊放大圖片"
-          @click="openFullscreenMedia(item.cover, false)"
-          @keydown.enter.prevent="openFullscreenMedia(item.cover, false)"
-          @keydown.space.prevent="openFullscreenMedia(item.cover, false)"
+    <!-- 左側新增：工具分類（跟頂部固定的「AI 工具中心」badge 是兩回事，
+         這裡顯示的是這個工具自己的分類，可點擊快速篩選）＋相關 Tags -->
+    <template #lightbox-left-extra="{ item, toggleSingleFilter, isSingleFilterSelected, toggleTag, isTagSelected, closeLightbox }">
+      <div class="tool-tags">
+        <button
+          v-if="item.category"
+          type="button"
+          class="tool-tag clickable-tool ai-tool-category-chip"
+          @click.stop="toggleSingleFilter && toggleSingleFilter('category', item.category); closeLightbox && closeLightbox()"
+          :title="`點擊${isSingleFilterSelected && isSingleFilterSelected('category', item.category) ? '取消' : '快速'}篩選工具分類：${item.category}`"
         >
-          <img :src="item.cover" :alt="item.name" />
-          <span class="ai-image-zoom-hint" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="15 3 21 3 21 9"></polyline>
-              <polyline points="9 21 3 21 3 15"></polyline>
-              <line x1="21" y1="3" x2="14" y2="10"></line>
-              <line x1="3" y1="21" x2="10" y2="14"></line>
-            </svg>
-            <span>點擊全螢幕檢視</span>
-          </span>
-        </div>
-        <div v-if="item.useCase" class="lightbox-section ai-usecase">
-          <h4 class="section-title">工具簡介 Description</h4>
-          <p class="section-desc">{{ item.useCase }}</p>
-        </div>
-      </div>
-      <div v-if="item.prompt" class="lightbox-section ai-prompt-section">
-        <h4 class="section-title">提示詞 Prompt</h4>
-        <PromptCodeBox :prompt="item.prompt" :copied="copyStates[item.id]" @copy="copyPrompt(item.prompt, item.id)" />
-      </div>
-      <div v-if="parseWorkflow(item.workflow).length" class="lightbox-section ai-workflow-section">
-        <h4 class="section-title">工作流程</h4>
-        <div class="workflow-steps">
-          <div v-for="(step, index) in parseWorkflow(item.workflow)" :key="`${step}-${index}`" class="workflow-step-item">
-            <span class="step-num">{{ index + 1 }}</span>
-            <span class="step-text">{{ step }}</span>
+          {{ item.category }}
+        </button>
+        <div v-if="parseList(item.tags).length" class="ai-related-tags">
+          <h4 class="ai-related-tags-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>
+            相關 Tags
+          </h4>
+          <div class="card-tags">
+            <span
+              v-for="tag in parseList(item.tags)"
+              :key="tag"
+              class="tag clickable-tag"
+              @click.stop="toggleTag && toggleTag(tag); closeLightbox && closeLightbox()"
+              :title="`點擊${isTagSelected && isTagSelected(tag) ? '取消' : '快速'}篩選 #${tag}`"
+            ># {{ tag }}</span>
           </div>
         </div>
       </div>
+    </template>
+
+    <template #lightbox-content="{ item }">
+      <LightboxTextSection
+        v-if="item.useCase"
+        icon="<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'></circle><path d='M12 16v-4'></path><path d='M12 8h.01'></path></svg>"
+        title="工具簡介"
+        accent="var(--color-secondary)"
+        :text="item.useCase"
+      />
+      <LightboxCodeSection
+        v-if="item.prompt"
+        icon="<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z'></path></svg>"
+        title="提示詞"
+        accent="var(--color-secondary)"
+        :content="item.prompt"
+      />
+      <LightboxListSection
+        v-if="parseWorkflow(item.workflow).length"
+        icon="<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='8' y='2' width='8' height='4' rx='1' ry='1'></rect><path d='M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2'></path><path d='M12 11h4'></path><path d='M12 16h4'></path><path d='M8 11h.01'></path><path d='M8 16h.01'></path></svg>"
+        title="工作流程"
+        accent="var(--color-secondary)"
+        :items="parseWorkflow(item.workflow)"
+      />
     </template>
   </ResearchGrid>
 </template>
@@ -83,15 +91,15 @@
 <script setup>
 import { ref, computed } from 'vue';
 import ResearchGrid from '../components/ResearchGrid.vue';
-import PromptCodeBox from '../components/PromptCodeBox.vue';
+import LightboxTextSection from '../components/lightbox/LightboxTextSection.vue';
+import LightboxCodeSection from '../components/lightbox/LightboxCodeSection.vue';
+import LightboxListSection from '../components/lightbox/LightboxListSection.vue';
 import { parseList } from '../utils/formatters';
-import { copyToClipboard } from '../utils/clipboard';
 
 defineProps({ highlightedId: { type: String, default: '' } });
 defineEmits(['trigger-crud', 'delete-done', 'open-lightbox', 'close-lightbox']);
 
 const gridRef = ref(null);
-const copyStates = ref({});
 
 defineExpose({ loadData: () => gridRef.value?.loadData() });
 
@@ -108,127 +116,26 @@ const parseWorkflow = (workflow) => {
       : String(workflow).split(/[\r\n]+/);
   return source.map(step => String(step).replace(/^(\(?\d+[\.、\)\s]+|\d+\s+)/, '').trim()).filter(Boolean);
 };
-
-const copyPrompt = async (prompt, id) => {
-  if (!await copyToClipboard(prompt)) return;
-  copyStates.value = { ...copyStates.value, [id]: true };
-  setTimeout(() => { copyStates.value = { ...copyStates.value, [id]: false }; }, 1800);
-};
 </script>
 
 <style scoped>
-.ai-card-summary {
-  display: -webkit-box;
-  overflow: hidden;
-  color: var(--text-secondary);
-  font-size: var(--fs-body);
-  line-height: 1.55;
-  white-space: pre-line;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+
+/* 左側「相關 Tags」：icon + 標題 + 標籤列，標籤沿用全站的 .tag 樣式 */
+.ai-related-tags {
+  margin-bottom: var(--space-4);
 }
 
-:deep(.ai-lightbox-meta-row .lightbox-date) {
-  padding-right: 2rem;
-}
-
-.ai-usecase-row {
-  display: flex;
-  align-items: stretch;
-  gap: 0.75rem;
-}
-
-.ai-usecase-image {
-  position: relative;
-  width: 42%;
-  /* height: 300px; */
-  min-width: 0;
-  overflow: hidden;
-  border-radius: var(--radius-sm);
-  background: var(--bg-input);
-  cursor: zoom-in;
-  outline: none;
-}
-
-.ai-usecase-image:focus-visible {
-  outline: 3px solid var(--color-focus);
-  outline-offset: 3px;
-}
-
-.ai-image-zoom-hint {
-  position: absolute;
-  right: 0.6rem;
-  bottom: 0.6rem;
+.ai-related-tags-title {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem 0.5rem;
-  border-radius: var(--radius-sm);
-  background: rgba(0, 0, 0, 0.68);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  font-size: 0.7175rem;
-  font-weight: 600;
-  opacity: 0;
-  transform: translateY(4px);
-  transition: opacity 0.18s ease, transform 0.18s ease;
-}
-
-.ai-usecase-image:hover .ai-image-zoom-hint,
-.ai-usecase-image:focus-visible .ai-image-zoom-hint {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.ai-usecase-image img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.ai-usecase {
-  flex: 1;
-  min-width: 0;
-  border-left: 0 !important;
-}
-
-.workflow-steps {
-  display: grid;
-  gap: 0.5rem;
-}
-
-.workflow-step-item {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.25rem 0.5rem;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-}
-
-.step-num {
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  flex: 0 0 auto;
-  border-radius: 50%;
-  background: var(--bg-hover);
-  color: var(--color-primary);
+  gap: var(--space-2);
+  margin: 0 0 var(--space-2);
   font-size: var(--fs-meta);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
+  color: var(--color-secondary);
 }
 
-.step-text {
-  /* color: var(--text-secondary); */
-  font-size: var(--fs-meta);
-  line-height: 1.55;
-}
-
-@media (max-width: 640px) {
-  .ai-usecase-row { flex-direction: column; }
-  .ai-usecase-image { width: 100%; height: 220px; max-height: 220px; }
+.ai-related-tags .card-tags {
+  margin-top: 0;
 }
 </style>

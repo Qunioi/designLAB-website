@@ -26,17 +26,17 @@ defineEmits(['copy']);
   width: 100%;
   text-align: left;
   background: var(--bg-input);
-  padding: 0.75rem 0.85rem;
+  padding: var(--space-3) var(--space-3);
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
   font-family: var(--font-code);
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-medium);
   color: var(--text-primary);
   min-height: 65px;
   max-height: 95px;
   overflow-y: auto;
-  line-height: 1.55;
+  line-height: var(--lh-normal);
   white-space: pre-wrap;
   cursor: pointer;
   scrollbar-width: thin;
@@ -50,7 +50,7 @@ defineEmits(['copy']);
 
 .prompt-code-box::-webkit-scrollbar-thumb {
   background: var(--border-color-hover);
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
 }
 
 .prompt-code-box:hover,
@@ -69,9 +69,9 @@ defineEmits(['copy']);
   bottom: 0.25rem;
   right: 0.45rem;
   font-family: var(--font-body);
-  font-size: 0.5875rem;
-  padding: 0.15rem 0.45rem;
-  border-radius: 4px;
+  font-size: var(--fs-tiny);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-xs);
   background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
@@ -90,6 +90,6 @@ defineEmits(['copy']);
   background: var(--color-primary);
   color: #ffffff;
   border-color: var(--color-primary);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
 }
 </style>

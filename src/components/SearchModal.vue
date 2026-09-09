@@ -195,7 +195,7 @@ const handleSelect = (item) => {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 8vh 1.5rem 2rem;
+  padding: 8vh var(--space-6) var(--space-8);
   z-index: var(--z-overlay);
 }
 
@@ -217,7 +217,7 @@ const handleSelect = (item) => {
   align-items: center;
   padding: var(--modal-header-padding);
   border-bottom: 1px solid var(--border-color);
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .search-icon {
@@ -226,8 +226,8 @@ const handleSelect = (item) => {
 
 .search-header input {
   flex: 1;
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-medium);
   outline: 0;
   background: transparent;
   border: none;
@@ -239,10 +239,10 @@ const handleSelect = (item) => {
 
 .esc-badge {
   font-size: var(--fs-tiny);
-  padding: 0.25rem 0.5rem;
+  padding: var(--space-1) var(--space-2);
   background: var(--bg-subtle);
   border: 1px solid var(--border-color);
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   color: var(--text-muted);
 }
 
@@ -265,18 +265,18 @@ const handleSelect = (item) => {
 .search-placeholder {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .placeholder-title {
-  font-size: 0.7875rem;
+  font-size: var(--fs-label);
   color: var(--text-secondary);
 }
 
 .suggested-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .suggested-tags .tag {
@@ -291,19 +291,19 @@ const handleSelect = (item) => {
 }
 
 .shortcut-tip {
-  margin-top: 2rem;
-  font-size: 0.7375rem;
+  margin-top: var(--space-8);
+  font-size: var(--fs-meta);
   color: var(--text-muted);
   border-top: 1px solid var(--border-color);
-  padding-top: 1rem;
+  padding-top: var(--space-4);
 }
 
 .shortcut-tip kbd {
   background: var(--bg-hover);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 0.1rem 0.3rem;
-  border-radius: 4px;
-  margin: 0 0.1rem;
+  padding: var(--space-1) var(--space-1);
+  border-radius: var(--radius-xs);
+  margin: 0 var(--space-1);
 }
 
 .no-results {
@@ -313,7 +313,7 @@ const handleSelect = (item) => {
   justify-content: center;
   padding: 3rem 0;
   color: var(--text-secondary);
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .no-results-icon {
@@ -322,17 +322,17 @@ const handleSelect = (item) => {
 
 .results-list {
   overflow-y: auto;
-  padding: 0.5rem;
+  padding: var(--space-2);
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--space-1);
 }
 
 .result-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1rem;
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease;
@@ -351,35 +351,20 @@ const handleSelect = (item) => {
   outline-offset: 2px;
 }
 
-.result-main {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  min-width: 0;
-  flex: 1;
-}
-
-.result-badge {
-  font-size: var(--fs-tiny);
-  font-weight: 700;
-  padding: 0.15rem 0.45rem;
-  border-radius: 4px;
-}
-
 .result-category {
   font-size: var(--fs-tiny);
   color: var(--text-muted);
 }
 
 .result-title {
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-semibold);
   color: var(--text-primary);
-  margin-bottom: 0.15rem;
+  margin-bottom: var(--space-1);
 }
 
 .result-snippet {
-  font-size: 0.7375rem;
+  font-size: var(--fs-meta);
   color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
@@ -419,9 +404,9 @@ const handleSelect = (item) => {
 }
 
 @media (max-width: 640px) {
-  .search-modal-backdrop { padding: 0.75rem; }
+  .search-modal-backdrop { padding: var(--space-3); }
   .search-modal-container { max-height: calc(100dvh - 1.5rem); border-radius: 16px; }
   .search-header,
-  .search-body { padding: 1rem; }
+  .search-body { padding: var(--space-4); }
 }
 </style>

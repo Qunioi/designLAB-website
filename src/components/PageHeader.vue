@@ -66,45 +66,43 @@ const isGuest = computed(() => {
 .page-header-component {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  margin-bottom: 0.25rem;
-  padding-top: 0.25rem;
+  gap: var(--space-1);
+  margin-bottom: var(--space-1);
+  padding-top: var(--space-1);
 }
 
 .header-main-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1rem;
+  gap: var(--space-4);
   width: 100%;
 }
 
 .title-wrap {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
   min-width: 0;
 }
 
+/* font-family／font-size／font-weight／color 跟 base.css 的 h1、
+   h1~h6 共用規則數值一樣，這裡只需要覆寫 letter-spacing */
 .page-title {
-  font-family: var(--font-title);
-  font-size: var(--fs-h1);
-  font-weight: 800;
   letter-spacing: -0.025em;
-  color: var(--text-primary);
 }
 
 .page-subtitle {
   font-size: var(--fs-body);
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: var(--lh-normal);
   max-width: 680px;
 }
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
   flex-shrink: 0;
 }
 
@@ -118,15 +116,15 @@ const isGuest = computed(() => {
 
 @media (max-width: 640px) {
   .page-title {
-    font-size: 1.35rem;
+    font-size: var(--fs-h2);
   }
   .add-btn {
-    padding: 0.45rem 0.85rem;
-    font-size: 0.75rem;
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--fs-meta);
     border-radius: var(--radius-sm);
   }
   .page-subtitle {
-    font-size: 0.75rem;
+    font-size: var(--fs-meta);
   }
 }
 </style>
