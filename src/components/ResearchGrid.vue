@@ -1104,7 +1104,9 @@ const handleDelete = (item) => {
   gap: var(--space-1);
 }
 
-/* Lightbox 編輯 / 刪除 — 純 icon 圓形按鈕 */
+/* Lightbox 編輯 / 刪除 — 純 icon 圓形按鈕，無背景色，跟卡片列表上的
+   ActionIconButton（見 ActionIconButton.vue）同一套 hover 邏輯：
+   不管靜止或 hover 都不填色，只靠邊框與圖示顏色變化來表示狀態。 */
 .lightbox-icon-btn {
   display: inline-flex;
   align-items: center;
@@ -1113,22 +1115,21 @@ const handleDelete = (item) => {
   height: 36px;
   border-radius: var(--radius-md);
   cursor: pointer;
-  background: var(--bg-hover);
+  background: transparent;
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
   transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
   flex-shrink: 0;
 }
 .lightbox-icon-btn:hover {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: #fff;
-  box-shadow: var(--shadow-sm);
+  background: transparent;
+  border-color: var(--color-warning);
+  color: var(--color-warning);
 }
 .lightbox-icon-btn.delete:hover {
-  background: var(--color-danger);
+  background: transparent;
   border-color: var(--color-danger);
-  color: #fff;
+  color: var(--color-danger);
 }
 
 .source-btn {

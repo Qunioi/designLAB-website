@@ -49,6 +49,11 @@
 
         <!-- 未登入狀態：顯示 ACCOUNT ID 與密碼登入輸入框與登入按鈕 -->
         <form v-if="!isLoggedIn" @submit.prevent="handleQuickIDLogin" class="profile-form">
+          <!-- 曾經登入過、但權杖已失效：明講原因，否則使用者只會看到登出鍵消失與登入框冒出來 -->
+          <p v-if="isSessionExpired" class="session-expired-notice">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <span>登入已逾期，雲端儲存功能暫時無法使用。請重新輸入帳號密碼登入，登入後即可正常儲存。</span>
+          </p>
           <div class="field-group">
             <label class="field-label">ACCOUNT ID</label>
             <div class="field-input-wrap">
@@ -118,9 +123,10 @@
             <input v-model="localNickname" type="text" placeholder="Enter nickname" class="field-input" required />
           </div>
 
-          <button type="submit" class="save-btn" :disabled="!isNicknameChanged">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            儲存暱稱修改
+          <button type="submit" class="save-btn" :disabled="!isNicknameChanged || savingNickname">
+            <svg v-if="savingNickname" class="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" stroke="none" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            {{ savingNickname ? '儲存中...' : '儲存暱稱修改' }}
           </button>
         </form>
 
@@ -209,8 +215,9 @@
                       <option value="Admin">管理員 (Admin)</option>
                       <option value="Super Admin">最高管理員 (Super Admin)</option>
                     </select>
-                    <button type="submit" class="add-member-btn">
-                      <span>+ 新增成員</span>
+                    <button type="submit" class="add-member-btn" :disabled="isAddingUser">
+                      <svg v-if="isAddingUser" class="animate-spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" stroke="none" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                      <span>{{ isAddingUser ? '新增中…' : '+ 新增成員' }}</span>
                     </button>
                   </form>
                 </div>
@@ -230,23 +237,25 @@
                       <div class="user-modal-right">
                         <!-- 自訂排序按鈕群 (⬆️ 上移 / ⬇️ 下移) -->
                         <div class="user-reorder-btns">
-                          <button 
-                            type="button" 
-                            class="order-btn" 
-                            :disabled="index === 0" 
+                          <button
+                            type="button"
+                            class="order-btn"
+                            :disabled="index === 0 || reorderingUserIndex !== -1"
                             @click="handleMoveUser(index, -1)"
                             title="向上移動成員順序"
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                            <svg v-if="reorderingUserIndex === index" class="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" stroke="none" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                            <svg v-else xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
                           </button>
-                          <button 
-                            type="button" 
-                            class="order-btn" 
-                            :disabled="index === userProfiles.length - 1" 
+                          <button
+                            type="button"
+                            class="order-btn"
+                            :disabled="index === userProfiles.length - 1 || reorderingUserIndex !== -1"
                             @click="handleMoveUser(index, 1)"
                             title="向下移動成員順序"
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            <svg v-if="reorderingUserIndex === index" class="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" stroke="none" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                            <svg v-else xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
                           </button>
                         </div>
 
@@ -255,18 +264,22 @@
                         </span>
                         <button
                           class="del-user-btn reset-pass-btn"
+                          :disabled="resettingUsername === p.username || deletingUsername === p.username"
                           @click="handleResetPassword(p.username)"
                           title="重設為臨時密碼 123456，該成員下次登入需強制變更"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                          <svg v-if="resettingUsername === p.username" class="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" stroke="none" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                          <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                         </button>
                         <button
                           v-if="!(p.role || '').toLowerCase().includes('admin') && p.username !== '@quni_jhuang' && p.username !== '@ray_zhao'"
                           class="del-user-btn"
+                          :disabled="deletingUsername === p.username || resettingUsername === p.username"
                           @click="handleDeleteUser(p.username)"
                           title="刪除此成員"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                          <svg v-if="deletingUsername === p.username" class="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" stroke="none" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                          <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                         </button>
                       </div>
                     </div>
@@ -330,7 +343,10 @@
               </div>
               <div class="modal-footer">
                 <button class="cancel-btn" @click="showChangePassModal = false">取消</button>
-                <button class="submit-btn" @click="handleChangePasswordSubmit">確認修改密碼</button>
+                <button class="submit-btn" :disabled="isChangingPassword" @click="handleChangePasswordSubmit">
+                  <svg v-if="isChangingPassword" class="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" stroke="none" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                  {{ isChangingPassword ? '修改中…' : '確認修改密碼' }}
+                </button>
               </div>
             </div>
           </div>
@@ -431,6 +447,8 @@ import {
   loginByAccountID,
   logout as logoutUser,
   isSuperAdminUser,
+  isAdminUser,
+  hasActiveSession,
   addUserProfile,
   removeUserProfile,
   adminResetPassword,
@@ -467,10 +485,22 @@ const handleStopImpersonate = () => {
   emit('update-user', { nickname: result.nickname, username: result.username });
 };
 
-const handleMoveUser = (index, delta) => {
+const reorderingUserIndex = ref(-1);
+const handleMoveUser = async (index, delta) => {
+  if (reorderingUserIndex.value !== -1) return;
   const targetIndex = index + delta;
-  if (targetIndex >= 0 && targetIndex < userProfiles.value.length) {
-    userProfiles.value = reorderUserProfiles(index, targetIndex);
+  if (targetIndex < 0 || targetIndex >= userProfiles.value.length) return;
+  reorderingUserIndex.value = index;
+  try {
+    const { profiles, synced } = reorderUserProfiles(index, targetIndex);
+    userProfiles.value = profiles;
+    const result = await synced;
+    if (result && result.success === false) {
+      // 同步失敗：userStore.js 已經把本機清單還原，這裡重新讀一次以反映還原後的順序。
+      refreshProfiles();
+    }
+  } finally {
+    reorderingUserIndex.value = -1;
   }
 };
 
@@ -488,8 +518,11 @@ const userProfiles = ref([]);
 const localNickname = ref(props.nickname);
 const localUsername = ref(props.username);
 
+// 顯示身分（帳號不是訪客）+ 手上真的還握著有效的 Session Token 才算「已登入」——
+// Token 過期時本機顯示身分不會自動消失，只看帳號會誤判成「還在登入中」，
+// 讓使用者看不到登入表單、無從重新登入（見 hasActiveSession() 的說明）。
 const isLoggedIn = computed(() => {
-  return props.username && props.username !== '@guest' && props.username !== 'guest' && props.username !== '@account';
+  return !!(props.username && props.username !== '@guest' && props.username !== 'guest' && props.username !== '@account' && hasActiveSession());
 });
 
 watch(() => props.nickname, (v) => { 
@@ -514,8 +547,10 @@ const newUserNickname = ref('');
 const newUsername = ref('');
 const newUserRole = ref('USER');
 
+const isAddingUser = ref(false);
 const handleAddUser = async () => {
-  if (!newUserNickname.value.trim() || !newUsername.value.trim()) return;
+  if (!newUserNickname.value.trim() || !newUsername.value.trim() || isAddingUser.value) return;
+  isAddingUser.value = true;
   try {
     await addUserProfile({
       nickname: newUserNickname.value,
@@ -529,41 +564,60 @@ const handleAddUser = async () => {
     alert('成功新增成員並同步至 Google Sheets USERS 分頁！臨時密碼為 123456，該成員首次登入需強制變更密碼。');
   } catch (err) {
     alert(err.message || '新增成員失敗！');
+  } finally {
+    isAddingUser.value = false;
   }
 };
 
 
+const deletingUsername = ref('');
 const handleDeleteUser = async (targetUsername) => {
+  if (deletingUsername.value) return;
   if (!confirm(`確定要刪除成員 ${targetUsername} 嗎？`)) return;
+  deletingUsername.value = targetUsername;
   try {
     await removeUserProfile(targetUsername);
     refreshProfiles();
     alert('已成功刪除該成員！');
   } catch (err) {
     alert(err.message || '刪除成員失敗！');
+  } finally {
+    deletingUsername.value = '';
   }
 };
 
+const resettingUsername = ref('');
 const handleResetPassword = async (targetUsername) => {
+  if (resettingUsername.value) return;
   if (!confirm(`確定要將 ${targetUsername} 的密碼重設為臨時密碼 123456 嗎？\n該成員下次登入時將被強制要求變更密碼。`)) return;
-  const result = await adminResetPassword(targetUsername);
-  if (result.success) {
-    alert(`已將 ${targetUsername} 的密碼重設為臨時密碼 123456，請通知該成員盡快登入並修改密碼。`);
-  } else {
-    alert(result.error || '重設密碼失敗！');
+  resettingUsername.value = targetUsername;
+  try {
+    const result = await adminResetPassword(targetUsername);
+    if (result.success) {
+      alert(`已將 ${targetUsername} 的密碼重設為臨時密碼 123456，請通知該成員盡快登入並修改密碼。`);
+    } else {
+      alert(result.error || '重設密碼失敗！');
+    }
+  } finally {
+    resettingUsername.value = '';
   }
 };
 
 
 // 是否為管理員（Super Admin / Admin）：一律以目前登入 Session 對應的伺服器角色為準，
-// 不再有任何帳號名稱字串可以繞過此判斷。
-const isAdmin = computed(() => {
-  const role = (getCurrentUser().role || '').toLowerCase();
-  return role === 'super admin' || role === 'admin';
+// 不再有任何帳號名稱字串可以繞過此判斷。Session 過期時 isAdminUser() 會回 false，
+// 皇冠與管理功能一起收起來，才不會出現「顯示管理員但什麼都存不了」的矛盾畫面。
+const isAdmin = computed(() => isAdminUser());
+
+// 本機還留著帳號顯示身分，但手上已經沒有有效 Session Token——也就是「登入已逾期」。
+// 這時要明講原因，否則使用者只會看到登出鍵不見、又跑出登入框，不知道發生什麼事。
+const isSessionExpired = computed(() => {
+  return !!(props.username && props.username !== '@guest' && props.username !== 'guest' && props.username !== '@account' && !hasActiveSession());
 });
 
 // 修改個人密碼狀態與處理方法
 const showChangePassModal = ref(false);
+const isChangingPassword = ref(false);
 const oldPasswordInput = ref('');
 const newPasswordInput = ref('');
 const confirmPasswordInput = ref('');
@@ -600,13 +654,19 @@ const handleChangePasswordSubmit = async () => {
     return;
   }
 
-  const result = await updateUserPassword(props.username, oldPasswordInput.value, newPasswordInput.value);
-  if (result.success) {
-    alert('密碼修改成功！新密碼已儲存。');
-    showChangePassModal.value = false;
-    mustChangePassword.value = false;
-  } else {
-    passErrorMsg.value = result.error || '密碼修改失敗！';
+  if (isChangingPassword.value) return;
+  isChangingPassword.value = true;
+  try {
+    const result = await updateUserPassword(props.username, oldPasswordInput.value, newPasswordInput.value);
+    if (result.success) {
+      alert('密碼修改成功！新密碼已儲存。');
+      showChangePassModal.value = false;
+      mustChangePassword.value = false;
+    } else {
+      passErrorMsg.value = result.error || '密碼修改失敗！';
+    }
+  } finally {
+    isChangingPassword.value = false;
   }
 };
 
@@ -695,13 +755,24 @@ const isNicknameChanged = computed(() => {
   return currentNick !== '' && currentNick !== propNick;
 });
 
-const saveProfile = () => {
+const savingNickname = ref(false);
+const saveProfile = async () => {
   const nick = (localNickname.value || '').trim();
-  if (nick !== '') {
+  if (nick === '' || savingNickname.value) return;
+  savingNickname.value = true;
+  try {
     const user = setCurrentUser(nick, props.username || '@quni_jhuang');
+    const result = await user.synced;
+    if (result && result.success === false) {
+      // 同步失敗：setCurrentUser 已經把本機暱稱／成員列表還原並提示錯誤，
+      // 這裡不要再樂觀把新暱稱套到畫面上，維持原本顯示的暱稱。
+      return;
+    }
     refreshProfiles();
     emit('update-user', user);
     emit('update-nickname', user.nickname);
+  } finally {
+    savingNickname.value = false;
   }
 };
 
@@ -1537,6 +1608,10 @@ const lightThemes = [
 }
 
 .add-member-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
   padding: var(--space-2) var(--space-5);
   background: var(--color-primary);
   border: 1px solid var(--color-primary);
@@ -1550,9 +1625,14 @@ const lightThemes = [
   transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
 
-.add-member-btn:hover {
+.add-member-btn:hover:not(:disabled) {
   background: var(--bg-hover);
   color: var(--color-primary);
+}
+
+.add-member-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* 成員清單：極簡扁平 List 視圖 (無獨立卡片粗框) */
@@ -1718,11 +1798,16 @@ const lightThemes = [
   transition: opacity 0.2s ease;
 }
 
-.del-user-btn:hover {
+.del-user-btn:hover:not(:disabled) {
   opacity: 1;
 }
 
-.reset-pass-btn:hover {
+.del-user-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.reset-pass-btn:hover:not(:disabled) {
   color: var(--color-primary);
 }
 
@@ -1796,6 +1881,9 @@ const lightThemes = [
 }
 
 .auth-modal .submit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   padding: var(--space-2) var(--space-5);
   border-radius: var(--radius-sm);
   background: var(--color-primary);
@@ -1808,9 +1896,34 @@ const lightThemes = [
   transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
-.auth-modal .submit-btn:hover {
+.auth-modal .submit-btn:hover:not(:disabled) {
   background: var(--bg-hover);
   color: var(--color-primary);
+}
+
+.auth-modal .submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.session-expired-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-warning, #d97706);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-warning, #d97706) 10%, transparent);
+  color: var(--text-primary);
+  font-size: var(--fs-meta);
+  line-height: 1.5;
+}
+
+.session-expired-notice svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-warning, #d97706);
 }
 
 

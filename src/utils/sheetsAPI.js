@@ -80,6 +80,19 @@ export function normalizeSheetRecord(record) {
   return normalized;
 }
 
+/**
+ * 寫入失敗時要顯示給使用者的說明文字。
+ * 後端回的「登入已逾期，請重新登入」本身沒說要去哪裡登入，這裡統一補上路徑，
+ * 避免使用者只看到「請重新登入」卻找不到入口，反覆按儲存反覆失敗。
+ */
+export function describeWriteFailure(error) {
+  const reason = error || '權限不足或登入已逾期，請重新登入後再試一次。';
+  const needsLogin = !getSession() || /登入|逾期|權限/.test(String(reason));
+  return needsLogin
+    ? `${reason}\n（請點左側選單最下方的「個人設定」重新登入後再試一次）`
+    : reason;
+}
+
 /** 取得目前設定的 Apps Script URL（由 VITE_SHEETS_URL 環境變數提供） */
 export function getSheetsUrl() {
   return SHEETS_URL;

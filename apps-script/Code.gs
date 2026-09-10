@@ -50,7 +50,8 @@ const CACHE = CacheService.getScriptCache();
 // 登入失敗鎖定（lock:/fails: 開頭）風險低、效期短（5 分鐘），維持用 CacheService 即可。
 const SESSION_STORE = PropertiesService.getScriptProperties();
 
-const SESSION_TTL_SECONDS = 6 * 60 * 60;   // Session 有效期 6 小時，每次驗證成功會自動延長（Sliding Expiration）
+const SESSION_TTL_SECONDS = 180 * 24 * 60 * 60;   // Session 有效期 180 天，每次驗證成功會自動延長（Sliding Expiration）。
+                                                   // 僅供內部團隊使用，不對外公開，改成長效期以避免頻繁被要求重新登入。
 const LOGIN_LOCK_SECONDS = 5 * 60;         // 登入失敗鎖定 5 分鐘
 const LOGIN_MAX_ATTEMPTS = 5;              // 連續失敗達此次數即鎖定
 const HASH_ITERATIONS = 2000;              // 密碼雜湊迭代次數（Apps Script 無原生 bcrypt，以加鹽迭代雜湊折衷）

@@ -175,7 +175,7 @@
     </div>
 
   <Teleport to="body">
-    <div v-if="featuredManagerOpen" class="featured-modal-backdrop" :class="currentTheme" @click.self="featuredManagerOpen = false">
+    <div v-if="featuredManagerOpen" class="featured-modal-backdrop" :class="currentTheme" @click.self="closeFeaturedManager">
       <section class="featured-manager glass-panel" role="dialog" aria-modal="true" aria-labelledby="featured-manager-title">
         <!-- 頂部標題與關閉按鈕 -->
         <header class="featured-manager-header">
@@ -188,7 +188,7 @@
               <p>勾選要顯示在 Dashboard「精選內容」的項目，選幾筆就顯示幾筆</p>
             </div>
           </div>
-          <button type="button" class="featured-manager-close" aria-label="關閉管理精選" @click="featuredManagerOpen = false">
+          <button type="button" class="featured-manager-close" aria-label="關閉管理精選" @click="closeFeaturedManager">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         </header>
@@ -234,11 +234,11 @@
             v-for="(item, index) in filteredManagerItems"
             :key="managerItemKey(item, index)"
             class="featured-card"
-            :class="{ selected: isFeatured(item), 'is-saving': savingFeaturedId === item.id }"
+            :class="{ selected: isCardSelected(item), 'is-saving': isSavingFeatured }"
             tabindex="0"
             role="checkbox"
-            :aria-checked="isFeatured(item)"
-            :aria-label="`${isFeatured(item) ? '移除精選' : '設為精選'}：${item.title || item.name}`"
+            :aria-checked="isCardSelected(item)"
+            :aria-label="`${isCardSelected(item) ? '移除精選' : '設為精選'}：${item.title || item.name}`"
             @click="toggleFeatured(item)"
             @keydown.enter.prevent="toggleFeatured(item)"
             @keydown.space.prevent="toggleFeatured(item)"
@@ -257,7 +257,19 @@
           </article>
         </div>
 
-        <div class="featured-manager-footer"><span>已選取 {{ featuredItems.length }} 筆</span><button type="button" class="btn-cancel" @click="featuredManagerOpen = false">完成</button></div>
+        <div class="featured-manager-footer">
+          <span>已選取 {{ pendingFeaturedCount }} 筆<template v-if="isFeaturedDirty">（尚未儲存）</template></span>
+          <button
+            v-if="isFeaturedDirty"
+            type="button"
+            class="btn-cancel"
+            :disabled="isSavingFeatured"
+            @click="saveFeaturedChanges"
+          >
+            <svg v-if="isSavingFeatured" class="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" stroke="none" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+            {{ isSavingFeatured ? '儲存中…' : '儲存' }}
+          </button>
+        </div>
       </section>
     </div>
   </Teleport>
@@ -265,7 +277,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import PageHeader from '../components/PageHeader.vue';
 import PromptCodeBox from '../components/PromptCodeBox.vue';
 import { getStorageData, addOrUpdateItem } from '../utils/storage';
@@ -295,10 +307,23 @@ const emit = defineEmits([
 
 const refreshTrigger = ref(0);
 const featuredManagerOpen = ref(false);
-const savingFeaturedId = ref('');
 const handleStorageUpdated = () => {
   refreshTrigger.value++;
 };
+
+// ── 管理精選內容彈窗：勾選只改本機暫存狀態，按「儲存」才真的寫入 ──
+// itemId → 使用者在這次開啟彈窗期間，暫定要改成的 featured 值；
+// 只存「跟目前已儲存狀態不同」的項目，空物件＝目前沒有未儲存的變更。
+const pendingFeaturedOverrides = ref({});
+const isFeaturedDirty = computed(() => Object.keys(pendingFeaturedOverrides.value).length > 0);
+const isSavingFeatured = ref(false);
+// 關閉彈窗（或被 @click.self 觸發）時，捨棄還沒儲存的勾選暫存狀態。
+watch(featuredManagerOpen, open => {
+  if (!open) {
+    pendingFeaturedOverrides.value = {};
+    isSavingFeatured.value = false;
+  }
+});
 
 onMounted(() => {
   if (typeof window !== 'undefined') {
@@ -347,6 +372,14 @@ const allContentItems = computed(() => {
 });
 const isFeatured = item => item.featured === true || item.featured === 'true' || item.featured === 1 || item.featured === '1';
 const featuredItems = computed(() => allContentItems.value.filter(isFeatured));
+// 管理彈窗的卡片打勾狀態：有暫存變更就顯示暫存值，否則顯示目前已儲存的值。
+// featuredItems／featuredCounts 之外的地方（例如 Dashboard 首頁真正顯示的
+// 「精選內容」）一律只看 isFeatured，未儲存前不受彈窗裡的勾選影響。
+const isCardSelected = item => Object.prototype.hasOwnProperty.call(pendingFeaturedOverrides.value, item.id)
+  ? pendingFeaturedOverrides.value[item.id]
+  : isFeatured(item);
+// 彈窗底部「已選取 N 筆」：算的是含暫存變更後的最新選取數，不是已寫入的舊值。
+const pendingFeaturedCount = computed(() => allContentItems.value.filter(isCardSelected).length);
 
 // ── 管理精選內容彈窗：分類篩選 + 搜尋 ──
 const featuredFilter = ref('ui');
@@ -365,14 +398,14 @@ const featuredCounts = computed(() => {
   const counts = {};
   featuredTypeTabs.forEach(tab => {
     const itemsInType = allContentItems.value.filter(item => item.type === tab.type);
-    counts[tab.type] = { selected: itemsInType.filter(isFeatured).length, total: itemsInType.length };
+    counts[tab.type] = { selected: itemsInType.filter(isCardSelected).length, total: itemsInType.length };
   });
   return counts;
 });
 const filteredManagerItems = computed(() => {
   let list = allContentItems.value.filter(item => item.type === featuredFilter.value);
   if (featuredShowSelectedOnly.value) {
-    list = list.filter(isFeatured);
+    list = list.filter(isCardSelected);
   }
   const q = featuredSearch.value.trim().toLowerCase();
   if (q) {
@@ -381,12 +414,54 @@ const filteredManagerItems = computed(() => {
   return list;
 });
 const managerItemKey = (item, index) => `manage-${item.type}-${item.id || item.sourceUrl || item.url || item.title || item.name || index}`;
+const FEATURED_TYPE_KEY_MAP = { ui: 'UI_RESEARCH', motion: 'MOTION_RESEARCH', competitor: 'COMPETITORS', ai: 'AI_CENTER', resource: 'RESOURCES' };
+
+// 點卡片只切換「暫存」勾選狀態，不會馬上寫入——要按「儲存」才會真的送出。
 const toggleFeatured = item => {
-  if (!isAdmin.value || savingFeaturedId.value) return;
-  savingFeaturedId.value = item.id;
-  const { type, typeLabel, ...storedItem } = item;
-  addOrUpdateItem({ ui: 'UI_RESEARCH', motion: 'MOTION_RESEARCH', competitor: 'COMPETITORS', ai: 'AI_CENTER', resource: 'RESOURCES' }[item.type], { ...storedItem, featured: !isFeatured(item) });
-  window.setTimeout(() => { savingFeaturedId.value = ''; }, 300);
+  if (!isAdmin.value || isSavingFeatured.value) return;
+  const id = item.id;
+  const next = !isCardSelected(item);
+  const overrides = { ...pendingFeaturedOverrides.value };
+  if (next === isFeatured(item)) {
+    // 切回跟目前已儲存狀態一樣，這筆就不算「有變更」了
+    delete overrides[id];
+  } else {
+    overrides[id] = next;
+  }
+  pendingFeaturedOverrides.value = overrides;
+};
+
+// 按下「儲存」才真的把這次開啟彈窗期間累積的所有勾選/取消勾選一次送出。
+const saveFeaturedChanges = async () => {
+  if (isSavingFeatured.value || !isFeaturedDirty.value) return;
+  isSavingFeatured.value = true;
+  try {
+    const changedIds = Object.keys(pendingFeaturedOverrides.value);
+    await Promise.all(changedIds.map(id => {
+      const item = allContentItems.value.find(i => i.id === id);
+      if (!item) return Promise.resolve();
+      const { type, typeLabel, ...storedItem } = item;
+      const key = FEATURED_TYPE_KEY_MAP[item.type];
+      // silent：只是勾選精選，不算「編輯內容」——不動 updatedAt，卡片才不會
+      // 因為排序依據（最後更新時間）改變而在列表中跳位置。
+      const { synced } = addOrUpdateItem(key, { ...storedItem, featured: pendingFeaturedOverrides.value[id] }, { silent: true });
+      return synced;
+    }));
+  } finally {
+    // 不論成功或失敗都清空暫存：成功的項目 isFeatured() 已反映新值，
+    // 失敗的項目 rollbackWrite_ 已把本機資料還原成原值——兩種情況下
+    // 卡片打勾狀態改回去看 isFeatured() 都會顯示正確結果。
+    pendingFeaturedOverrides.value = {};
+    isSavingFeatured.value = false;
+  }
+};
+
+const closeFeaturedManager = () => {
+  if (isSavingFeatured.value) return;
+  if (isFeaturedDirty.value && typeof window !== 'undefined' && !window.confirm('有尚未儲存的精選變更，確定要放棄這些變更嗎？')) {
+    return;
+  }
+  featuredManagerOpen.value = false;
 };
 const normalizedTags = tags => Array.isArray(tags) ? tags : String(tags || '').split(/[,/，#\n\r]+/).map(tag => tag.trim()).filter(Boolean);
 // AI 工具中心／設計資源這兩種類型在卡片上不顯示標籤，改顯示一行文字描述
@@ -1093,9 +1168,13 @@ const handleRecentClick = (item) => {
   border-top: 1px solid var(--border-color);
   color: var(--text-muted);
   font-size: var(--fs-meta);
+  height: 60px;
 }
 
 .featured-manager-footer .btn-cancel {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
   font-size: var(--fs-meta);
   font-weight: var(--fw-semibold);
@@ -1109,6 +1188,11 @@ const handleRecentClick = (item) => {
 
 .featured-manager-footer .btn-cancel:hover {
   opacity: 0.9;
+}
+
+.featured-manager-footer .btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .card-header {

@@ -13,7 +13,7 @@ import {
   pushToSheet, hasSheetsIntegration,
   loginRequest, logoutRequest, changePasswordRequest, adminResetPasswordRequest,
   addUserRequest, removeUserRequest, pushAllUsersToSheet,
-  getSession
+  getSession, describeWriteFailure
 } from './sheetsAPI';
 import { addNotification } from './notifications';
 
@@ -139,16 +139,27 @@ export async function removeUserProfile(targetUsername) {
 export function reorderUserProfiles(fromIndex, toIndex) {
   let profiles = getUserProfiles();
   if (fromIndex < 0 || fromIndex >= profiles.length || toIndex < 0 || toIndex >= profiles.length) {
-    return profiles;
+    return { profiles, synced: Promise.resolve({ success: true }) };
   }
+  const previousRaw = localStorage.getItem(PROFILES_KEY);
   const movedItem = profiles.splice(fromIndex, 1)[0];
   profiles.splice(toIndex, 0, movedItem);
   localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
 
-  if (hasSheetsIntegration()) {
-    pushAllUsersToSheet(profiles);
-  }
-  return profiles;
+  const synced = hasSheetsIntegration()
+    ? pushAllUsersToSheet(profiles).then(result => {
+        if (!result || !result.success) {
+          // 雲端拒絕：還原排序前的本機成員清單，呼叫端需要在收到失敗後
+          // 重新讀取一次 getUserProfiles()（見 Settings.vue 的 handleMoveUser）。
+          if (previousRaw !== null) localStorage.setItem(PROFILES_KEY, previousRaw);
+          else localStorage.removeItem(PROFILES_KEY);
+          alert(`成員排序儲存失敗，變更未同步至雲端：${describeWriteFailure(result && result.error)}\n（本機畫面已還原）`);
+        }
+        return result;
+      })
+    : Promise.resolve({ success: true });
+
+  return { profiles, synced };
 }
 
 /**
@@ -179,10 +190,25 @@ export function getCurrentUser() {
   };
 }
 
-/** 判斷當前登入者是否為管理者 (Super Admin 或 Admin) */
+/**
+ * 判斷當前登入者是否為管理者 (Super Admin 或 Admin)。
+ * 必須「手上還握著有效的 Session Token」才算數：本機快取的角色即使寫著 Admin，
+ * Token 過期後任何寫入都會被後端拒絕，這時還顯示管理按鈕只會讓使用者按了才發現存不了。
+ */
 export function isAdminUser() {
+  if (!hasActiveSession()) return false;
   const role = (getCurrentUser().role || '').toLowerCase();
   return role === 'super admin' || role === 'admin';
+}
+
+/**
+ * 是否真的握有有效的登入 Session Token——跟「本機顯示暱稱/帳號」是兩回事：
+ * 暱稱、帳號、角色這些顯示身分即使 Session 過期也會繼續留在 localStorage，
+ * 單看這些沒辦法判斷使用者其實已經被登出。Token 過期或遭後端拒絕時，
+ * sheetsAPI.js 的 callAction_ 會清掉 Session，這裡才會如實反映「已登出」。
+ */
+export function hasActiveSession() {
+  return !!getSession();
 }
 
 /** 判斷當前登入者是否為最高管理員 (Super Admin)，僅此角色可使用身分模擬功能 */
@@ -256,19 +282,36 @@ export function setCurrentUser(nickname, username, role = 'User') {
 
   const finalRole = matchedIndex !== -1 ? (profiles[matchedIndex].role || role) : (isGuest ? 'User' : role);
 
+  const previousNickname = localStorage.getItem(NICKNAME_KEY);
+  const previousProfilesRaw = localStorage.getItem(PROFILES_KEY);
+
   localStorage.setItem(NICKNAME_KEY, cleanNick);
   localStorage.setItem(USERNAME_KEY, cleanUser);
 
+  // `synced` 一律會 resolve（不丟出例外）：呼叫端可以 await 它來得知儲存
+  // 按鈕該等到什麼時候才能解除 loading／重新可點擊（見 Settings.vue 的儲存暱稱按鈕）。
+  let synced = Promise.resolve({ success: true });
   const session = getSession();
   if (session && matchedIndex !== -1 && session.username === cleanUser.toLowerCase()) {
     profiles[matchedIndex].nickname = cleanNick;
     localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
     if (hasSheetsIntegration()) {
-      pushToSheet('USERS', { username: cleanUser, nickname: cleanNick });
+      synced = pushToSheet('USERS', { username: cleanUser, nickname: cleanNick }).then(result => {
+        if (!result || !result.success) {
+          // 雲端拒絕（例如登入已逾期）：本機暱稱／成員列表還原成修改前的狀態，
+          // 避免畫面顯示「已改好」但雲端其實沒有真的存進去。
+          if (previousNickname !== null) localStorage.setItem(NICKNAME_KEY, previousNickname);
+          else localStorage.removeItem(NICKNAME_KEY);
+          if (previousProfilesRaw !== null) localStorage.setItem(PROFILES_KEY, previousProfilesRaw);
+          else localStorage.removeItem(PROFILES_KEY);
+          alert(`暱稱儲存失敗，變更未同步至雲端：${describeWriteFailure(result && result.error)}\n（本機畫面已還原）`);
+        }
+        return result;
+      });
     }
   }
 
-  return { nickname: cleanNick, username: cleanUser, role: finalRole };
+  return { nickname: cleanNick, username: cleanUser, role: finalRole, synced };
 }
 
 /** 儲存使用者的佈景主題偏好（僅本人可寫，伺服器依 Session Token 驗證） */

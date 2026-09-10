@@ -7,7 +7,7 @@ import {
   initialProposals
 } from '../data/mockData';
 
-import { hasSheetsIntegration, pushToSheet, deleteFromSheet, normalizeSheetRecord } from './sheetsAPI';
+import { hasSheetsIntegration, pushToSheet, deleteFromSheet, normalizeSheetRecord, describeWriteFailure } from './sheetsAPI';
 import { notifyItemEdit, notifyItemAdd, notifyItemDelete } from './notifications';
 
 const KEYS = {
@@ -141,13 +141,17 @@ function getFormattedNow() {
 
 import { formatStandardDateTime } from './formatters';
 
-export function addOrUpdateItem(key, item) {
+export function addOrUpdateItem(key, item, options = {}) {
+  // `silent`：像「精選」勾選這種純標記用途的小欄位變更，不算是「編輯內容」——
+  // 不更新 updatedAt／updatedBy／lastEditorName（避免其他畫面依 updatedAt
+  // 排序時，項目因為被勾選精選就跳到最前面），也不觸發「編輯」小鈴鐺提醒。
+  const { silent = false } = options;
   const previousRaw = localStorage.getItem(KEYS[key]);
   const list = getStorageData(key);
   const normalizedItem = normalizeItem(key, item);
   let savedItem = null;
   let isNewItem = false;
-  
+
   const currentUserObj = getCurrentUser();
   const currentUserStr = getCurrentUserString();
   const nowStr = formatStandardDateTime(new Date());
@@ -157,22 +161,30 @@ export function addOrUpdateItem(key, item) {
     const index = list.findIndex(i => i.id === item.id);
     if (index !== -1) {
       const originalAuthor = list[index].createdBy || list[index].updatedBy || currentUserStr;
-      list[index] = { 
-        ...list[index], 
-        ...normalizedItem,
-        createdAt: formatStandardDateTime(list[index].createdAt || nowStr),
-        updatedAt: nowStr,
-        updatedBy: currentUserStr,
-        lastEditorName: currentUserObj.nickname
-      };
+      list[index] = silent
+        ? {
+            ...list[index],
+            ...normalizedItem,
+            createdAt: formatStandardDateTime(list[index].createdAt || nowStr)
+          }
+        : {
+            ...list[index],
+            ...normalizedItem,
+            createdAt: formatStandardDateTime(list[index].createdAt || nowStr),
+            updatedAt: nowStr,
+            updatedBy: currentUserStr,
+            lastEditorName: currentUserObj.nickname
+          };
       savedItem = list[index];
 
       // 觸發小鈴鐺提醒給原建立者
-      notifyItemEdit({
-        itemTitle: savedItem.title || savedItem.name || '研究案例',
-        originalAuthor: originalAuthor,
-        editorName: currentUserStr
-      });
+      if (!silent) {
+        notifyItemEdit({
+          itemTitle: savedItem.title || savedItem.name || '研究案例',
+          originalAuthor: originalAuthor,
+          editorName: currentUserStr
+        });
+      }
     } else {
       // ID 存在但找不到，視為新增
       isNewItem = true;
@@ -269,5 +281,5 @@ function rollbackWrite_(key, previousRaw, error) {
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('design-lab-storage-updated', { detail: { key } }));
   }
-  alert(`儲存失敗，變更未同步至雲端：${error || '權限不足或登入已逾期，請重新登入後再試一次。'}\n（本機畫面已還原）`);
+  alert(`儲存失敗，變更未同步至雲端：${describeWriteFailure(error)}\n（本機畫面已還原）`);
 }

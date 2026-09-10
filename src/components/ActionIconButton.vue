@@ -30,14 +30,14 @@ defineEmits(['click']);
   align-items: center;
   justify-content: center;
   font-size: var(--fs-meta);
-  background: var(--bg-subtle);
+  background: transparent;
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
   transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
 .action-icon-btn:hover {
-  background: var(--bg-hover);
+  background: transparent;
   border-color: var(--border-color-hover);
   color: var(--text-primary);
 }
@@ -55,13 +55,13 @@ defineEmits(['click']);
 }
 
 .action-icon-btn.edit:hover {
-  background: var(--bg-hover);
+  background: transparent;
   border-color: var(--color-warning);
   color: var(--color-warning);
 }
 
 .action-icon-btn.delete:hover {
-  background: var(--bg-hover);
+  background: transparent;
   border-color: var(--color-danger);
   color: var(--color-danger);
 }
