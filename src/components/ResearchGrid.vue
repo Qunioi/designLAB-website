@@ -58,50 +58,36 @@
     <!-- 卡片列表：篩選／搜尋時卡片淡出淡入、其餘卡片平滑補位。
          Grid 容器一律保持掛載（不用 v-else），篩到 0 筆時離場動畫才播得完。 -->
     <CardGrid :max="5" transition="card-list" class="cards-grid" :class="{ 'stagger-in': staggerIntro }" @before-leave="lockLeavingCard">
-      <ContentCard
+      <ItemCard
         v-for="item in filteredList"
         :key="item.id"
         :id="`item-${item.id}`"
         :class="{ highlighted: highlightedId === item.id, 'is-mine': isMyCreatedItem(item) }"
         :title="getTitle(item)"
         :cover="getCover(item)"
+        :link="getLink(item)"
+        :badge="getBadgeText(item)"
+        :desc="descField ? (item[descField] || '') : ''"
+        :tools="toolsField ? parseList(item[toolsField]) : []"
+        :tags="parseList(item.tags)"
+        :mine="isMyCreatedItem(item)"
+        filterable
+        :badge-clickable="!badgeLabel"
+        :is-tag-active="isTagSelected"
+        :is-tool-active="tool => isSingleFilterSelected(toolsField, tool)"
         :hit-label="`查看《${getTitle(item)}》詳情`"
         @open="openLightbox(item)"
+        @badge-click="handleBadgeClick(item)"
+        @toggle-tag="toggleTag"
+        @toggle-tool="tool => toggleSingleFilter(toolsField, tool)"
       >
-        <template #media>
-          <div class="hover-overlay" aria-hidden="true">
-            <Icon name="eye" :size="22" />
-            <span>點擊看詳情</span>
-          </div>
-          <div v-if="isMyCreatedItem(item)" class="mine-avatar-dot" title="我發佈的">
-            <Icon name="user-solid" :size="10" />
-          </div>
-          <!-- 外連：wrapper 承接主題光暈，內層 <a> 保持清晰 -->
-          <div v-if="getLink(item)" class="ext-link-wrapper">
-            <a :href="getLink(item)" target="_blank" rel="noopener noreferrer" class="media-ext-link" @click.stop :aria-label="`前往《${getTitle(item)}》`" title="前往">
-              <Icon name="external-link" :size="13" />
-            </a>
-          </div>
-        </template>
-        <template #meta>
-          <Chip variant="type" :clickable="!badgeLabel" @click="handleBadgeClick(item)" :title="badgeLabel ? '' : '點擊切換類型篩選'">{{ getBadgeText(item) }}</Chip>
-        </template>
         <template #meta-end>
           <div class="card-actions card-actions-reveal" v-if="!isGuest">
             <IconButton v-if="canEditCardItem(item)" icon="edit" size="sm" variant="edit" :label="`編輯《${getTitle(item)}》`" @click="$emit('trigger-crud', { type: crudType, item })" />
             <IconButton v-if="canDeleteCardItem(item)" icon="trash-2" size="sm" variant="delete" :label="`刪除《${getTitle(item)}》`" @click="handleDelete(item)" />
           </div>
         </template>
-        <slot
-          name="card-extra"
-          :item="item"
-          :toggle-tag="toggleTag"
-          :is-tag-selected="isTagSelected"
-          :selected-tags="selectedTags"
-          :toggle-single-filter="toggleSingleFilter"
-          :is-single-filter-selected="isSingleFilterSelected"
-        />
-      </ContentCard>
+      </ItemCard>
     </CardGrid>
 
     <!-- 燈箱：點遮罩可關閉；Esc 由本元件處理（全螢幕預覽開著時先關預覽） -->
@@ -224,7 +210,7 @@
 import EmptyState from './base/EmptyState.vue';
 import Chip from './base/Chip.vue';
 import CardGrid from './base/CardGrid.vue';
-import ContentCard from './base/ContentCard.vue';
+import ItemCard from './ItemCard.vue';
 import { confirmDialog } from '../utils/confirm';
 import { toast } from '../utils/toast';
 import Icon from './base/Icon.vue';
@@ -239,7 +225,7 @@ import BaseModal from './base/BaseModal.vue';
 import FullscreenMediaOverlay from './FullscreenMediaOverlay.vue';
 import { getStorageData, deleteItem, isMyCreatedItem, checkDeletePermission } from '../utils/storage';
 import { getCurrentUser } from '../utils/userStore';
-import { formatDateOnly } from '../utils/formatters';
+import { formatDateOnly, parseList } from '../utils/formatters';
 import { useStaggerIntro, scrollBehavior } from '../utils/motion';
 
 const props = defineProps({
@@ -258,6 +244,9 @@ const props = defineProps({
   titleField:   { type: String, default: 'title' },
   coverField:   { type: String, default: 'cover' },
   linkField:    { type: String, default: 'link' },
+  // 卡片上的文字描述、製作工具欄位（沒有就不顯示）
+  descField:    { type: String, default: '' },
+  toolsField:   { type: String, default: '' },
   lightboxCoverField: { type: String, default: '' },
   lightboxLinkField:  { type: String, default: '' },
   lightboxMetaClass: { type: String, default: '' },
@@ -705,29 +694,6 @@ const handleDelete = async (item) => {
   }
 }
 
-/* .card-panel 等卡片共用 class 在 components.css：scoped style 只在本元件有效，Dashboard 也要用 */
-
-.mine-avatar-dot {
-  position: absolute;
-  top: 0.65rem;
-  left: 0.65rem;
-  z-index: 6;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--action-primary);
-  color: var(--action-on-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid var(--on-media-soft);
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--dur-fast) var(--ease-standard);
-}
-.card-panel:hover .mine-avatar-dot {
-  transform: scale(1.08);
-}
-
 .mine-lightbox-indicator {
   display: inline-flex;
   align-items: center;
@@ -756,67 +722,6 @@ const handleDelete = async (item) => {
   font-weight: var(--fw-bold);
   text-align: center;
 }
-
-.ext-link-wrapper {
-  position: absolute;
-  top: 0.65rem; right: 0.65rem;
-  width: 32px; height: 32px;
-  border-radius: var(--radius-sm);
-  z-index: 5;
-  transition: box-shadow var(--dur-base) var(--ease-standard), transform var(--dur-base) var(--ease-standard);
-}
-
-.ext-link-wrapper:hover {
-  box-shadow: var(--shadow-hover);
-  transform: scale(1.05);
-}
-
-.media-ext-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%; height: 100%;
-  border-radius: inherit;
-  background: var(--media-shade);
-  color: var(--on-media);
-  opacity: 0.88;
-  box-shadow: var(--shadow-sm);
-  transition: background-color var(--dur-base) var(--ease-standard), border-color var(--dur-base) var(--ease-standard), color var(--dur-base) var(--ease-standard), opacity var(--dur-base) var(--ease-standard), transform var(--dur-base) var(--ease-standard);
-}
-.media-ext-link svg {
-  stroke: currentColor;
-  width: 14px;
-  height: 14px;
-}
-.media-ext-link:hover,
-.media-ext-link:focus-visible {
-  opacity: 1;
-  background: var(--action-primary);
-  border-color: var(--on-media);
-  color: var(--action-on-primary);
-  transform: translateY(-1px);
-}
-.media-ext-link:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--color-primary) 55%, transparent);
-  outline-offset: 3px;
-}
-
-.hover-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: var(--media-shade);
-  opacity: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: var(--on-media);
-  font-size: var(--fs-body);
-  gap: var(--space-2);
-  transition: opacity var(--dur-base) var(--ease-standard);
-}
-.card-media-wrapper:hover .hover-overlay { opacity: 1; }
 
 /* CloseButton 的外觀在元件內，這裡只負責釘在右上角 */
 .lightbox-close {
@@ -1028,10 +933,6 @@ const handleDelete = async (item) => {
 /* 列表欄數由 CardGrid 負責（超寬 5 · 桌機 4 · 筆電 3 · 平板 2 · 手機 1） */
 @media (max-width: 1023px) {
   .lightbox-body-grid { grid-template-columns: 1fr; gap: var(--space-5); }
-}
-/* 觸控裝置沒有 hover：外連按鈕常駐 */
-@media (pointer: coarse) {
-  .media-ext-link { opacity: 1; }
 }
 @media (max-width: 640px) {
   .filter-select { flex: 1; }

@@ -33,53 +33,35 @@
               </div>
             </div>
           </template>
-            <ContentCard
+            <ItemCard
               v-for="item in recentItems"
               :key="item.id"
+              v-bind="cardProps(item)"
               hit="card"
               title-tag="h4"
-              :title="item.title || item.name"
-              :cover="item.cover || item.screenshot || item.logo"
-              :placeholder="(item.title || item.name || '?').charAt(0)"
               @open="handleRecentClick(item)"
             >
-              <template #meta>
-                <Chip variant="type">{{ item.typeLabel }}</Chip>
-              </template>
               <template #meta-end>
                 <time v-if="item.updatedAt || item.createdAt" class="card-time-text">{{ formatDate(item.updatedAt || item.createdAt) }}</time>
               </template>
-              <p v-if="isTextDescType(item)" class="card-desc one-line">{{ item.useCase || item.desc }}</p>
-              <div v-else-if="item.tags?.length" class="card-tags">
-                <Chip v-for="tag in normalizedTags(item.tags).slice(0, 2)" :key="tag" variant="tag">{{ tag }}</Chip>
-              </div>
-            </ContentCard>
+            </ItemCard>
         </CardGrid>
       </SectionBlock>
 
       <SectionBlock v-if="featuredItems.length" title="精選內容" class="dashboard-featured">
         <CardGrid :class="{ 'stagger-in': staggerIntro }">
-            <ContentCard
+            <ItemCard
               v-for="item in featuredItems"
               :key="`featured-${item.type}-${item.id}`"
+              v-bind="cardProps(item)"
               hit="card"
               title-tag="h4"
-              :title="item.title || item.name"
-              :cover="item.cover || item.screenshot || item.logo"
-              :placeholder="(item.title || item.name || '?').charAt(0)"
               @open="handleRecentClick(item)"
             >
-              <template #meta>
-                <Chip variant="type">{{ item.typeLabel }}</Chip>
-              </template>
               <template #meta-end>
                 <time v-if="item.updatedAt || item.createdAt" class="card-time-text">{{ formatDate(item.updatedAt || item.createdAt) }}</time>
               </template>
-              <p v-if="isTextDescType(item)" class="card-desc one-line">{{ item.useCase || item.desc }}</p>
-              <div v-else-if="item.tags?.length" class="card-tags">
-                <Chip v-for="tag in normalizedTags(item.tags).slice(0, 2)" :key="tag" variant="tag">{{ tag }}</Chip>
-              </div>
-            </ContentCard>
+            </ItemCard>
         </CardGrid>
       </SectionBlock>
 
@@ -187,7 +169,7 @@ import SelectCard from '../components/base/SelectCard.vue';
 import EmptyState from '../components/base/EmptyState.vue';
 import Chip from '../components/base/Chip.vue';
 import CardGrid from '../components/base/CardGrid.vue';
-import ContentCard from '../components/base/ContentCard.vue';
+import ItemCard from '../components/ItemCard.vue';
 import SectionBlock from '../components/base/SectionBlock.vue';
 import { confirmDialog } from '../utils/confirm';
 import MediaPickerModal from '../components/MediaPickerModal.vue';
@@ -197,7 +179,8 @@ import { ref, computed, watch, onMounted, onUnmounted, inject } from 'vue';
 import { identityVersion } from '../utils/identity';
 import PageHeader from '../components/PageHeader.vue';
 import PromptCodeBox from '../components/PromptCodeBox.vue';
-import { getStorageData, addOrUpdateItem } from '../utils/storage';
+import { getStorageData, addOrUpdateItem, isMyCreatedItem } from '../utils/storage';
+import { parseList } from '../utils/formatters';
 import { isAdminUser } from '../utils/userStore';
 import { useStaggerIntro } from '../utils/motion';
 
@@ -368,9 +351,27 @@ const closeFeaturedManager = async () => {
   }
   featuredManagerOpen.value = false;
 };
-const normalizedTags = tags => Array.isArray(tags) ? tags : String(tags || '').split(/[,/，#\n\r]+/).map(tag => tag.trim()).filter(Boolean);
-// AI 工具中心／設計資源這兩種類型在卡片上不顯示標籤，改顯示一行文字描述
-const isTextDescType = item => item.type === 'ai' || item.type === 'resource';
+// 卡片內容跟各列表頁一致：欄位對應同各 view 傳給 ResearchGrid 的 badgeField／coverField／linkField／descField／toolsField
+const CARD_FIELDS = {
+  ui:         { badge: 'category',   cover: 'cover',      link: 'sourceUrl' },
+  motion:     { badge: 'motionType', cover: 'cover',      link: 'sourceUrl', tools: 'tools' },
+  competitor: { badge: 'category',   cover: 'logo',       link: 'url' },
+  ai:         { badge: 'category',   cover: 'cover',      link: 'url', desc: 'useCase' },
+  resource:   { badge: 'category',   cover: 'screenshot', link: 'url', desc: 'desc' }
+};
+const cardProps = item => {
+  const f = CARD_FIELDS[item.type] || {};
+  return {
+    title: item.title || item.name || '',
+    cover: item[f.cover] || item.cover || item.logo || '',
+    link: item[f.link] || item.link || item.source || item.url || '',
+    badge: item[f.badge] || '',
+    desc: f.desc ? (item[f.desc] || '') : '',
+    tools: f.tools ? parseList(item[f.tools]) : [],
+    tags: parseList(item.tags),
+    mine: isMyCreatedItem(item)
+  };
+};
 const formatDate = value => {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? '' : date.toISOString().slice(0, 10);
@@ -553,7 +554,7 @@ const handleRecentClick = (item) => {
   grid-column: 1 / -1;
 }
 
-/* 首頁卡片用 ContentCard／CardGrid，管理精選用 MediaPickerModal＋SelectCard；以下只有這一頁特有的樣式 */
+/* 首頁卡片用 ItemCard／CardGrid（跟列表頁同一個元件），管理精選用 MediaPickerModal＋SelectCard；以下只有這一頁特有的樣式 */
 
 .header-selected-count {
   padding: var(--space-1) var(--space-2);

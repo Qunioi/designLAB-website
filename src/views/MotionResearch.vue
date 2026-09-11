@@ -8,6 +8,7 @@
     searchPlaceholder="搜尋動畫、製作工具、Tag..."
     badgeField="motionType"
     coverField="cover"
+    toolsField="tools"
     linkField="sourceUrl"
     researchContext="動態研究"
     emptyText="無相符的動態研究。點選右上角新增一筆！"
@@ -22,29 +23,6 @@
     @close-lightbox="$emit('close-lightbox')"
     ref="gridRef"
   >
-    <template #card-extra="{ item, toggleTag, isTagSelected, toggleSingleFilter, isSingleFilterSelected }">
-      <div class="card-tools" v-if="parseList(item.tools).length">
-        <Chip
-          v-for="tool in parseList(item.tools)"
-          :key="tool"
-          variant="tool"
-          :active="Boolean(isSingleFilterSelected && isSingleFilterSelected('tools', tool))"
-          @click.stop="toggleSingleFilter && toggleSingleFilter('tools', tool)"
-          :title="`點擊${isSingleFilterSelected && isSingleFilterSelected('tools', tool) ? '取消' : '快速'}篩選製作工具：${tool}`"
-        >{{ tool }}</Chip>
-      </div>
-      <div class="card-tags" v-if="parseList(item.tags).length">
-        <Chip
-          v-for="tag in parseList(item.tags)"
-          :key="tag"
-          variant="tag"
-          :active="Boolean(isTagSelected && isTagSelected(tag))"
-          @click.stop="toggleTag && toggleTag(tag)"
-          :title="`點擊${isTagSelected && isTagSelected(tag) ? '取消' : '快速'}篩選 #${tag}`"
-        >{{ tag }}</Chip>
-      </div>
-    </template>
-
     <template #lightbox-content="{ item, toggleTag, isTagSelected, toggleSingleFilter, isSingleFilterSelected }">
       <LightboxTextSection
         v-if="item.takeaways"

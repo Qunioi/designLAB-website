@@ -9,6 +9,7 @@
     badgeField="category"
     titleField="name"
     coverField="cover"
+    descField="useCase"
     linkField="url"
     linkBtnLabel="前往工具網站"
     researchContext="AI 工具中心"
@@ -25,20 +26,6 @@
     @close-lightbox="$emit('close-lightbox')"
     ref="gridRef"
   >
-    <template #card-extra="{ item, toggleTag, isTagSelected }">
-      <p v-if="item.useCase" class="card-desc">{{ item.useCase }}</p>
-      <div class="card-tags" v-if="parseList(item.tags).length">
-        <Chip
-          v-for="tag in parseList(item.tags)"
-          :key="tag"
-          variant="tag"
-          :active="Boolean(isTagSelected && isTagSelected(tag))"
-          @click.stop="toggleTag && toggleTag(tag)"
-          :title="`點擊${isTagSelected && isTagSelected(tag) ? '取消' : '快速'}篩選 #${tag}`"
-        >{{ tag }}</Chip>
-      </div>
-    </template>
-
     <template #lightbox-content="{ item, toggleTag, isTagSelected }">
       <LightboxTextSection
         v-if="item.useCase"

@@ -22,19 +22,6 @@
     @close-lightbox="$emit('close-lightbox')"
     ref="gridRef"
   >
-    <template #card-extra="{ item, toggleTag, isTagSelected }">
-      <div class="card-tags" v-if="parseList(item.tags).length">
-        <Chip
-          v-for="tag in parseList(item.tags)"
-          :key="tag"
-          variant="tag"
-          :active="Boolean(isTagSelected && isTagSelected(tag))"
-          @click.stop="toggleTag && toggleTag(tag)"
-          :title="`點擊${isTagSelected && isTagSelected(tag) ? '取消' : '快速'}篩選 #${tag}`"
-        >{{ tag }}</Chip>
-      </div>
-    </template>
-
     <template #lightbox-content="{ item, toggleTag, isTagSelected }">
       <LightboxTextSection
         v-if="item.takeaways"

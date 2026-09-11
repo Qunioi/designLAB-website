@@ -74,6 +74,7 @@ defineProps({
     color var(--dur-fast) var(--ease-standard),
     box-shadow var(--dur-fast) var(--ease-standard),
     transform var(--dur-fast) var(--ease-standard);
+  text-box: trim-both cap alphabetic;
 }
 
 .base-btn:active:not(:disabled) {
@@ -92,6 +93,7 @@ defineProps({
   display: inline-flex;
   align-items: center;
   gap: inherit;
+  text-box: trim-both cap alphabetic;
 }
 
 .base-btn.is-block {

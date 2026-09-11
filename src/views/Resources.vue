@@ -9,6 +9,7 @@
     badgeField="category"
     titleField="name"
     coverField="screenshot"
+    descField="desc"
     linkField="url"
     linkBtnLabel="前往設計資源"
     emptyText="無相符的設計資源。點選右上角新增一筆！"
@@ -23,20 +24,6 @@
     @close-lightbox="$emit('close-lightbox')"
     ref="gridRef"
   >
-    <template #card-extra="{ item, toggleTag, isTagSelected }">
-      <p class="card-desc" v-if="item.desc">{{ item.desc }}</p>
-      <div class="card-tags" v-if="parseList(item.tags).length">
-        <Chip
-          v-for="tag in parseList(item.tags)"
-          :key="tag"
-          variant="tag"
-          :active="Boolean(isTagSelected && isTagSelected(tag))"
-          @click.stop="toggleTag && toggleTag(tag)"
-          :title="`點擊${isTagSelected && isTagSelected(tag) ? '取消' : '快速'}篩選 #${tag}`"
-        >{{ tag }}</Chip>
-      </div>
-    </template>
-
     <template #lightbox-content="{ item, toggleTag, isTagSelected }">
       <LightboxTextSection
         v-if="item.desc"
