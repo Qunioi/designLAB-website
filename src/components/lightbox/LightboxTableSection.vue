@@ -11,8 +11,7 @@
 </template>
 
 <script setup>
-// 格式 5：標題 + Key-Value 表格。對應示意圖的「實作資訊」。
-// rows 傳入 [{ label, value, href? }]，有 href 就渲染成可點擊連結。
+// 有 href 的列渲染成連結
 import LightboxSection from './LightboxSection.vue';
 
 defineProps({

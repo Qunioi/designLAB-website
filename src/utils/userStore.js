@@ -1,13 +1,5 @@
-// ================================================
-// userStore.js — 團隊成員權限、登入狀態與本機顯示身分 (v5.0)
-// ================================================
-//
-// 密碼驗證與角色授權已全部移到 Google Apps Script 後端
-// （apps-script/Code.gs）。這支模組不再持有、也不再比對任何密碼；
-// 這裡管理的是「登入後的顯示身分」（暱稱／帳號／角色快取）與
-// 「訪客／身分模擬」這類純本機的畫面切換 —— 這些狀態可被使用者
-// 自行竄改，但因為所有真正的寫入都需要登入時取得的 Session Token，
-// 竄改顯示身分並不會取得任何實際權限。
+// 密碼驗證與角色授權都在後端（apps-script/Code.gs），這裡不持有任何密碼。
+// 顯示身分與訪客／身分模擬是純本機狀態，可被竄改，但寫入都需要 Session Token，竄改不會取得權限。
 
 import {
   pushToSheet, hasSheetsIntegration,
@@ -16,6 +8,8 @@ import {
   getSession, describeWriteFailure
 } from './sheetsAPI';
 import { addNotification } from './notifications';
+import { toast } from './toast';
+import { bumpIdentity } from './identity';
 
 const PROFILES_KEY = 'design_lab_user_profiles';
 const NICKNAME_KEY = 'design_lab_nickname';
@@ -34,7 +28,6 @@ const DEFAULT_PROFILES = [
   { id: 'u-7', username: '@jason_hong', nickname: 'Jason', role: 'User', themeClass: 'theme-cloud-canvas' }
 ];
 
-/** 強效消除重複帳號 (以 username 忽略大小寫為唯一的 Unique ID) */
 export function deduplicateProfiles(list) {
   if (!Array.isArray(list)) return [];
   const map = new Map();
@@ -48,7 +41,6 @@ export function deduplicateProfiles(list) {
   return Array.from(map.values());
 }
 
-/** 取得所有團隊成員 Profile 清單（本機快取；由公開的 Sheets 讀取同步填入，不含密碼欄位） */
 export function getUserProfiles() {
   const raw = localStorage.getItem(PROFILES_KEY);
   if (!raw) {
@@ -73,7 +65,7 @@ export function getUserProfiles() {
   }
 }
 
-/** 管理員新增新成員（伺服器驗證呼叫者為管理員後才會建立，臨時密碼固定，強制首次登入變更） */
+/** 伺服器確認呼叫者為管理員才建立；臨時密碼固定，首次登入強制變更 */
 export async function addUserProfile({ nickname, username, role = 'User' }) {
   const cleanNick = (nickname || '').trim();
   let cleanUser = (username || '').trim();
@@ -153,7 +145,9 @@ export function reorderUserProfiles(fromIndex, toIndex) {
           // 重新讀取一次 getUserProfiles()（見 Settings.vue 的 handleMoveUser）。
           if (previousRaw !== null) localStorage.setItem(PROFILES_KEY, previousRaw);
           else localStorage.removeItem(PROFILES_KEY);
-          alert(`成員排序儲存失敗，變更未同步至雲端：${describeWriteFailure(result && result.error)}\n（本機畫面已還原）`);
+          toast.error('成員排序儲存失敗，變更未同步至雲端', {
+            detail: `${describeWriteFailure(result && result.error)}\n畫面已還原為儲存前的內容。`
+          });
         }
         return result;
       })
@@ -163,11 +157,8 @@ export function reorderUserProfiles(fromIndex, toIndex) {
 }
 
 /**
- * 取得目前顯示身分。username／nickname 是本機顯示狀態（供訪客瀏覽、
- * 身分模擬等純前端切換使用），但角色一律以 Google Sheets 上實際
- * 記錄的值為準——找不到對應成員時一律視為一般使用者，不會有任何
- * 帳號能單靠使用者名稱字串就取得管理員權限。真正能執行寫入操作的
- * 權限，來自登入時取得的 Session Token，與這裡的顯示身分無關。
+ * 顯示身分是本機狀態（訪客瀏覽、身分模擬），但角色一律以 Google Sheets 的記錄為準，
+ * 找不到對應成員時視為一般使用者。實際寫入權限來自 Session Token，與這裡無關。
  */
 export function getCurrentUser() {
   const session = getSession();
@@ -191,9 +182,8 @@ export function getCurrentUser() {
 }
 
 /**
- * 判斷當前登入者是否為管理者 (Super Admin 或 Admin)。
- * 必須「手上還握著有效的 Session Token」才算數：本機快取的角色即使寫著 Admin，
- * Token 過期後任何寫入都會被後端拒絕，這時還顯示管理按鈕只會讓使用者按了才發現存不了。
+ * 管理者（Super Admin 或 Admin）：還必須握有有效的 Session Token，
+ * 否則 Token 過期後管理按鈕還在，按了才發現存不了。
  */
 export function isAdminUser() {
   if (!hasActiveSession()) return false;
@@ -202,10 +192,8 @@ export function isAdminUser() {
 }
 
 /**
- * 是否真的握有有效的登入 Session Token——跟「本機顯示暱稱/帳號」是兩回事：
- * 暱稱、帳號、角色這些顯示身分即使 Session 過期也會繼續留在 localStorage，
- * 單看這些沒辦法判斷使用者其實已經被登出。Token 過期或遭後端拒絕時，
- * sheetsAPI.js 的 callAction_ 會清掉 Session，這裡才會如實反映「已登出」。
+ * 本機的顯示身分在 Session 過期後仍會留著，不能拿來判斷是否登入。
+ * Token 過期或被後端拒絕時 sheetsAPI.js 的 callAction_ 會清掉 Session。
  */
 export function hasActiveSession() {
   return !!getSession();
@@ -216,16 +204,11 @@ export function isSuperAdminUser() {
   return (getCurrentUser().role || '').toLowerCase() === 'super admin';
 }
 
-/** 格式化當前使用者字串（例如 "Quni (@quni_jhuang)"） */
 export function getCurrentUserString() {
   const { nickname, username } = getCurrentUser();
   return `${nickname} (${username})`;
 }
 
-/**
- * 以帳號密碼登入。密碼比對完全在後端進行，這裡只負責呼叫並保存
- * 伺服器核發的 Session Token；Token 才是後續所有寫入操作的憑證。
- */
 export async function loginByAccountID(inputID, inputPassword = '') {
   const cleanUser = (inputID || '').trim();
   if (!cleanUser) return { requiresPassword: false, user: getCurrentUser() };
@@ -240,6 +223,7 @@ export async function loginByAccountID(inputID, inputPassword = '') {
 
   localStorage.setItem(NICKNAME_KEY, result.user.nickname);
   localStorage.setItem(USERNAME_KEY, result.user.username);
+  bumpIdentity();
 
   return {
     requiresPassword: false,
@@ -248,20 +232,18 @@ export async function loginByAccountID(inputID, inputPassword = '') {
   };
 }
 
-/** 登出：通知後端銷毀 Token，並將顯示身分還原為訪客。 */
 export async function logout() {
   await logoutRequest();
   localStorage.removeItem(IMPERSONATOR_KEY);
   localStorage.setItem(NICKNAME_KEY, '訪客');
   localStorage.setItem(USERNAME_KEY, '@guest');
+  bumpIdentity();
   return { nickname: '訪客', username: '@guest', role: 'User' };
 }
 
 /**
- * 切換「本機顯示身分」——用於訪客瀏覽與身分模擬，純前端狀態，
- * 不會、也無法異動任何雲端資料。只有在變更對象正是目前登入 Session
- * 本人時，才會把暱稱同步寫回 Google Sheets（伺服器會再次確認 Token
- * 與帳號相符）。
+ * 切換本機顯示身分（訪客瀏覽、身分模擬），不會異動雲端資料。
+ * 只有對象正是目前登入的本人時，才把暱稱同步寫回 Google Sheets。
  */
 export function setCurrentUser(nickname, username, role = 'User') {
   let cleanUser = (username || '').trim() || '@guest';
@@ -287,6 +269,7 @@ export function setCurrentUser(nickname, username, role = 'User') {
 
   localStorage.setItem(NICKNAME_KEY, cleanNick);
   localStorage.setItem(USERNAME_KEY, cleanUser);
+  bumpIdentity();
 
   // `synced` 一律會 resolve（不丟出例外）：呼叫端可以 await 它來得知儲存
   // 按鈕該等到什麼時候才能解除 loading／重新可點擊（見 Settings.vue 的儲存暱稱按鈕）。
@@ -304,7 +287,10 @@ export function setCurrentUser(nickname, username, role = 'User') {
           else localStorage.removeItem(NICKNAME_KEY);
           if (previousProfilesRaw !== null) localStorage.setItem(PROFILES_KEY, previousProfilesRaw);
           else localStorage.removeItem(PROFILES_KEY);
-          alert(`暱稱儲存失敗，變更未同步至雲端：${describeWriteFailure(result && result.error)}\n（本機畫面已還原）`);
+          bumpIdentity();
+          toast.error('暱稱儲存失敗，變更未同步至雲端', {
+            detail: `${describeWriteFailure(result && result.error)}\n畫面已還原為儲存前的內容。`
+          });
         }
         return result;
       });
@@ -335,7 +321,6 @@ export function saveUserTheme(themeClass) {
   }
 }
 
-/** 取得當前使用者的主題設定 */
 export function getUserTheme() {
   const currentUser = getCurrentUser();
   const profiles = getUserProfiles();
@@ -351,7 +336,6 @@ export function getUserTheme() {
   return legacyThemeAliases[savedTheme] || savedTheme;
 }
 
-/** 修改自己的登入密碼（需要正確的舊密碼，伺服器端驗證與雜湊儲存） */
 export async function updateUserPassword(targetUsername, oldPassword, newPassword) {
   const result = await changePasswordRequest(oldPassword, newPassword);
   if (!result.success) {
@@ -369,11 +353,8 @@ export async function adminResetPassword(targetUsername) {
   return { success: true, message: result.message || '已重設為臨時密碼' };
 }
 
-// ------------------------------------------------------------
-// 身分模擬（僅限管理員；純前端顯示切換，見上方 setCurrentUser 說明）
-// ------------------------------------------------------------
+// 身分模擬（僅限管理員）：純前端顯示切換，見 setCurrentUser
 
-/** 檢查當前是否處於身分模擬狀態 */
 export function getImpersonatorStatus() {
   const raw = localStorage.getItem(IMPERSONATOR_KEY);
   if (!raw) return { isImpersonating: false, originalUsername: '' };
@@ -385,7 +366,7 @@ export function getImpersonatorStatus() {
   }
 }
 
-/** 管理員模擬切換為其他帳號視角 (支援模擬訪客 @guest)，用於 QA 預覽，不影響實際寫入權限 */
+/** 管理員模擬其他帳號視角（含訪客 @guest），不影響實際寫入權限 */
 export function impersonateUser(targetUsername) {
   const alreadyImpersonating = !!localStorage.getItem(IMPERSONATOR_KEY);
   if (!alreadyImpersonating && !isSuperAdminUser()) {
@@ -403,6 +384,7 @@ export function impersonateUser(targetUsername) {
   if (cleanUser.toLowerCase() === '@guest' || cleanUser.toLowerCase() === '@account') {
     localStorage.setItem(NICKNAME_KEY, '訪客');
     localStorage.setItem(USERNAME_KEY, '@guest');
+    bumpIdentity();
     return { nickname: '訪客', username: '@guest', role: 'User' };
   }
 
@@ -412,10 +394,10 @@ export function impersonateUser(targetUsername) {
 
   localStorage.setItem(NICKNAME_KEY, matched.nickname);
   localStorage.setItem(USERNAME_KEY, matched.username);
+  bumpIdentity();
   return matched;
 }
 
-/** 停止模擬，還原為開始模擬前的原始登入身分 */
 export function stopImpersonating() {
   const raw = localStorage.getItem(IMPERSONATOR_KEY);
   localStorage.removeItem(IMPERSONATOR_KEY);
@@ -427,5 +409,6 @@ export function stopImpersonating() {
   } catch (e) {
     // 解析失敗則維持目前狀態，不強制還原
   }
+  bumpIdentity();
   return getCurrentUser();
 }

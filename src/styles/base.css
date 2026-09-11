@@ -1,13 +1,4 @@
-/* ============================================================
-   BASE — 全域 reset、原生元素樣式、版面骨架、轉場與無障礙設定
 
-   只放「所有頁面都會用到、跟具體業務元件無關」的東西；
-   顏色/字級一律吃 tokens.css 的變數，不要在這裡寫死數值。
-   ============================================================ */
-
-/* ============================================================
-   RESET & GLOBAL BASE STYLES
-   ============================================================ */
 *,
 *::before,
 *::after {
@@ -22,7 +13,7 @@ html {
 }
 
 body {
-  background-color: var(--bg-primary);
+  background-color: var(--surface-page);
   color: var(--text-primary);
   font-family: var(--font-body);
   font-size: var(--fs-body);
@@ -30,12 +21,9 @@ body {
   overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.25s ease, color 0.25s ease;
+  transition: background-color var(--dur-base) var(--ease-standard), color var(--dur-base) var(--ease-standard);
 }
 
-/* ============================================================
-   GLOBAL SLIM SCROLLBARS (極簡精緻捲軸)
-   ============================================================ */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -47,7 +35,7 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: var(--border-color);
-  border-radius: 99px;
+  border-radius: var(--radius-full);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -59,7 +47,6 @@ body {
   scrollbar-color: var(--border-color) transparent;
 }
 
-/* Tabular numbers for dates, metrics, and counters */
 .stat-val,
 .prop-stat .num,
 .column-count,
@@ -79,20 +66,16 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-  font-size: var(--fs-h1);
+  font-size: var(--fs-page-title);
   font-weight: var(--fw-black);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
 }
 
-h2 {
-  font-size: var(--fs-h2);
-  font-weight: var(--fw-bold);
-  letter-spacing: -0.01em;
-}
-
+h2,
 h3 {
-  font-size: var(--fs-h3);
-  font-weight: var(--fw-semibold);
+  font-size: var(--fs-section-title);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-heading);
 }
 
 p {
@@ -122,9 +105,6 @@ input:focus-visible {
   outline-offset: 2px;
 }
 
-/* ============================================================
-   FORMS, INPUTS & SELECTS
-   ============================================================ */
 input,
 textarea,
 select {
@@ -135,35 +115,13 @@ select {
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   outline: none;
-  transition: border-color 0.18s ease, background-color 0.18s ease;
+  transition: border-color var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
 }
 
 input:focus,
 textarea:focus,
 select:focus {
   border-color: var(--color-primary);
-}
-
-label,
-.form-group label {
-  color: var(--text-primary);
-  font-weight: var(--fw-bold);
-  font-size: var(--fs-label);
-  padding-left: 1rem;
-  position: relative;
-  &::before {
-    content: "";
-    position: absolute;
-    left: 2px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    background-color: var(--color-primary);
-    border-radius: 50%;
-    box-shadow: 0 0 0 3px #88C0D01B;
-  }
 }
 
 input::placeholder,
@@ -185,43 +143,16 @@ select {
   cursor: pointer;
 }
 
-/* ============================================================
-   LAYOUT ARCHITECTURE
-   ============================================================ */
-.app-container {
-  display: flex;
-  min-height: 100vh;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  transition: background-color 0.25s ease, color 0.25s ease;
-}
-
-.main-content {
-  flex: 1;
-  min-width: 0;
-  margin-left: var(--sidebar-width);
-  padding: var(--space-container);
-  max-width: 1720px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* ============================================================
-   BENTO GRID
-   ============================================================ */
 .bento-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
+  gap: var(--space-section);
 }
 
-/* ============================================================
-   TRANSITIONS & ACCESSIBILITY
-   ============================================================ */
+/* 全域 fade 轉場（頁面切換、選單、面板共用；元件內 scoped 的 .fade-* 會覆寫這份） */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
 }
 
 .fade-enter-from {
@@ -245,41 +176,38 @@ select {
   }
 }
 
-/* ============================================================
-   RESPONSIVE LAYOUT
-   ============================================================ */
-@media (max-width: 1024px) {
+@media (min-width: 1920px) {
+  :root {
+    --grid-gap: var(--space-5);
+  }
+}
+
+@media (max-width: 1023px) {
   :root {
     --sidebar-width: 72px;
   }
 
   .bento-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  :root {
-    --sidebar-width: 0px;
-    --fs-display: 2rem;
-    --fs-h1: 1.5rem;
-    --fs-h2: 1.15rem;
-  }
-
-  .main-content {
-    margin-left: 0;
-    padding: calc(env(safe-area-inset-top, 0px) + 5.5rem) var(--space-8) calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+    grid-template-columns: 1fr;
   }
 
   .page-title {
     overflow-wrap: anywhere;
   }
-
-  .bento-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 640px) {
-  .main-content {
-    padding: calc(env(safe-area-inset-top, 0px) + 5.5rem) var(--space-5) calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+  :root {
+    --sidebar-width: 0px;
+    --fs-page-title: 1.25rem;
+  }
+}
+
+/* 觸控裝置：可點區域至少 44px（用 min-* 才不會跟元件自己的 width／height 打架） */
+@media (pointer: coarse) {
+  /* BaseButton、IconButton 的觸控尺寸寫在元件裡（scoped 的權重比這裡高） */
+  .menu-item,
+  .filter-dropdown-btn {
+    min-height: 44px;
   }
 }

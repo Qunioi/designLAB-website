@@ -16,17 +16,17 @@
         @input="emitUpdate"
       />
       <button type="button" class="kv-remove-btn" @click="removeRow(index)" title="移除這一列">
-        <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <Icon name="close" :size="8" :stroke-width="3" />
       </button>
     </div>
-    <button type="button" class="kv-add-btn" @click="addRow">+ 新增欄位</button>
+    <BaseButton variant="ghost" size="sm" class="kv-add-btn" type="button" @click="addRow">+ 新增欄位</BaseButton>
   </div>
 </template>
 
 <script setup>
-// 使用者可自訂「欄位名稱＋內容」的表格編輯器，對應 LightboxTableSection 的
-// rows（[{ label, value }]）。跟 TagInput 一樣是 v-model 陣列，但這裡每一項
-// 是可編輯的兩個文字欄，不是單純的標籤字串。
+import Icon from './base/Icon.vue';
+import BaseButton from './base/BaseButton.vue';
+// 對應 LightboxTableSection 的 rows（[{ label, value }]）
 import { ref, watch } from 'vue';
 
 const props = defineProps({
@@ -73,9 +73,9 @@ const removeRow = (index) => {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-3);
-  font-size: var(--fs-label);
+  font-size: var(--fs-body);
   color: var(--text-primary);
-  transition: border-color 0.18s ease;
+  transition: border-color var(--dur-fast) var(--ease-standard);
 }
 
 .kv-input:focus {
@@ -101,29 +101,19 @@ const removeRow = (index) => {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  font-size: var(--fs-tiny);
+  font-size: var(--fs-meta);
   color: var(--text-muted);
   cursor: pointer;
-  transition: color 0.15s ease, background-color 0.15s ease;
+  transition: color var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
 }
 
 .kv-remove-btn:hover {
   background: var(--color-error);
-  color: #ffffff;
+  color: var(--action-on-danger);
 }
 
 .kv-add-btn {
   align-self: flex-start;
-  font-size: var(--fs-label);
-  font-weight: var(--fw-semibold);
-  color: var(--color-primary);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: background-color 0.15s ease;
 }
 
-.kv-add-btn:hover {
-  background: var(--bg-hover);
-}
 </style>

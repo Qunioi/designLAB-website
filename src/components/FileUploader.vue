@@ -1,6 +1,5 @@
 <template>
   <div class="file-uploader-box">
-    <!-- 隱藏原生 File Input -->
     <input
       ref="fileInputRef"
       class="hidden-file-input"
@@ -10,14 +9,10 @@
       @change="handleFileSelect"
     />
 
-    <!-- 狀態 1：正在上傳中 -->
     <div v-if="isUploading" class="uploader-uploading-card">
       <div class="uploading-header">
         <div class="uploading-icon-spinner">
-          <svg class="animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-          </svg>
+          <Spinner :size="28" />
         </div>
         <div class="uploading-info">
           <div class="uploading-filename">{{ selectedFile?.name || '檔案上傳中...' }}</div>
@@ -25,13 +20,11 @@
         </div>
       </div>
       <div class="upload-progress-bar">
-        <div class="upload-progress-fill" :style="{ width: `${uploadProgress}%` }"></div>
+        <div class="upload-progress-fill" :style="{ transform: `scaleX(${uploadProgress / 100})` }"></div>
       </div>
     </div>
 
-    <!-- 狀態 2：已有檔案（已上傳或已有 modelValue） -->
     <div v-else-if="modelValue || selectedFile" class="media-preview-card">
-      <!-- 縮圖區（點擊放大） -->
       <div class="preview-thumbnail-container" @click="openFullscreenModal" title="點擊放大預覽">
         <video
           v-if="isVideo"
@@ -48,32 +41,20 @@
           @error="imageLoadError = true"
         />
         <div v-else class="preview-fallback-box">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-            <circle cx="8.5" cy="8.5" r="1.5"></circle>
-            <polyline points="21 15 16 10 5 21"></polyline>
-          </svg>
+          <Icon name="image" :size="24" :stroke-width="1.8" />
           <span>圖片無法載入</span>
         </div>
 
-        <!-- Hover 放大提示遮罩 -->
         <div class="thumbnail-hover-overlay">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            <line x1="11" y1="8" x2="11" y2="14"></line>
-            <line x1="8" y1="11" x2="14" y2="11"></line>
-          </svg>
+          <Icon name="zoom-in" :size="20" />
         </div>
 
-        <!-- 影片標記 -->
         <span v-if="isVideo" class="video-badge">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          <Icon name="play" :size="12" />
           影片
         </span>
       </div>
 
-      <!-- 檔案詳情與操作群 -->
       <div class="preview-main-info">
         <div class="file-header-row">
           <div class="file-title-wrap">
@@ -88,50 +69,26 @@
           </div>
         </div>
 
-        <!-- 操作按鈕列 -->
         <div class="action-btn-row">
-          <button
-            type="button"
-            class="action-btn btn-secondary"
-            @click="triggerFileInput"
-            title="從本機選擇新檔案重新上傳"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
-            </svg>
+          <BaseButton variant="secondary" size="sm" type="button" @click="triggerFileInput" title="從本機選擇新檔案重新上傳">
+            <template #icon><Icon name="refresh" :size="14" /></template>
             重新上傳
-          </button>
+          </BaseButton>
 
-          <button
-            type="button"
-            class="action-btn btn-secondary"
-            @click="openFileManager"
-            title="從媒體庫中選擇已上傳檔案"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-            </svg>
+          <BaseButton variant="secondary" size="sm" type="button" @click="openFileManager" title="從媒體庫中選擇已上傳檔案">
+            <template #icon><Icon name="folder" :size="14" /></template>
             媒體庫
-          </button>
+          </BaseButton>
 
 
-          <button
-            type="button"
-            class="action-btn btn-danger"
-            @click="clearMedia"
-            title="移除此檔案"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            </svg>
+          <BaseButton variant="danger" size="sm" type="button" @click="clearMedia" title="移除此檔案">
+            <template #icon><Icon name="trash" :size="14" /></template>
             移除
-          </button>
+          </BaseButton>
         </div>
       </div>
     </div>
 
-    <!-- 狀態 3：未選取任何檔案（現代整潔 Dropzone） -->
     <div
       v-else
       class="uploader-dropzone-box"
@@ -143,11 +100,7 @@
     >
       <div class="dropzone-content">
         <div class="dropzone-icon-circle">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="17 8 12 3 7 8"></polyline>
-            <line x1="12" y1="3" x2="12" y2="15"></line>
-          </svg>
+          <Icon name="upload" :size="28" :stroke-width="1.8" />
         </div>
 
         <div class="dropzone-text-group">
@@ -165,217 +118,82 @@
           <span class="divider-line"></span>
         </div>
 
-        <button
-          type="button"
-          class="open-library-btn"
-          @click.stop="openFileManager"
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-          </svg>
-          從 Cloudflare R2 媒體庫選取
-        </button>
+        <BaseButton variant="primary" size="sm" type="button" @click.stop="openFileManager">
+          從媒體庫選取
+        </BaseButton>
       </div>
     </div>
 
-    <!-- 彈窗：檔案總管 (R2 媒體庫) -->
     <Teleport to="body">
-      <div
-        v-if="showFileManager"
-        class="file-manager-backdrop"
-        :class="activeThemeClass"
-        @click="showFileManager = false"
+      <!-- 從表單彈窗再開的彈窗（stacked）；Esc 由本元件處理（全螢幕預覽開著時先關預覽） -->
+      <MediaPickerModal
+        :open="showFileManager"
+        title="媒體庫檔案總管"
+        subtitle="選擇先前已儲存在 Cloudflare R2 的圖片或影片素材"
+        icon="folder"
+        close-label="關閉媒體庫"
+        layer="stacked"
+        panel-class="file-manager-modal"
+        :close-on-esc="false"
+        :tabs="managerTabs"
+        v-model:tab="managerFilter"
+        tabs-label="依檔案類型篩選"
+        v-model:search="managerSearch"
+        search-placeholder="搜尋檔案名稱…"
+        card-min-width="170px"
+        :empty="isLoadingFiles || Boolean(fileManagerError) || visibleManagedFiles.length === 0"
+        @close="showFileManager = false"
       >
-        <section
-          class="file-manager-modal glass-panel"
-          role="dialog"
-          aria-modal="true"
-          aria-label="R2 檔案總管"
-          @click.stop
-        >
-          <!-- 頂部標題與關閉按鈕 -->
-          <header class="file-manager-header">
-            <div class="header-title-box">
-              <div class="header-icon-box">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                </svg>
-              </div>
-              <div>
-                <h3>媒體庫檔案總管</h3>
-                <p>選擇先前已儲存在 Cloudflare R2 的圖片或影片素材</p>
-              </div>
-            </div>
-            <button
-              type="button"
-              class="file-manager-close"
-              aria-label="關閉"
-              @click="showFileManager = false"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </header>
+        <template #toolbar-end>
+          <BaseButton variant="primary" size="sm" type="button" @click="triggerFileInput">
+            <template #icon><Icon name="plus" :size="14" /></template>
+            上傳新檔案
+          </BaseButton>
+        </template>
 
-          <!-- 篩選與搜尋工具列 -->
-          <div class="file-manager-toolbar">
-            <div class="toolbar-left">
-              <div class="filter-pill-group">
-                <button
-                  type="button"
-                  :class="{ active: managerFilter === 'all' }"
-                  @click="managerFilter = 'all'"
-                >
-                  全部 ({{ managedFiles.length }})
-                </button>
-                <button
-                  type="button"
-                  :class="{ active: managerFilter === 'images' }"
-                  @click="managerFilter = 'images'"
-                >
-                  圖片 ({{ imageFilesCount }})
-                </button>
-                <button
-                  type="button"
-                  :class="{ active: managerFilter === 'videos' }"
-                  @click="managerFilter = 'videos'"
-                >
-                  影片 ({{ videoFilesCount }})
-                </button>
-              </div>
-            </div>
+        <template #empty>
+          <EmptyState v-if="isLoadingFiles" fill title="連線讀取 R2 素材清單中…">
+            <template #icon><Spinner :size="26" /></template>
+          </EmptyState>
 
-            <div class="toolbar-right">
-              <div class="search-input-wrapper">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <input
-                  v-model="managerSearch"
-                  type="search"
-                  placeholder="搜尋檔案名稱…"
-                />
-              </div>
+          <EmptyState v-else-if="fileManagerError" fill tone="danger" icon="alert-circle" :title="fileManagerError" />
 
-              <!-- 在媒體庫直接提供上傳按鈕 -->
-              <button
-                type="button"
-                class="manager-upload-btn"
-                @click="triggerFileInput"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                上傳新檔案
-              </button>
-            </div>
-          </div>
+          <EmptyState
+            v-else-if="managedFiles.length === 0"
+            fill
+            icon="image"
+            title="目前尚無已儲存的素材"
+            description="您可以點擊右上方的「上傳新檔案」，將第一張圖片或影片加入媒體庫。"
+          >
+            <template #actions>
+              <BaseButton variant="primary" type="button" @click="triggerFileInput">立即上傳檔案</BaseButton>
+            </template>
+          </EmptyState>
 
-          <!-- 內容區：Loading / 錯誤 / 空狀態 / 檔案列表 -->
-          <div v-if="isLoadingFiles" class="file-manager-state-box">
-            <svg class="animate-spin text-primary" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-            </svg>
-            <p>連線讀取 R2 素材清單中…</p>
-          </div>
+          <EmptyState
+            v-else-if="visibleManagedFiles.length === 0"
+            fill
+            :icon="managerSearch.trim() ? 'search-x' : (managerFilter === 'videos' ? 'video' : 'image')"
+            :title="managerSearch.trim() ? `找不到符合「${managerSearch.trim()}」的檔案` : (managerFilter === 'videos' ? '目前媒體庫中尚未有任何影片素材' : (managerFilter === 'images' ? '目前媒體庫中尚未有任何圖片素材' : '目前尚無符合條件的檔案'))"
+            :description="managerSearch.trim() ? '請檢查輸入的關鍵字是否有誤，或清除搜尋。' : (managerFilter === 'videos' ? '您可以點擊右上方「上傳新檔案」將 MP4、WEBM 影片加入媒體庫。' : (managerFilter === 'images' ? '您可以點擊右上方「上傳新檔案」將圖片素材加入媒體庫。' : ''))"
+          >
+            <template #actions>
+              <BaseButton v-if="managerSearch.trim()" variant="secondary" size="sm" @click="managerSearch = ''">清除搜尋關鍵字</BaseButton>
+              <BaseButton v-if="managerFilter !== 'all'" variant="secondary" size="sm" @click="managerFilter = 'all'; managerSearch = ''">查看全部媒體檔案 ({{ managedFiles.length }})</BaseButton>
+              <BaseButton v-if="!managerSearch.trim()" variant="primary" size="sm" type="button" @click="triggerFileInput">立即上傳新檔案</BaseButton>
+            </template>
+          </EmptyState>
+        </template>
 
-          <div v-else-if="fileManagerError" class="file-manager-state-box text-danger">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-            <p>{{ fileManagerError }}</p>
-          </div>
-
-          <div v-else-if="managedFiles.length === 0" class="file-manager-empty-box">
-            <div class="empty-icon-circle">
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                <polyline points="21 15 16 10 5 21"></polyline>
-              </svg>
-            </div>
-            <h4>目前尚無已儲存的素材</h4>
-            <p>您可以點擊上方或下方的上傳按鈕，將第一張圖片或影片加入媒體庫。</p>
-            <button type="button" class="empty-cta-btn" @click="triggerFileInput">
-              立即上傳檔案
-            </button>
-          </div>
-
-          <div v-else-if="visibleManagedFiles.length === 0" class="file-manager-empty-box">
-            <div class="empty-icon-circle">
-              <!-- 搜尋關鍵字找不到 -->
-              <svg v-if="managerSearch.trim()" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                <line x1="8" y1="8" x2="14" y2="14"></line>
-                <line x1="14" y1="8" x2="8" y2="14"></line>
-              </svg>
-              <!-- 影片分類為空 -->
-              <svg v-else-if="managerFilter === 'videos'" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <polygon points="23 7 16 12 23 17 23 7"></polygon>
-                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
-              </svg>
-              <!-- 圖片分類為空 -->
-              <svg v-else width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                <polyline points="21 15 16 10 5 21"></polyline>
-              </svg>
-            </div>
-
-            <h4 v-if="managerSearch.trim()">找不到符合「{{ managerSearch.trim() }}」的檔案</h4>
-            <h4 v-else-if="managerFilter === 'videos'">目前媒體庫中尚未有任何影片素材</h4>
-            <h4 v-else-if="managerFilter === 'images'">目前媒體庫中尚未有任何圖片素材</h4>
-            <h4 v-else>目前尚無符合條件的檔案</h4>
-
-            <p v-if="managerSearch.trim()">請檢查輸入的關鍵字是否有誤，或點擊下方按鈕清除搜尋。</p>
-            <p v-else-if="managerFilter === 'videos'">您可以點擊右上方「上傳新檔案」將 MP4、WEBM 影片加入媒體庫。</p>
-            <p v-else-if="managerFilter === 'images'">您可以點擊右上方「上傳新檔案」將圖片素材加入媒體庫。</p>
-
-            <div class="empty-action-group">
-              <button
-                v-if="managerSearch.trim()"
-                type="button"
-                class="btn-text-link"
-                @click="managerSearch = ''"
-              >
-                清除搜尋關鍵字
-              </button>
-              <button
-                v-if="managerFilter !== 'all'"
-                type="button"
-                class="btn-text-link"
-                @click="managerFilter = 'all'; managerSearch = ''"
-              >
-                查看全部媒體檔案 ({{ managedFiles.length }})
-              </button>
-              <button
-                v-if="!managerSearch.trim()"
-                type="button"
-                class="empty-cta-btn"
-                @click="triggerFileInput"
-              >
-                立即上傳新檔案
-              </button>
-            </div>
-          </div>
-
-          <!-- 檔案卡片清單網格 -->
-          <div v-else class="file-manager-grid">
-            <article
+            <SelectCard
               v-for="file in visibleManagedFiles"
               :key="file.key"
               class="managed-file-card"
               :class="{ 'is-incompatible': !canUseFile(file) }"
+              media-class="card-media-wrap"
+              body-class="card-info-wrap"
             >
-              <div class="card-media-wrap">
+              <template #media>
                 <video
                   v-if="/\.(mp4|webm|mov)$/i.test(file.name)"
                   :src="file.publicUrl"
@@ -390,42 +208,21 @@
                 />
 
                 <div class="card-hover-actions">
-                  <button
-                    type="button"
-                    class="use-btn"
-                    :disabled="!canUseFile(file)"
-                    @click="selectManagedFile(file)"
-                  >
+                  <BaseButton variant="primary" size="sm" type="button" :disabled="!canUseFile(file)" @click="selectManagedFile(file)">
                     {{ canUseFile(file) ? '選取此檔案' : '格式不相符' }}
-                  </button>
+                  </BaseButton>
                 </div>
 
                 <span v-if="/\.(mp4|webm|mov)$/i.test(file.name)" class="card-media-badge">影片</span>
-              </div>
-
-              <div class="card-info-wrap">
+              </template>
                 <div class="card-title-col">
                   <strong :title="cleanFileNameString(file.name)">{{ cleanFileNameString(file.name) }}</strong>
                   <small>{{ file.key.startsWith('images/') ? '圖片' : '影片' }}</small>
                 </div>
-                <button
-                  type="button"
-                  class="delete-icon-btn"
-                  title="從 R2 刪除檔案"
-                  @click="removeManagedFile(file)"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                  </svg>
-                </button>
-              </div>
-            </article>
-          </div>
-        </section>
-      </div>
+                <IconButton icon="trash-2" size="sm" variant="delete" label="從 R2 刪除檔案" @click="removeManagedFile(file)" />
+            </SelectCard>
+      </MediaPickerModal>
 
-      <!-- 彈窗：全螢幕放大預覽 -->
       <div
         v-if="showFullscreenModal"
         class="fullscreen-preview-backdrop"
@@ -438,10 +235,7 @@
           aria-label="關閉預覽"
           @click="closeFullscreenModal"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
+          <Icon name="close" :size="24" />
         </button>
         <div class="fullscreen-media-container" @click.stop>
           <video
@@ -464,8 +258,17 @@
 </template>
 
 <script setup>
+import SelectCard from './base/SelectCard.vue';
+import EmptyState from './base/EmptyState.vue';
+import { confirmDialog } from '../utils/confirm';
+import MediaPickerModal from './MediaPickerModal.vue';
+import IconButton from './base/IconButton.vue';
+import Icon from './base/Icon.vue';
+import BaseButton from './base/BaseButton.vue';
+import Spinner from './base/Spinner.vue';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { deleteUploadedFile, formatFileSize, listUploadedFiles, uploadFile, validateMediaFile } from '../utils/upload';
+import { toast } from '../utils/toast';
 import { getUserTheme } from '../utils/userStore';
 
 const props = defineProps({
@@ -503,7 +306,7 @@ const activeThemeClass = computed(() => {
 
 const previewSource = computed(() => previewUrl.value || props.modelValue);
 
-// 將 UUID 或 Timestamp 前綴自動過濾，呈現最乾淨的使用者檔名
+// 去掉 UUID／時間戳前綴，只顯示原始檔名
 const cleanFileNameString = (str) => {
   if (!str) return '';
   const decoded = decodeURIComponent(str).split('/').pop().split('?')[0];
@@ -547,6 +350,12 @@ const videoFilesCount = computed(() => {
   return managedFiles.value.filter((f) => /\.(mp4|webm|mov)$/i.test(f.name)).length;
 });
 
+const managerTabs = computed(() => [
+  { value: 'all', label: `全部 (${managedFiles.value.length})` },
+  { value: 'images', label: `圖片 (${imageFilesCount.value})` },
+  { value: 'videos', label: `影片 (${videoFilesCount.value})` }
+]);
+
 const triggerFileInput = () => {
   imageLoadError.value = false;
   fileInputRef.value?.click();
@@ -584,7 +393,7 @@ const processFile = async (file) => {
       showFileManager.value = false;
     }
   } catch (error) {
-    alert(error.message || '檔案上傳失敗，請重試。');
+    toast.error('檔案上傳失敗', { detail: error.message || '請稍後再試一次。' });
     selectedFile.value = null;
     if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
     previewUrl.value = '';
@@ -659,7 +468,13 @@ const selectManagedFile = (file) => {
 };
 
 const removeManagedFile = async (file) => {
-  if (!confirm(`確定要從 Cloudflare R2 永久刪除「${cleanFileNameString(file.name)}」嗎？`)) return;
+  const ok = await confirmDialog({
+    title: '永久刪除這個檔案？',
+    message: `「${cleanFileNameString(file.name)}」會從 Cloudflare R2 媒體庫刪除，已經在使用這個檔案的項目會顯示不出來。`,
+    confirmText: '永久刪除',
+    danger: true
+  });
+  if (!ok) return;
   try {
     await deleteUploadedFile(file.publicUrl);
     managedFiles.value = managedFiles.value.filter((item) => item.key !== file.key);
@@ -667,7 +482,7 @@ const removeManagedFile = async (file) => {
       clearMedia();
     }
   } catch (error) {
-    alert(error.message || '刪除失敗');
+    toast.error('素材刪除失敗', { detail: error.message || '請稍後再試一次。' });
   }
 };
 
@@ -694,34 +509,31 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 <style scoped>
 .file-uploader-box {
   width: 100%;
-  font-family: var(--font-body, inherit);
+  font-family: var(--font-body);
 }
 
 .hidden-file-input {
   display: none;
 }
 
-/* ============================================================
-   未上傳狀態：現代整合型 Dropzone
-   ============================================================ */
 .uploader-dropzone-box {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--space-2) var(--space-3);
-  background: var(--bg-input, rgba(15, 23, 42, 0.03));
-  border: 1.5px dashed var(--border-color, rgba(15, 23, 42, 0.12));
-  border-radius: var(--radius-lg, 12px);
+  padding: var(--space-5) var(--space-3);
+  background: var(--bg-input);
+  border: 1.5px dashed var(--border-color);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: border-color var(--dur-base) var(--ease-out), background-color var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out);
   text-align: center;
 }
 
 .uploader-dropzone-box:hover,
 .uploader-dropzone-box.is-dragging {
-  border-color: var(--color-primary, #6366f1);
-  background: var(--bg-hover, rgba(99, 102, 241, 0.05));
+  border-color: var(--color-primary);
+  background: var(--bg-hover);
   transform: translateY(-1px);
 }
 
@@ -734,15 +546,14 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 }
 
 .dropzone-icon-circle {
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
-  width: 34px;
+  width: 30px;
   height: var(--control-height-sm);
   border-radius: 50%;
-  color: var(--color-primary, #6366f1);
-  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.06));
-  transition: transform 0.2s ease;
+  color: var(--color-primary);
+  transition: transform var(--dur-base) var(--ease-standard);
 }
 
 .uploader-dropzone-box:hover .dropzone-icon-circle {
@@ -758,7 +569,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 .dropzone-primary-text {
   font-size: var(--fs-meta);
   font-weight: var(--fw-medium);
-  color: var(--text-primary, #0f172a);
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -770,7 +581,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 
 .dropzone-sub-text {
   font-size: var(--fs-meta);
-  color: var(--text-secondary, #475569);
+  color: var(--text-secondary);
   opacity: 0.95;
   margin: 0;
 }
@@ -790,39 +601,20 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 .divider-line {
   flex: 1;
   height: 1px;
-  background: var(--border-color, rgba(15, 23, 42, 0.08));
+  background: var(--border-color);
 }
 
 .divider-text {
-  font-size: var(--fs-tiny);
-  color: var(--text-muted, #64748b);
+  font-size: var(--fs-meta);
+  color: var(--text-muted);
   text-transform: uppercase;
 }
 
-.open-library-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-1) var(--space-3);
-  font-size: var(--fs-meta);
-  font-weight: var(--fw-semibold);
-  color: var(--text-primary, #0f172a);
-  background: var(--bg-card, #ffffff);
-  border: 1px solid var(--border-color, rgba(15, 23, 42, 0.1));
-  border-radius: var(--radius-sm, 6px);
-  cursor: pointer;
-  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,0.04));
-  transition: all 0.15s ease;
-}
-
-/* ============================================================
-   上傳中進度卡片
-   ============================================================ */
 .uploader-uploading-card {
   padding: var(--space-4) var(--space-5);
-  background: var(--bg-card, #ffffff);
-  border: 1px solid var(--border-color, rgba(15, 23, 42, 0.08));
-  border-radius: var(--radius-md, 10px);
+  background: var(--surface-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
@@ -837,7 +629,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 .uploading-icon-spinner {
   width: 28px;
   height: 28px;
-  color: var(--color-primary, #6366f1);
+  color: var(--color-primary);
 }
 
 .uploading-info {
@@ -846,9 +638,9 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 }
 
 .uploading-filename {
-  font-size: var(--fs-label);
+  font-size: var(--fs-body);
   font-weight: var(--fw-semibold);
-  color: var(--text-primary, #0f172a);
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -856,26 +648,24 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 
 .uploading-meta {
   font-size: var(--fs-meta);
-  color: var(--text-muted, #64748b);
+  color: var(--text-muted);
 }
 
 .upload-progress-bar {
   height: 6px;
-  background: var(--bg-input, rgba(15, 23, 42, 0.06));
-  border-radius: 999px;
+  background: var(--bg-input);
+  border-radius: var(--radius-full);
   overflow: hidden;
 }
 
 .upload-progress-fill {
+  width: 100%;
   height: 100%;
-  background: var(--color-primary, #6366f1);
-  border-radius: 999px;
-  transition: width 0.15s ease;
+  background: var(--action-primary);
+  transform-origin: left center; /* 圓角由外層 .upload-progress-bar 的 overflow 裁切 */
+  transition: transform var(--dur-fast) var(--ease-standard);
 }
 
-/* ============================================================
-   已上傳狀態：精緻卡片
-   ============================================================ */
 .media-preview-card {
   display: flex;
   align-items: center;
@@ -883,9 +673,9 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   padding: var(--space-3) var(--space-3);
   background: var(--bg-input);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--radius-sm);
   box-shadow: none !important;
-  transition: border-color 0.15s ease;
+  transition: border-color var(--dur-fast) var(--ease-standard);
 }
 
 .media-preview-card:hover {
@@ -899,7 +689,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   flex-shrink: 0;
   border-radius: var(--radius-xs);
   overflow: hidden;
-  background: var(--bg-card);
+  background: var(--surface-card);
   border: 1px solid var(--border-color);
   cursor: pointer;
 }
@@ -908,7 +698,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.25s ease;
+  transition: transform var(--dur-base) var(--ease-standard);
 }
 
 .preview-thumbnail-container:hover .preview-media {
@@ -923,9 +713,9 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   align-items: center;
   justify-content: center;
   gap: var(--space-1);
-  color: #94a3b8;
-  font-size: var(--fs-tiny);
-  background: #1e293b;
+  color: var(--on-media-muted);
+  font-size: var(--fs-meta);
+  background: var(--media-surface);
 }
 
 .thumbnail-hover-overlay {
@@ -934,10 +724,10 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.45);
-  color: #ffffff;
+  background: var(--media-shade);
+  color: var(--on-media);
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--dur-base) var(--ease-standard);
 }
 
 .preview-thumbnail-container:hover .thumbnail-hover-overlay {
@@ -951,9 +741,9 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  background: rgba(0, 0, 0, 0.7);
-  color: #ffffff;
-  font-size: var(--fs-tiny);
+  background: var(--media-shade-strong);
+  color: var(--on-media);
+  font-size: var(--fs-meta);
   padding: 1px 5px;
   border-radius: var(--radius-xs);
   backdrop-filter: blur(4px);
@@ -982,9 +772,9 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 
 .clean-file-name {
   margin: 0 0 var(--space-1) 0;
-  font-size: var(--fs-label);
+  font-size: var(--fs-body);
   font-weight: var(--fw-semibold);
-  color: var(--text-primary, #0f172a);
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1000,7 +790,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 .badge {
   display: inline-flex;
   align-items: center;
-  font-size: var(--fs-tiny);
+  font-size: var(--fs-meta);
   padding: 2px 7px;
   border-radius: var(--radius-xs);
   font-weight: var(--fw-medium);
@@ -1008,14 +798,14 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 
 .badge-type,
 .badge-size {
-  background: var(--bg-card);
+  background: var(--surface-card);
   border: 1px solid var(--border-color);
   color: var(--text-muted);
 }
 
 .badge-status {
-  background: rgba(16, 185, 129, 0.1);
-  color: #059669;
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+  color: var(--color-success);
   font-weight: var(--fw-semibold);
   gap: 4px;
 }
@@ -1024,7 +814,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #10b981;
+  background: var(--color-success);
 }
 
 .action-btn-row {
@@ -1034,324 +824,10 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   gap: var(--space-2);
 }
 
-.action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-xs, 4px);
-  font-size: var(--fs-meta);
-  font-weight: var(--fw-medium);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  border: 1px solid transparent;
-}
+/* .managed-file-card 的外框、圓角、封面 4:3、hover／焦點狀態都用全域 .select-card（components.css） */
 
-.btn-secondary {
-  background: var(--bg-card);
-  border-color: var(--border-color);
-  color: var(--text-secondary);
-}
-
-.btn-secondary:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-  border-color: var(--border-color-hover);
-}
-
-.btn-danger {
-  background: transparent;
-  color: var(--color-danger, #ef4444);
-  border-color: transparent;
-}
-
-.btn-danger:hover {
-  background: rgba(239, 68, 68, 0.1);
-}
-
-/* ============================================================
-   檔案總管彈窗 (Theme-Aware & Modern Glass)
-   ============================================================ */
-.file-manager-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-5);
-  background: var(--modal-backdrop, rgba(3, 7, 18, 0.65));
-  backdrop-filter: blur(8px);
-}
-
-.file-manager-modal {
-  width: min(860px, 94vw);
-  height: min(560px, 86vh);
-  min-height: min(480px, 86vh);
-  display: flex;
-  flex-direction: column;
-  background: var(--bg-card, #ffffff);
-  border: 1px solid var(--border-color, rgba(15, 23, 42, 0.1));
-  border-radius: var(--radius-xl, 16px);
-  overflow: hidden;
-}
-
-.file-manager-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-4) var(--space-6);
-  border-bottom: 1px solid var(--border-color, rgba(15, 23, 42, 0.08));
-  background: var(--bg-card, #ffffff);
-}
-
-.header-title-box {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.header-icon-box {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md, 8px);
-  background: var(--bg-input, rgba(15, 23, 42, 0.04));
-  color: var(--color-primary, #6366f1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.header-title-box h3 {
-  margin: 0;
-  font-size: var(--fs-body-lg);
-  font-weight: var(--fw-bold);
-  color: var(--text-primary, #0f172a);
-}
-
-.header-title-box p {
-  margin: var(--space-1) 0 0 0;
-  font-size: var(--fs-meta);
-  color: var(--text-muted, #64748b);
-}
-
-.file-manager-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: 0;
-  border-radius: var(--radius-sm, 6px);
-  background: var(--bg-input, rgba(15, 23, 42, 0.05));
-  color: var(--text-secondary, #64748b);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.file-manager-close:hover {
-  background: var(--bg-hover, rgba(15, 23, 42, 0.1));
-  color: var(--text-primary, #0f172a);
-}
-
-/* 工具列 */
-.file-manager-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-6);
-  border-bottom: 1px solid var(--border-color, rgba(15, 23, 42, 0.06));
-  background: var(--bg-card, #ffffff);
-}
-
-.toolbar-left,
-.toolbar-right {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.filter-pill-group {
-  display: inline-flex;
-  padding: 2px;
-  background: var(--bg-input, rgba(15, 23, 42, 0.04));
-  border-radius: var(--radius-sm, 6px);
-  border: 1px solid var(--border-color, rgba(15, 23, 42, 0.06));
-}
-
-.filter-pill-group button {
-  border: 0;
-  background: transparent;
-  color: var(--text-secondary, #64748b);
-  font-size: var(--fs-meta);
-  font-weight: var(--fw-semibold);
-  padding: var(--space-1) var(--space-3);
-  border-radius: 5px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.filter-pill-group button.active {
-  background: var(--bg-card, #ffffff);
-  color: var(--color-primary, #6366f1);
-  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,0.06));
-}
-
-.search-input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.search-input-wrapper svg {
-  position: absolute;
-  left: 0.65rem;
-  color: var(--text-muted, #94a3b8);
-  pointer-events: none;
-}
-
-.search-input-wrapper input {
-  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-8);
-  font-size: var(--fs-meta);
-  border: 1px solid var(--border-color, rgba(15, 23, 42, 0.1));
-  border-radius: var(--radius-sm, 6px);
-  background: var(--bg-input, rgba(15, 23, 42, 0.03));
-  color: var(--text-primary, #0f172a);
-  outline: none;
-  width: 180px;
-  transition: all 0.15s ease;
-}
-
-.search-input-wrapper input:focus {
-  border-color: var(--color-primary, #6366f1);
-  box-shadow: 0 0 0 2px var(--glow-primary, rgba(99, 102, 241, 0.15));
-}
-
-.manager-upload-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-2) var(--space-3);
-  border: 0;
-  border-radius: var(--radius-sm, 6px);
-  background: var(--color-primary, #6366f1);
-  color: #ffffff;
-  font-size: var(--fs-meta);
-  font-weight: var(--fw-semibold);
-  cursor: pointer;
-  transition: opacity 0.15s ease;
-}
-
-.manager-upload-btn:hover {
-  opacity: 0.9;
-}
-
-/* 狀態視窗 */
-.file-manager-state-box,
-.file-manager-empty-box {
-  flex: 1;
-  min-height: 320px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem var(--space-6);
-  text-align: center;
-  gap: var(--space-2);
-  color: var(--text-muted, #64748b);
-  font-size: var(--fs-label);
-}
-
-.file-manager-empty-box h4 {
-  margin: 0;
-  font-size: var(--fs-body-lg);
-  font-weight: var(--fw-semibold);
-  color: var(--text-primary, #0f172a);
-}
-
-.empty-icon-circle {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: var(--bg-input, rgba(15, 23, 42, 0.04));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-muted, #94a3b8);
-  margin-bottom: var(--space-2);
-}
-
-.empty-cta-btn {
-  margin-top: var(--space-2);
-  padding: var(--space-2) var(--space-5);
-  font-size: var(--fs-meta);
-  font-weight: var(--fw-semibold);
-  background: var(--color-primary, #6366f1);
-  color: #ffffff;
-  border: 0;
-  border-radius: var(--radius-sm, 6px);
-  cursor: pointer;
-}
-
-.btn-text-link {
-  background: transparent;
-  border: 0;
-  color: var(--color-primary, #6366f1);
-  font-size: var(--fs-meta);
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-.empty-action-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-2);
-  margin-top: var(--space-1);
-}
-
-/* 媒體網格 */
-.file-manager-grid {
-  flex: 1;
-  min-height: 320px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  align-content: start;
-  gap: var(--space-4);
-  padding: var(--space-5) var(--space-6);
-  overflow-y: auto;
-}
-
-.managed-file-card {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--border-color, rgba(15, 23, 42, 0.08));
-  border-radius: var(--radius-md, 10px);
-  background: var(--bg-card, #ffffff);
-  overflow: hidden;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.managed-file-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md, 0 6px 14px rgba(0,0,0,0.08));
-  border-color: var(--color-primary, #6366f1);
-}
-
-.card-media-wrap {
-  position: relative;
-  width: 100%;
-  height: 110px;
-  background: #0d1117;
-  overflow: hidden;
-}
-
-.card-media-wrap img,
-.card-media-wrap video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.managed-file-card :deep(.card-media-wrap) {
+  background: var(--media-surface);
 }
 
 .card-hover-actions {
@@ -1360,51 +836,32 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--media-shade);
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--dur-base) var(--ease-standard);
 }
 
 .managed-file-card:hover .card-hover-actions {
   opacity: 1;
 }
 
-.use-btn {
-  padding: var(--space-2) var(--space-3);
-  background: var(--color-primary, #6366f1);
-  color: #ffffff;
-  border: 0;
-  border-radius: var(--radius-sm, 6px);
-  font-size: var(--fs-meta);
-  font-weight: var(--fw-semibold);
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
-
-.use-btn:disabled {
-  background: #64748b;
-  cursor: not-allowed;
-  opacity: 0.75;
-}
-
 .card-media-badge {
   position: absolute;
   bottom: 4px;
   left: 4px;
-  background: rgba(0, 0, 0, 0.65);
-  color: #ffffff;
-  font-size: var(--fs-tiny);
+  background: var(--media-shade-strong);
+  color: var(--on-media);
+  font-size: var(--fs-meta);
   padding: 1px 5px;
   border-radius: var(--radius-xs);
 }
 
-.card-info-wrap {
+.managed-file-card :deep(.card-info-wrap) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-2) var(--space-3);
   gap: var(--space-2);
-  border-top: 1px solid var(--border-color, rgba(15, 23, 42, 0.05));
+  border-top: 1px solid var(--border-color);
 }
 
 .card-title-col {
@@ -1416,7 +873,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   display: block;
   font-size: var(--fs-meta);
   font-weight: var(--fw-semibold);
-  color: var(--text-primary, #0f172a);
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1424,37 +881,19 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 
 .card-title-col small {
   display: block;
-  font-size: var(--fs-tiny);
-  color: var(--text-muted, #64748b);
+  font-size: var(--fs-meta);
+  color: var(--text-muted);
 }
 
-.delete-icon-btn {
-  border: 0;
-  background: transparent;
-  color: var(--text-muted, #94a3b8);
-  padding: 4px;
-  border-radius: var(--radius-xs);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.delete-icon-btn:hover {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--color-danger, #ef4444);
-}
-
-/* ============================================================
-   全螢幕放大預覽
-   ============================================================ */
 .fullscreen-preview-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 1200;
+  z-index: var(--z-fullscreen);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--space-8);
-  background: rgba(0, 0, 0, 0.92);
+  background: var(--scrim-media);
   backdrop-filter: blur(10px);
 }
 
@@ -1466,17 +905,17 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   height: 44px;
   border: 0;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+  background: var(--on-media-soft);
+  color: var(--on-media);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background var(--dur-fast) var(--ease-standard);
 }
 
 .preview-close-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--on-media-border);
 }
 
 .fullscreen-media-container {
@@ -1492,8 +931,8 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
   max-width: 90vw;
   max-height: 85vh;
   object-fit: contain;
-  border-radius: var(--radius-md, 10px);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
 }
 
 @media (max-width: 640px) {
@@ -1505,12 +944,6 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
     width: 100%;
     height: 140px;
   }
-  .file-manager-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .search-input-wrapper input {
-    width: 100%;
-  }
+
 }
 </style>

@@ -1,12 +1,6 @@
-/**
- * 安全且支援回退機制 (Fallback) 的剪貼簿複製函數
- * @param {string} text 要複製的文字
- * @returns {Promise<boolean>} 是否成功複製
- */
 export async function copyToClipboard(text) {
   if (!text) return false;
 
-  // 1. 優先使用現代 Clipboard API
   if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
     try {
       await navigator.clipboard.writeText(text);
@@ -16,7 +10,7 @@ export async function copyToClipboard(text) {
     }
   }
 
-  // 2. 回退機制 (Fallback): 建立隱藏 textarea 進行 execCommand 複製
+  // Clipboard API 不可用或失敗時（例如非 HTTPS）改用 execCommand
   try {
     const textArea = document.createElement('textarea');
     textArea.value = text;

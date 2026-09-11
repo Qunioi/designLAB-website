@@ -1,5 +1,5 @@
 <template>
-  <div class="research-container" @click="closeTagDropdown">
+  <div class="research-container">
     <PageHeader
       :title="pageTitle"
       :subtitle="pageSubtitle"
@@ -7,19 +7,16 @@
       @add-click="$emit('trigger-crud', { type: crudType })"
     />
 
-    <!-- 抽離之高階 FilterToolbar 子元件 -->
     <FilterToolbar
       v-model:searchQuery="searchQuery"
       :searchPlaceholder="searchPlaceholder"
       :filters="filters"
-      :activeDropdown="activeDropdown"
       :multiFilterValues="multiFilterValues"
       :dynamicOptions="dynamicOptions"
       :creatorOptions="creatorOptions"
       :selectedCreators="selectedCreators"
       v-model:sortOption="sortOption"
       :totalSelectedChipsCount="totalSelectedChipsCount"
-      @toggle-dropdown="toggleDropdown"
       @clear-filter-field="clearFilterField"
       @toggle-option="({ field, opt }) => toggleFilterOption(field, opt)"
       @remove-option="({ field, opt }) => removeFilterOption(field, opt)"
@@ -28,106 +25,105 @@
       @reset-all="resetAllFilters"
     />
 
-    <!-- 列表為空提示 -->
-    <div v-if="filteredList.length === 0" class="empty-state">
-      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-      <p>{{ totalSelectedChipsCount > 0 || searchQuery ? '找不到符合目前搜尋與篩選條件的內容。' : emptyText }}</p>
-      <button class="reset-filter-btn" v-if="totalSelectedChipsCount > 0 || searchQuery" @click="resetAllFilters">重置所有搜尋與篩選</button>
-      <button
-        v-else-if="!isGuest"
-        type="button"
-        class="empty-primary-btn"
-        @click="$emit('trigger-crud', { type: crudType })"
-      >
-        {{ addBtnLabel }}
-      </button>
-    </div>
-
-    <!-- 卡片列表 -->
-    <div v-else class="cards-grid">
-      <div v-for="item in filteredList" :key="item.id" class="card-panel" :class="{ highlighted: highlightedId === item.id, 'is-mine': isMyCreatedItem(item) }" :id="`item-${item.id}`">
-        <div
-          class="card-media-wrapper"
-          role="button"
-          tabindex="0"
-          :aria-label="`查看《${getTitle(item)}》詳情`"
-          @click="openLightbox(item)"
-          @keydown.enter.prevent="openLightbox(item)"
-          @keydown.space.prevent="openLightbox(item)"
-        >
-          <img v-if="getCover(item)" :src="getCover(item)" class="card-media" :alt="getTitle(item)" loading="lazy" />
-          <div v-else class="card-media-placeholder" aria-hidden="true">
-            <span>{{ getTitle(item) }}</span>
+    <!-- 列表為空提示（只做淡入；離場不做動畫，避免它還佔著位置時把新進場的卡片往下推） -->
+    <CardGrid v-if="showSkeleton" :max="5" class="cards-grid" role="status" aria-label="資料載入中">
+      <template v-for="n in 8" :key="`skeleton-${n}`">
+      <div class="card-panel skeleton-card" aria-hidden="true">
+          <span class="skeleton-block skeleton-media"></span>
+          <div class="skeleton-body">
+            <span class="skeleton-block skeleton-line is-badge"></span>
+            <span class="skeleton-block skeleton-line is-title"></span>
+            <span class="skeleton-block skeleton-line is-short"></span>
           </div>
-          <div class="hover-overlay">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </div>
+      </template>
+    </CardGrid>
+
+    <Transition name="empty-fade">
+    <EmptyState
+      v-if="filteredList.length === 0 && !showSkeleton"
+      size="lg"
+      icon="search"
+      :title="totalSelectedChipsCount > 0 || searchQuery ? '找不到符合目前搜尋與篩選條件的內容' : emptyText"
+    >
+      <template #actions>
+        <BaseButton variant="secondary" v-if="totalSelectedChipsCount > 0 || searchQuery" @click="resetAllFilters">重置所有搜尋與篩選</BaseButton>
+        <BaseButton variant="primary" v-else-if="!isGuest" type="button" @click="$emit('trigger-crud', { type: crudType })">
+          {{ addBtnLabel }}
+        </BaseButton>
+      </template>
+    </EmptyState>
+    </Transition>
+
+    <!-- 卡片列表：篩選／搜尋時卡片淡出淡入、其餘卡片平滑補位。
+         Grid 容器一律保持掛載（不用 v-else），篩到 0 筆時離場動畫才播得完。 -->
+    <CardGrid :max="5" transition="card-list" class="cards-grid" :class="{ 'stagger-in': staggerIntro }" @before-leave="lockLeavingCard">
+      <ContentCard
+        v-for="item in filteredList"
+        :key="item.id"
+        :id="`item-${item.id}`"
+        :class="{ highlighted: highlightedId === item.id, 'is-mine': isMyCreatedItem(item) }"
+        :title="getTitle(item)"
+        :cover="getCover(item)"
+        :hit-label="`查看《${getTitle(item)}》詳情`"
+        @open="openLightbox(item)"
+      >
+        <template #media>
+          <div class="hover-overlay" aria-hidden="true">
+            <Icon name="eye" :size="22" />
             <span>點擊看詳情</span>
           </div>
-          <!-- 我發佈的：精緻 Avatar Dot 置於圖片左上角 -->
           <div v-if="isMyCreatedItem(item)" class="mine-avatar-dot" title="我發佈的">
-            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+            <Icon name="user-solid" :size="10" />
           </div>
-          <!-- 外連笭頭：wrapper 承接主題光暈，內層 <a> 保持清晰 -->
+          <!-- 外連：wrapper 承接主題光暈，內層 <a> 保持清晰 -->
           <div v-if="getLink(item)" class="ext-link-wrapper">
             <a :href="getLink(item)" target="_blank" rel="noopener noreferrer" class="media-ext-link" @click.stop :aria-label="`前往《${getTitle(item)}》`" title="前往">
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+              <Icon name="external-link" :size="13" />
             </a>
           </div>
-        </div>
-        <div class="card-info">
-          <div class="card-meta-row" @click.stop>
-            <div class="card-meta-left">
-              <span :class="[badgeClass, { 'clickable-badge': !badgeLabel }]" @click="handleBadgeClick(item)" :title="badgeLabel ? '' : '點擊切換分類篩選'">{{ getBadgeText(item) }}</span>
-            </div>
-            <div class="card-actions card-actions-reveal" v-if="!isGuest">
-              <ActionIconButton v-if="canEditCardItem(item)" variant="edit" :aria-label="`編輯《${getTitle(item)}》`" @click="$emit('trigger-crud', { type: crudType, item })" title="編輯">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
-              </ActionIconButton>
-              <ActionIconButton v-if="canDeleteCardItem(item)" variant="delete" :aria-label="`刪除《${getTitle(item)}》`" @click="handleDelete(item)" title="刪除">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              </ActionIconButton>
-            </div>
+        </template>
+        <template #meta>
+          <Chip variant="type" :clickable="!badgeLabel" @click="handleBadgeClick(item)" :title="badgeLabel ? '' : '點擊切換類型篩選'">{{ getBadgeText(item) }}</Chip>
+        </template>
+        <template #meta-end>
+          <div class="card-actions card-actions-reveal" v-if="!isGuest">
+            <IconButton v-if="canEditCardItem(item)" icon="edit" size="sm" variant="edit" :label="`編輯《${getTitle(item)}》`" @click="$emit('trigger-crud', { type: crudType, item })" />
+            <IconButton v-if="canDeleteCardItem(item)" icon="trash-2" size="sm" variant="delete" :label="`刪除《${getTitle(item)}》`" @click="handleDelete(item)" />
           </div>
-          <h3 class="card-title">{{ getTitle(item) }}</h3>
-          <slot
-            name="card-extra"
-            :item="item"
-            :toggle-tag="toggleTag"
-            :is-tag-selected="isTagSelected"
-            :selected-tags="selectedTags"
-            :toggle-single-filter="toggleSingleFilter"
-            :is-single-filter-selected="isSingleFilterSelected"
-          />
-        </div>
-      </div>
-    </div>
+        </template>
+        <slot
+          name="card-extra"
+          :item="item"
+          :toggle-tag="toggleTag"
+          :is-tag-selected="isTagSelected"
+          :selected-tags="selectedTags"
+          :toggle-single-filter="toggleSingleFilter"
+          :is-single-filter-selected="isSingleFilterSelected"
+        />
+      </ContentCard>
+    </CardGrid>
 
-    <!-- Lightbox Modal -->
-    <Transition name="fade">
-      <div v-if="lightbox.isOpen" class="lightbox-backdrop" @click="closeLightbox">
-        <div
-          class="lightbox-container glass-panel"
-          role="dialog"
-          aria-modal="true"
-          :aria-labelledby="`lightbox-title-${lightbox.item?.id}`"
-          @click.stop
-        >
-          <button class="lightbox-close" type="button" @click="closeLightbox" aria-label="關閉詳細資料" title="關閉">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
+    <!-- 燈箱：點遮罩可關閉；Esc 由本元件處理（全螢幕預覽開著時先關預覽） -->
+    <BaseModal
+      :open="lightbox.isOpen"
+      size="xl"
+      layer="lightbox"
+      panel-class="lightbox-container"
+      :labelledby="`lightbox-title-${lightbox.item?.id}`"
+      :close-on-esc="false"
+      @close="closeLightbox"
+    >
+          <CloseButton class="lightbox-close" label="關閉詳細資料" @click="closeLightbox" />
           <div class="lightbox-scroll-area">
-            <!-- 頂部橫跨全寬：分類 badge（左）＋ 日期（右，關閉鈕另外絕對定位疊在更右邊） -->
             <div :class="['lightbox-meta-row', lightboxMetaClass]">
-              <span :class="[badgeClass, { 'clickable-badge': !lightboxBadgeLabel && !badgeLabel }]" @click="handleLightboxBadgeClick(lightbox.item)" :title="(lightboxBadgeLabel || badgeLabel) ? '' : '點擊切換分類篩選'">{{ getLightboxBadgeText(lightbox.item) }}</span>
+              <Chip variant="type" :clickable="!lightboxBadgeLabel && !badgeLabel" @click="handleLightboxBadgeClick(lightbox.item)" :title="(lightboxBadgeLabel || badgeLabel) ? '' : '點擊切換類型篩選'">{{ getLightboxBadgeText(lightbox.item) }}</Chip>
               <span class="lightbox-date" v-if="lightbox.item.createdAt || lightbox.item.updatedAt">{{ formatDateOnly(lightbox.item.createdAt || lightbox.item.updatedAt) }}</span>
             </div>
 
-            <!-- 主體兩欄：左欄標題＋媒體，右欄各類型自訂內容（可獨立捲動） -->
             <div class="lightbox-body-grid">
               <div class="lightbox-media-col">
                 <h2 :id="`lightbox-title-${lightbox.item?.id}`" class="lightbox-title">{{ getTitle(lightbox.item) }}</h2>
-                <!-- 各類型可選填的額外資訊（例如 AI 工具中心的「工具分類」），
-                     不填就完全不佔位置，其餘 4 種類型不受影響 -->
                 <slot
                   name="lightbox-left-extra"
                   :item="lightbox.item"
@@ -154,7 +150,7 @@
                       @click.stop="openFullscreenMedia(getLightboxVideo(lightbox.item), true)"
                       title="全螢幕放大播放影片"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                      <Icon name="maximize" :size="14" />
                       <span>點擊全螢幕檢視</span>
                     </button>
                   </div>
@@ -172,7 +168,7 @@
                     <img v-if="getLightboxImage(lightbox.item)" :src="getLightboxImage(lightbox.item)" class="lightbox-img" alt="點擊放大" />
                     <div v-else class="lightbox-media-placeholder" aria-hidden="true">{{ getTitle(lightbox.item) }}</div>
                     <div class="media-zoom-overlay">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                      <Icon name="maximize" :size="14" />
                       <span>點擊全螢幕檢視</span>
                     </div>
                   </div>
@@ -194,40 +190,29 @@
               </div>
             </div>
 
-            <!-- 底部橫跨全寬：編輯/刪除/發布者（左）＋ 前往連結 CTA（右） -->
             <div class="lightbox-footer">
               <div class="lightbox-actions-group" v-if="isGuest">
-                <!-- 發佈者標示：自己發佈顯示「我發佈」，其他人發佈的顯示對方暱稱 -->
                 <span v-if="isMyCreatedItem(lightbox.item) || getPublisherNickname(lightbox.item)" class="mine-lightbox-indicator" :class="{ 'is-others': !isMyCreatedItem(lightbox.item) }">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                  <Icon name="user-solid" :size="11" />
                   {{ isMyCreatedItem(lightbox.item) ? '我發佈' : getPublisherNickname(lightbox.item) }} 發佈
                 </span>
               </div>
               <div class="lightbox-actions-group" v-if="!isGuest">
-                <button v-if="canEditCardItem(lightbox.item)" type="button" class="lightbox-icon-btn edit" @click="$emit('trigger-crud', { type: crudType, item: lightbox.item }); closeLightbox();" :aria-label="`編輯`" title="編輯">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
-                </button>
-                <!-- 刪除：管理員或我發佈的才顯示 -->
-                <button v-if="canDeleteCardItem(lightbox.item)" type="button" class="lightbox-icon-btn delete" @click="handleDelete(lightbox.item); closeLightbox();" :aria-label="`刪除`" title="刪除">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>
-                </button>
-                <!-- 發佈者標示：自己發佈顯示「我發佈」，其他人發佈的顯示對方暱稱 -->
+                <IconButton v-if="canEditCardItem(lightbox.item)" icon="edit" variant="edit" label="編輯" @click="$emit('trigger-crud', { type: crudType, item: lightbox.item }); closeLightbox();" />
+                <IconButton v-if="canDeleteCardItem(lightbox.item)" icon="trash-2" variant="delete" label="刪除" @click="handleDelete(lightbox.item); closeLightbox();" />
                 <span v-if="isMyCreatedItem(lightbox.item) || getPublisherNickname(lightbox.item)" class="mine-lightbox-indicator" :class="{ 'is-others': !isMyCreatedItem(lightbox.item) }">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                  <Icon name="user-solid" :size="11" />
                   {{ isMyCreatedItem(lightbox.item) ? '我' : getPublisherNickname(lightbox.item) }} 發佈
                 </span>
               </div>
-              <a v-if="getLightboxLink(lightbox.item)" :href="getLightboxLink(lightbox.item)" target="_blank" rel="noopener noreferrer" class="source-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                <span>{{ linkBtnLabel }}</span>
-              </a>
+              <BaseButton v-if="getLightboxLink(lightbox.item)" :href="getLightboxLink(lightbox.item)" target="_blank" rel="noopener noreferrer" class="source-btn">
+                <template #icon><Icon name="external-link" :size="14" /></template>
+                {{ linkBtnLabel }}
+              </BaseButton>
             </div>
           </div>
-        </div>
-      </div>
-    </Transition>
+    </BaseModal>
 
-    <!-- 抽離之全螢幕媒體放大燈箱子元件 -->
     <FullscreenMediaOverlay
       :media="fullscreenMedia"
       @close="closeFullscreenMedia"
@@ -236,15 +221,26 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive, onMounted, onUnmounted, nextTick, watch } from 'vue';
+import EmptyState from './base/EmptyState.vue';
+import Chip from './base/Chip.vue';
+import CardGrid from './base/CardGrid.vue';
+import ContentCard from './base/ContentCard.vue';
+import { confirmDialog } from '../utils/confirm';
+import { toast } from '../utils/toast';
+import Icon from './base/Icon.vue';
+import BaseButton from './base/BaseButton.vue';
+import { ref, computed, reactive, onMounted, onUnmounted, nextTick, watch, inject } from 'vue';
+import { identityVersion } from '../utils/identity';
 import PageHeader from './PageHeader.vue';
 import FilterToolbar from './FilterToolbar.vue';
-import ActionIconButton from './ActionIconButton.vue';
+import IconButton from './base/IconButton.vue';
+import CloseButton from './base/CloseButton.vue';
+import BaseModal from './base/BaseModal.vue';
 import FullscreenMediaOverlay from './FullscreenMediaOverlay.vue';
 import { getStorageData, deleteItem, isMyCreatedItem, checkDeletePermission } from '../utils/storage';
-import { getCurrentUser, isAdminUser } from '../utils/userStore';
+import { getCurrentUser } from '../utils/userStore';
 import { formatDateOnly } from '../utils/formatters';
-import NotificationBell from '../components/NotificationBell.vue';
+import { useStaggerIntro, scrollBehavior } from '../utils/motion';
 
 const props = defineProps({
   pageTitle:    { type: String, required: true },
@@ -255,12 +251,9 @@ const props = defineProps({
   searchPlaceholder: { type: String, default: '搜尋...' },
   filters:      { type: Array, default: () => [] },
   searchFields: { type: Array, default: () => ['title'] },
-  badgeClass:   { type: String, default: 'category-badge' },
   badgeField:   { type: String, default: '' },
   badgeLabel:   { type: String, default: '' },
-  // 燈箱頂部的 badge 若要跟卡片列表不同（例如卡片顯示每筆各自的分類，
-  // 但燈箱固定顯示這個類型的名稱，如「AI 工具中心」），填這個欄位即可；
-  // 不填就跟卡片一樣，沿用 badgeLabel／badgeField 的邏輯。
+  // 燈箱 badge 要跟卡片不同時才填（例如固定顯示「AI 工具中心」）；不填沿用 badgeLabel／badgeField
   lightboxBadgeLabel: { type: String, default: '' },
   titleField:   { type: String, default: 'title' },
   coverField:   { type: String, default: 'cover' },
@@ -268,7 +261,7 @@ const props = defineProps({
   lightboxCoverField: { type: String, default: '' },
   lightboxLinkField:  { type: String, default: '' },
   lightboxMetaClass: { type: String, default: '' },
-  linkBtnLabel: { type: String, default: '前往' },
+  linkBtnLabel: { type: String, default: '查看完整內容' },
   researchContext: { type: String, default: '研究案例' },
   hideLightboxMedia: { type: Boolean, default: false },
   emptyText:    { type: String, default: '無相符資料。點選右上角新增一筆！' },
@@ -280,7 +273,6 @@ const props = defineProps({
 const emit = defineEmits(['trigger-crud', 'delete-done', 'open-lightbox', 'close-lightbox']);
 const items            = ref([]);
 const searchQuery      = ref('');
-const activeDropdown   = ref('');
 const multiFilterValues = reactive({});
 const selectedTags     = computed(() => multiFilterValues.tags || []);
 const selectedCreators = ref([]);
@@ -289,24 +281,24 @@ const lightbox         = ref({ isOpen: false, item: null });
 const fullscreenMedia = ref({ url: '', isVideo: false });
 
 const isGuest = computed(() => {
+  identityVersion.value; // 登出／權杖過期／身分模擬切換時重新判斷
   const u = getCurrentUser();
   const uname = (u.username || '').toLowerCase();
   return !uname || uname === '@guest' || uname === '@account' || u.nickname === '訪客';
 });
 
-/** 判斷目前登入者是否具備刪除該項目的權限 (管理員可刪除任何項目，一般使用者僅可刪除自己發佈的項目) */
+/** 管理員可刪除任何項目，一般使用者只能刪除自己發佈的 */
 const canDeleteCardItem = (item) => {
   if (!item) return false;
   return checkDeletePermission(item).allowed;
 };
 
-/** 編輯：只要是登入使用者（非訪客）即可編輯任何項目，不限本人建立 */
+/** 登入使用者都可以編輯任何項目，不限本人建立 */
 const canEditCardItem = (item) => {
   if (!item) return false;
   return !isGuest.value;
 };
 
-/** 取得該項目發佈者的暱稱（非本人建立時，於 Lightbox 顯示「誰發佈的」用） */
 const getPublisherNickname = (item) => {
   if (!item) return '';
   if (item.creatorName) return item.creatorName;
@@ -345,6 +337,16 @@ const closeFullscreenMedia = () => {
   fullscreenMedia.value = { url: '', isVideo: false };
 };
 
+// 被篩掉的卡片離場時要先脫離 Grid 排版（CSS 設成 position:absolute），
+// 剩下的卡片才能平滑位移補位；脫離前先把它當下的位置與尺寸鎖住，
+// 否則一變成絕對定位就會失去 Grid 欄寬，在淡出前瞬間縮成一條。
+const lockLeavingCard = (el) => {
+  el.style.left = `${el.offsetLeft}px`;
+  el.style.top = `${el.offsetTop}px`;
+  el.style.width = `${el.offsetWidth}px`;
+  el.style.height = `${el.offsetHeight}px`;
+};
+
 const handleKeyDown = (e) => {
   if (e.key === 'Escape') {
     if (fullscreenMedia.value.url) {
@@ -368,7 +370,7 @@ const getFilterZhTitle = (f) => {
   switch (f.field) {
     case 'motionType': return '動畫類型';
     case 'tools': return '製作工具';
-    case 'category': return '分類';
+    case 'category': return '類型';
     case 'tags': return '主題標籤';
     default: return f.field;
   }
@@ -391,18 +393,6 @@ const getFilterButtonLabel = (f) => {
     return `${zhTitle} (${count})`;
   }
   return f.allOption || `所有${zhTitle}`;
-};
-
-const toggleDropdown = (field) => {
-  if (activeDropdown.value === field) {
-    activeDropdown.value = '';
-  } else {
-    activeDropdown.value = field;
-  }
-};
-
-const closeTagDropdown = () => {
-  activeDropdown.value = '';
 };
 
 const getSelectedCount = (field) => {
@@ -458,22 +448,19 @@ const resetAllFilters = () => {
   sortOption.value = 'newest';
 };
 
-// 為了維持對 view 的相容與點擊 quick filter
 const toggleTag = (tag) => toggleFilterOption('tags', tag);
 const isTagSelected = (tag) => isOptionSelected('tags', tag);
 const toggleSingleFilter = (field, val) => toggleFilterOption(field, val);
 const isSingleFilterSelected = (field, val) => isOptionSelected(field, val);
 
 const handleBadgeClick = (item) => {
-  // badgeLabel 是固定文字（例如「AI 工具中心」），不是這筆資料自己的欄位值，
-  // 點下去沒有意義可以篩選，直接略過。
+  // badgeLabel 是固定文字，不是這筆資料的欄位值，不能拿來篩選
   if (props.badgeLabel) return;
   const badgeText = getBadgeText(item);
   if (!badgeText) return;
   const targetField = props.badgeField || 'category';
   toggleFilterOption(targetField, badgeText);
 };
-/** 燈箱裡的分類 badge 點擊：固定文字（lightboxBadgeLabel／badgeLabel）時不可篩選 */
 const handleLightboxBadgeClick = (item) => {
   if (props.lightboxBadgeLabel || props.badgeLabel) return;
   handleBadgeClick(item);
@@ -510,7 +497,7 @@ const getItemValues = (item, field, optField) => {
     return val.map(s => String(s).trim()).filter(Boolean);
   }
   if (typeof val === 'string') {
-    // 分類是單一語意值；例如「UI/UX Skills」不可被斜線拆成兩個分類。
+    // 類型是單一語意值；例如「UI/UX Skills」不可被斜線拆成兩個類型。
     if (field === 'category' || optField === 'category') {
       return val.trim() ? [val.trim()] : [];
     }
@@ -535,7 +522,6 @@ const dynamicOptions = computed(() => {
 
 const filteredList = computed(() => {
   let list = items.value.filter(item => {
-    // 1. 分類與標籤多選過濾
     for (const f of props.filters) {
       const selectedArr = multiFilterValues[f.field];
       if (selectedArr && selectedArr.length > 0) {
@@ -547,14 +533,12 @@ const filteredList = computed(() => {
       }
     }
 
-    // 2. 建立者過濾
     if (selectedCreators.value.length > 0) {
       const creator = item.createdBy || item.creatorName || item.updatedBy || '';
       const matchedCreator = selectedCreators.value.some(sc => creator.includes(sc));
       if (!matchedCreator) return false;
     }
 
-    // 3. 關鍵字搜尋
     const q = searchQuery.value.trim().toLowerCase();
     if (!q) return true;
     return props.searchFields.some(fieldName => {
@@ -565,7 +549,6 @@ const filteredList = computed(() => {
     });
   });
 
-  // 4. 多維度動態排序
   return list.sort((a, b) => {
     if (sortOption.value === 'oldest') {
       const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
@@ -582,7 +565,6 @@ const filteredList = computed(() => {
       const titleB = getTitle(b).toLowerCase();
       return titleA.localeCompare(titleB, 'zh-Hant');
     }
-    // 預設 'newest': 由新到舊
     const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
     const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
     return timeB - timeA;
@@ -618,7 +600,7 @@ const checkAndAutoOpenModal = () => {
     openLightbox(found, false);
     nextTick(() => {
       const el = document.getElementById(`item-${found.id}`);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (el) el.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
     });
   }
 };
@@ -629,15 +611,6 @@ const loadData = () => {
 };
 defineExpose({ loadData });
 
-const handleDocumentClick = (e) => {
-  if (activeDropdown.value) {
-    const isInsideDropdown = e.target.closest('.custom-tag-dropdown');
-    if (!isInsideDropdown) {
-      activeDropdown.value = '';
-    }
-  }
-};
-
 watch(() => props.highlightedId, () => {
   checkAndAutoOpenModal();
 });
@@ -646,10 +619,13 @@ const handleStorageUpdated = () => {
   loadData();
 };
 
+const isSyncing = inject('isSyncing', ref(false));
+const showSkeleton = computed(() => isSyncing.value && items.value.length === 0);
+const staggerIntro = useStaggerIntro(props.crudType, () => !showSkeleton.value && filteredList.value.length > 0);
+
 onMounted(() => {
   loadData();
   window.addEventListener('keydown', handleKeyDown);
-  window.addEventListener('click', handleDocumentClick);
   if (typeof window !== 'undefined') {
     window.addEventListener('design-lab-storage-updated', handleStorageUpdated);
   }
@@ -657,98 +633,80 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown);
-  window.removeEventListener('click', handleDocumentClick);
   if (typeof window !== 'undefined') {
     window.removeEventListener('design-lab-storage-updated', handleStorageUpdated);
   }
 });
 
-const handleDelete = (item) => {
+const handleDelete = async (item) => {
   const perm = checkDeletePermission(item);
-  if (!perm.allowed) { alert(`⚠️ 權限受限：此案例由原建立者「${perm.creatorName}」發表，非原建立者不得刪除！`); return; }
-  const title = getTitle(item);
-  if (confirm(`${props.deleteConfirmPrefix}${title}${props.deleteConfirmSuffix}`)) {
-    items.value = deleteItem(props.storageKey, item.id);
-    emit('delete-done');
+  if (!perm.allowed) {
+    toast.error('沒有刪除權限', { detail: `這筆由「${perm.creatorName}」建立，只有建立者或管理員可以刪除。` });
+    return;
   }
+  const title = getTitle(item);
+  const ok = await confirmDialog({
+    title: `${props.deleteConfirmPrefix}${title}${props.deleteConfirmSuffix}`,
+    message: '刪除後無法復原。',
+    confirmText: '刪除',
+    danger: true
+  });
+  if (!ok) return;
+  items.value = deleteItem(props.storageKey, item.id);
+  emit('delete-done');
 };
 </script>
 
 <style scoped>
-/* ── Layout Container ───────────────────── */
 .research-container {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-stack);
 }
 
-.clickable-badge {
-  cursor: pointer;
-  transition: color 0.2s ease, opacity 0.2s ease;
-}
-.clickable-badge:hover {
-  opacity: 0.85;
-}
 
-/* ── 多選標籤選取器：實際的 UI 已經抽成 FilterToolbar.vue 元件，
-   這裡以前的舊版 CSS（下拉選單、已選標籤 Chip 列）沒有任何模板在用，
-   全部移除；.custom-tag-dropdown 這個 class 字串在下面的
-   closeTagDropdown() 還會用到（抓的是 FilterToolbar 渲染出來的
-   真實 DOM，不是靠這裡的 CSS），只是不需要在這裡定義樣式。 ── */
-
-.reset-filter-btn {
-  font-size: var(--fs-meta);
-  color: var(--text-muted);
-  text-decoration: underline;
-  cursor: pointer;
-  transition: color 0.15s ease;
+/* ── 篩選／搜尋時卡片的進出場與補位動畫 ──
+   進場：從略小、略低的位置淡入；離場：反向淡出，並脫離排版（位置由
+   lockLeavingCard 鎖住），讓剩下的卡片用 .card-list-move 平滑移到新位置。 */
+.card-list-enter-active,
+.card-list-leave-active {
+  transition: opacity var(--dur-base) var(--ease-standard), transform var(--dur-base) var(--ease-standard);
 }
-.reset-filter-btn:hover {
-  color: var(--color-primary);
+.card-list-leave-active {
+  transition-duration: var(--dur-fast); /* 離場比進場快 */
 }
-
-/* ── Empty State ────────────────────────── */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-3);
-  padding: 4rem var(--space-8);
-  color: var(--text-muted);
-  font-size: var(--fs-body);
+.card-list-enter-from,
+.card-list-leave-to {
+  opacity: 0;
+  transform: scale(0.96) translateY(8px);
+}
+.card-list-leave-active {
+  position: absolute;
+  pointer-events: none;
+}
+.cards-grid > .card-list-move {
+  transition: transform var(--dur-slow) var(--ease-move);
 }
 
-.empty-primary-btn {
-  min-height: 40px;
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-md);
-  background: var(--color-primary);
-  color: #ffffff;
-  font-size: var(--fs-label);
-  font-weight: var(--fw-bold);
-  transition: background 0.2s ease, transform 0.2s ease;
+.empty-fade-enter-active {
+  transition: opacity var(--dur-base) var(--ease-standard) 0.12s, transform var(--dur-base) var(--ease-standard) 0.12s;
+}
+.empty-fade-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
 }
 
-.empty-primary-btn:hover {
-  background: var(--color-secondary);
-  transform: translateY(-1px);
+@media (prefers-reduced-motion: reduce) {
+  .card-list-enter-active,
+  .card-list-leave-active,
+  .cards-grid > .card-list-move,
+  .empty-fade-enter-active {
+    transition: none;
+  }
 }
 
-/* ── Cards Grid (現代空氣感網格) ─────── */
-.cards-grid {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
-  gap: var(--space-4);
-}
+/* .card-panel 等卡片共用 class 在 components.css：scoped style 只在本元件有效，Dashboard 也要用 */
 
-/* .card-panel、.card-media-wrapper 等卡片外殼共用 class 已經搬到
-   src/styles/components.css（全域），Dashboard.vue 的卡片也是靠那邊
-   才套得到樣式——Vue 的 scoped style 只在原本那個元件裡有效，寫在這裡
-   的話別的頁面用同樣的 class name 是吃不到樣式的。 */
-
-/* ── 我發佈的 Avatar Dot（圖片左上角） ─ */
 .mine-avatar-dot {
   position: absolute;
   top: 0.65rem;
@@ -757,25 +715,24 @@ const handleDelete = (item) => {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--color-primary);
-  color: #fff;
+  background: var(--action-primary);
+  color: var(--action-on-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid rgba(255, 255, 255, 0.18);
+  border: 2px solid var(--on-media-soft);
   box-shadow: var(--shadow-sm);
-  transition: transform 0.18s ease;
+  transition: transform var(--dur-fast) var(--ease-standard);
 }
 .card-panel:hover .mine-avatar-dot {
   transform: scale(1.08);
 }
 
-/* ── Lightbox 中發佈者指示器：自己發佈用主色強調，他人發佈則以次要文字色顯示暱稱 ─── */
 .mine-lightbox-indicator {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  font-size: var(--fs-tiny);
+  font-size: var(--fs-meta);
   font-weight: var(--fw-semibold);
   color: var(--color-primary);
   opacity: 0.85;
@@ -786,17 +743,16 @@ const handleDelete = (item) => {
   color: var(--text-secondary);
 }
 
-/* ── Card Media：.card-media-wrapper／.card-media／.card-media-placeholder
-   本體已搬到全域 components.css，這裡只留燈箱專用的 placeholder 樣式 ── */
+/* .card-media-* 本體在 components.css，這裡只有燈箱專用的 placeholder */
 .lightbox-media-placeholder {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
   padding: var(--space-6);
-  background: linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
+  background: linear-gradient(135deg, var(--surface-card), var(--surface-raised));
   color: var(--text-secondary);
-  font-size: var(--fs-h2);
+  font-size: var(--fs-glyph);
   font-weight: var(--fw-bold);
   text-align: center;
 }
@@ -807,26 +763,25 @@ const handleDelete = (item) => {
   width: 32px; height: 32px;
   border-radius: var(--radius-sm);
   z-index: 5;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition: box-shadow var(--dur-base) var(--ease-standard), transform var(--dur-base) var(--ease-standard);
 }
 
 .ext-link-wrapper:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-hover);
   transform: scale(1.05);
 }
 
 .media-ext-link {
-  /* 圖片上的低干擾浮層，避免操作按鈕搶走封面焦點 */
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%; height: 100%;
   border-radius: inherit;
-  background: rgba(15, 23, 42, 0.58);
-  color: #ffffff;
+  background: var(--media-shade);
+  color: var(--on-media);
   opacity: 0.88;
   box-shadow: var(--shadow-sm);
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+  transition: background-color var(--dur-base) var(--ease-standard), border-color var(--dur-base) var(--ease-standard), color var(--dur-base) var(--ease-standard), opacity var(--dur-base) var(--ease-standard), transform var(--dur-base) var(--ease-standard);
 }
 .media-ext-link svg {
   stroke: currentColor;
@@ -836,9 +791,9 @@ const handleDelete = (item) => {
 .media-ext-link:hover,
 .media-ext-link:focus-visible {
   opacity: 1;
-  background: var(--color-primary);
-  border-color: rgba(255, 255, 255, 0.9);
-  color: var(--color-on-primary);
+  background: var(--action-primary);
+  border-color: var(--on-media);
+  color: var(--action-on-primary);
   transform: translateY(-1px);
 }
 .media-ext-link:focus-visible {
@@ -849,77 +804,46 @@ const handleDelete = (item) => {
 .hover-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.42);
+  pointer-events: none;
+  background: var(--media-shade);
   opacity: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #fff;
-  font-size: var(--fs-label);
+  color: var(--on-media);
+  font-size: var(--fs-body);
   gap: var(--space-2);
-  transition: opacity 0.22s ease;
+  transition: opacity var(--dur-base) var(--ease-standard);
 }
 .card-media-wrapper:hover .hover-overlay { opacity: 1; }
 
-/* ── Lightbox Modal ─────────────────────── */
-.lightbox-backdrop {
-  position: fixed; inset: 0;
-  background: rgba(0, 0, 0, 0.82);
-  backdrop-filter: blur(12px);
-  display: flex; align-items: center; justify-content: center;
-  z-index: var(--z-lightbox);
-  padding: var(--space-6);
-}
-.lightbox-container {
-  position: relative;
-  width: 100%;
-  max-width: 1040px;
-  max-height: 88vh;
-  background: var(--bg-elevated);
-  border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
-  border-radius: var(--modal-radius);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
+/* CloseButton 的外觀在元件內，這裡只負責釘在右上角 */
 .lightbox-close {
   position: absolute;
-  top: 0.75rem; right: 0.75rem;
-  width: 40px; height: 40px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.1);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-}
-.lightbox-close:hover,
-.lightbox-close:focus-visible { background: rgba(0, 0, 0, 0.8); transform: scale(1.04); }
-.lightbox-close:focus-visible {
-  outline: 3px solid var(--color-primary);
-  outline-offset: 3px;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: var(--z-raised);
 }
 
 .lightbox-scroll-area {
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: var(--space-5) var(--space-6) var(--space-6);
   display: flex;
   flex-direction: column;
 }
 
-/* ── 可點擊放大圖片與 Zoom 提示 ──────────────────────
-   統一用 16:9 比例，避免每筆資料的封面圖尺寸不一造成版面跳動 ── */
+/* 統一 16:9，避免封面尺寸不一造成版面跳動 */
 .lightbox-media-box {
   position: relative;
   width: 100%;
   height: auto;
   aspect-ratio: 16 / 9;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   overflow: hidden;
-  background: #000000;
+  background: var(--bg-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -942,10 +866,9 @@ const handleDelete = (item) => {
   width: 100%;
   height: 100%;
   aspect-ratio: auto;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   outline: none;
   object-fit: contain;
-  background: #000000;
 }
 
 .clickable-media-box {
@@ -953,9 +876,8 @@ const handleDelete = (item) => {
   width: 100%;
   height: 100%;
   aspect-ratio: auto;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   overflow: hidden;
-  background: #000000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -970,22 +892,22 @@ const handleDelete = (item) => {
   position: absolute;
   top: 1rem;
   right: 1rem;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(8px);
+  background: var(--media-shade-strong);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  color: #ffffff;
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--on-media-border);
+  color: var(--on-media);
   padding: var(--space-2) var(--space-3);
-  border-radius: 8px;
-  font-size: var(--fs-tiny);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-meta);
   font-weight: var(--fw-semibold);
   display: flex;
   align-items: center;
   gap: var(--space-2);
   opacity: 0;
   transform: translateY(0);
-  transition: opacity 0.22s ease, transform 0.22s ease;
-  z-index: 10;
+  transition: opacity var(--dur-base) var(--ease-standard), transform var(--dur-base) var(--ease-standard);
+  z-index: var(--z-raised);
   cursor: pointer;
   pointer-events: auto;
 }
@@ -1002,18 +924,12 @@ const handleDelete = (item) => {
   opacity: 1;
 }
 
-.video-media-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
 .lightbox-img {
   width: 100%;
   height: 100%;
   max-height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  transition: transform var(--dur-slow) var(--ease-standard);
 }
 
 .lightbox-media-placeholder {
@@ -1025,9 +941,6 @@ const handleDelete = (item) => {
   transform: scale(1.02);
 }
 
-/* ── 全螢幕放大檢視：實際 UI 已經抽成 FullscreenMediaOverlay.vue 元件，
-   這裡以前的舊版 .fullscreen-* CSS 沒有任何模板在用，移除 ── */
-/* ── 主體兩欄排版：左欄標題＋媒體／右欄各類型自訂內容 ── */
 .lightbox-body-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.15fr);
@@ -1059,9 +972,8 @@ const handleDelete = (item) => {
   border-radius: var(--radius-sm);
 }
 .lightbox-slot-content :deep(.section-title) {
-  /* line-height 跟 h1~h6 共用規則一樣，不重複寫 */
   margin: 0 0 var(--space-1);
-  font-size: var(--fs-label);
+  font-size: var(--fs-meta);
 }
 .lightbox-slot-content :deep(.section-desc) {
   margin: 0;
@@ -1083,10 +995,9 @@ const handleDelete = (item) => {
   white-space: nowrap;
 }
 .lightbox-title {
-  /* 這是 h2，line-height／color 跟 h1~h6 共用規則一樣，不重複寫 */
-  font-size: var(--fs-h1);
+  font-size: var(--fs-lightbox-title);
   font-weight: var(--fw-black);
-  margin: var(--space-3) 0;
+  margin: var(--space-3) 0 var(--space-4);
 }
 .lightbox-footer {
   margin-top: var(--space-5);
@@ -1104,87 +1015,32 @@ const handleDelete = (item) => {
   gap: var(--space-1);
 }
 
-/* Lightbox 編輯 / 刪除 — 純 icon 圓形按鈕，無背景色，跟卡片列表上的
-   ActionIconButton（見 ActionIconButton.vue）同一套 hover 邏輯：
-   不管靜止或 hover 都不填色，只靠邊框與圖示顏色變化來表示狀態。 */
-.lightbox-icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  background: transparent;
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
-  flex-shrink: 0;
-}
-.lightbox-icon-btn:hover {
-  background: transparent;
-  border-color: var(--color-warning);
-  color: var(--color-warning);
-}
-.lightbox-icon-btn.delete:hover {
-  background: transparent;
-  border-color: var(--color-danger);
-  color: var(--color-danger);
-}
-
 .source-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  background: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  color: #fff;
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-sm);
-  font-weight: var(--fw-semibold);
-  font-size: var(--fs-meta);
-  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
-  text-decoration: none;
   flex-shrink: 0;
 }
-.source-btn span {
-  text-box: trim-both cap alphabetic;
-}
-.source-btn:hover {
-  background: var(--bg-hover);
-  color: var(--color-primary);
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-sm);
-}
 
-.fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
+.fade-enter-active, .fade-leave-active { transition: opacity var(--dur-base) var(--ease-standard); }
+.fade-leave-active {
+  transition-duration: var(--dur-fast); /* 離場比進場快 */
+}
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
-@media (min-width: 1440px) { .cards-grid { grid-template-columns: repeat(4, 1fr); } }
-@media (min-width: 1920px) { .cards-grid { grid-template-columns: repeat(5, 1fr); } }
-@media (max-width: 1280px) { .cards-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 860px) {
-  /* 燈箱兩欄排版在窄螢幕（含平板直向）收合成單欄：媒體在上、內容在下 */
+/* 列表欄數由 CardGrid 負責（超寬 5 · 桌機 4 · 筆電 3 · 平板 2 · 手機 1） */
+@media (max-width: 1023px) {
   .lightbox-body-grid { grid-template-columns: 1fr; gap: var(--space-5); }
 }
-@media (max-width: 768px)  {
-  .cards-grid { grid-template-columns: 1fr; }
-  .media-ext-link {
-    opacity: 1;
-  }
+/* 觸控裝置沒有 hover：外連按鈕常駐 */
+@media (pointer: coarse) {
+  .media-ext-link { opacity: 1; }
 }
 @media (max-width: 640px) {
-  .cards-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
   .filter-select { flex: 1; }
-  .lightbox-backdrop { padding: var(--space-3); }
-  .lightbox-container { max-height: calc(100dvh - 1.5rem); border-radius: 16px; }
   .lightbox-scroll-area { padding: var(--space-4); -webkit-overflow-scrolling: touch; }
+  /* 手機單欄時標題會延伸到最右側，跟日期列一樣預留關閉鈕的位置，避免文字被按鈕蓋住 */
+  .lightbox-title { padding-right: 2.75rem; }
   .lightbox-media-box { max-height: 38vh; }
   .lightbox-footer { align-items: stretch; flex-direction: column; }
   .lightbox-actions-group { width: 100%; flex-wrap: wrap; }
-  .source-btn { width: 100%; justify-content: center; }
+  .source-btn { width: 100%; }
 }
 </style>

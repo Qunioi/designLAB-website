@@ -2,7 +2,7 @@
   <Transition name="fade">
     <div v-if="media.url" class="fullscreen-image-backdrop" role="dialog" aria-modal="true" aria-label="全螢幕媒體檢視" @click="$emit('close')">
       <button type="button" class="fullscreen-close-btn" @click="$emit('close')" aria-label="關閉全螢幕媒體" title="關閉全螢幕 (ESC)">
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <Icon name="close" :size="22" :stroke-width="2.5" />
       </button>
       <div class="fullscreen-media-content" @click.stop>
         <video v-if="media.isVideo" :src="media.url" controls autoplay class="fullscreen-video-element"></video>
@@ -13,6 +13,7 @@
 </template>
 
 <script setup>
+import Icon from './base/Icon.vue';
 defineProps({
   media: {
     type: Object,
@@ -27,9 +28,9 @@ defineEmits(['close']);
 .fullscreen-image-backdrop {
   position: fixed;
   inset: 0;
-  background: var(--modal-backdrop);
-  backdrop-filter: blur(16px);
+  background: var(--scrim-media);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -51,7 +52,7 @@ defineEmits(['close']);
   max-width: 90vw;
   max-height: 85vh;
   object-fit: contain;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-surface);
 }
 
@@ -62,20 +63,19 @@ defineEmits(['close']);
   width: 42px;
   height: var(--control-height-lg);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: var(--on-media-soft);
+  color: var(--on-media);
+  border: 1px solid var(--on-media-border);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: calc(var(--z-fullscreen) + 10);
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  transition: background-color var(--dur-base) var(--ease-standard), border-color var(--dur-base) var(--ease-standard), color var(--dur-base) var(--ease-standard), transform var(--dur-base) var(--ease-standard);
 }
 
 .fullscreen-close-btn:hover {
-  background: rgba(255, 255, 255, 0.35);
-  transform: scale(1.1);
+  background: var(--on-media-border);
 }
 
 .fullscreen-close-btn:focus-visible {
@@ -85,7 +85,10 @@ defineEmits(['close']);
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.2s ease;
+  transition: opacity var(--dur-base) var(--ease-standard);
+}
+.fade-leave-active {
+  transition-duration: var(--dur-fast); /* 離場比進場快 */
 }
 
 .fade-enter-from,

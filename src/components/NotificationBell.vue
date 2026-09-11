@@ -1,26 +1,25 @@
 <template>
-  <div class="bell-wrapper" ref="bellRef">
-    <button
-      class="bell-btn"
-      :aria-label="bellAriaLabel"
-      :aria-expanded="showNotifPanel ? 'true' : 'false'"
-      aria-haspopup="dialog"
-      @click="toggleNotifPanel"
-      title="通知中心"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-      </svg>
-      <span class="unread-badge" v-if="unreadCount > 0" aria-hidden="true">{{ unreadCount }}</span>
-    </button>
+  <!-- 通知面板：開關、點外面關閉、Esc 都由 Dropdown 負責 -->
+  <Dropdown v-model:open="showNotifPanel" class="bell-wrapper" align="end">
+    <template #trigger="{ triggerProps }">
+      <button
+        type="button"
+        class="bell-btn"
+        v-bind="triggerProps"
+        :aria-label="bellAriaLabel"
+        aria-haspopup="dialog"
+        @click="toggleNotifPanel"
+        title="通知中心"
+      >
+        <Icon name="bell" :size="18" />
+        <span class="unread-badge" v-if="unreadCount > 0" aria-hidden="true">{{ unreadCount }}</span>
+      </button>
+    </template>
 
-    <!-- 小鈴鐺通知下拉彈窗（不透明實色背景，高對比大字） -->
-    <Transition name="fade">
-      <div class="notif-panel solid-panel" v-if="showNotifPanel" @click.stop>
+      <div class="notif-panel">
         <div class="notif-header">
           <span class="notif-header-title">通知</span>
-          <button class="mark-read-btn" @click="handleMarkAllRead">全標為已讀</button>
+          <BaseButton variant="ghost" size="sm" @click="handleMarkAllRead">全標為已讀</BaseButton>
         </div>
         <div class="notif-list" v-if="notifications.length">
           <div 
@@ -33,23 +32,22 @@
               <span class="notif-title">{{ n.title }}</span>
               <span class="notif-time">{{ n.time }}</span>
             </div>
-            <!-- 高清晰高對比描述文字 (支援管理員 ID 小型化 span) -->
             <p class="notif-msg" v-html="getMsgContent(n)"></p>
           </div>
         </div>
-        <div class="notif-empty" v-else>
-          <span>目前沒有新通知</span>
-        </div>
+        <EmptyState v-else size="sm" title="目前沒有新通知" class="notif-empty" />
       </div>
-    </Transition>
-  </div>
+  </Dropdown>
 </template>
 
 <script setup>
+import EmptyState from './base/EmptyState.vue';
+import Icon from './base/Icon.vue';
+import BaseButton from './base/BaseButton.vue';
+import Dropdown from './base/Dropdown.vue';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { getNotifications, getUnreadNotificationCount, markAllNotificationsAsRead, formatNotificationMessage, getCurrentUser } from '../utils/notifications';
 
-const bellRef = ref(null);
 const showNotifPanel = ref(false);
 const notifications = ref([]);
 const unreadCount = ref(0);
@@ -73,21 +71,13 @@ const refreshNotifications = () => {
   unreadCount.value = getUnreadNotificationCount();
 };
 
-const handleClickOutside = (e) => {
-  if (bellRef.value && !bellRef.value.contains(e.target)) {
-    showNotifPanel.value = false;
-  }
-};
-
 onMounted(() => {
   refreshNotifications();
   timer = setInterval(refreshNotifications, 2000);
-  document.addEventListener('click', handleClickOutside);
 });
 
 onUnmounted(() => {
   if (timer) clearInterval(timer);
-  document.removeEventListener('click', handleClickOutside);
 });
 
 const toggleNotifPanel = () => {
@@ -112,14 +102,14 @@ const handleMarkAllRead = () => {
   width: 38px;
   height: var(--control-height-md);
   border-radius: var(--radius-md);
-  background: var(--bg-card);
+  background: var(--surface-card);
   border: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
   position: relative;
-  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+  transition: background-color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard), transform var(--dur-fast) var(--ease-standard);
   cursor: pointer;
 }
 
@@ -133,14 +123,14 @@ const handleMarkAllRead = () => {
   position: absolute;
   top: -3px;
   right: -3px;
-  background: var(--color-danger);
-  color: #ffffff;
-  font-size: var(--fs-tiny);
+  background: var(--action-danger);
+  color: var(--action-on-danger);
+  font-size: var(--fs-badge);
   font-weight: var(--fw-bold);
   min-width: 17px;
   height: 17px;
   padding: 0 4px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -150,35 +140,15 @@ const handleMarkAllRead = () => {
   z-index: 2;
 }
 
-/* 通知下拉面板 (完全不透明實色背景，避免透光) */
-.notif-panel.solid-panel {
-  position: absolute;
-  top: calc(100% + 0.6rem);
-  right: 0;
-  width: 330px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-surface, rgba(0, 0, 0, 0.1) 0px 4px 12px);
-  z-index: 1000;
+/* 面板外框（背景、框線、陰影、位置）由 Dropdown 負責，這裡只管尺寸 */
+.bell-wrapper :deep(.dropdown-panel) {
   overflow: hidden;
+}
+
+.notif-panel {
   display: flex;
   flex-direction: column;
-}
-
-/* 深色主題提高面板與背景的層次；淺色主題沿用較輕的陰影。 */
-:global(.theme-midnight-indigo) .notif-panel.solid-panel,
-:global(.theme-github-dark) .notif-panel.solid-panel,
-:global(.theme-obsidian-neon) .notif-panel.solid-panel,
-:global(.theme-nord-dark) .notif-panel.solid-panel {
-  box-shadow: rgba(0, 0, 0, 0.5) 0px 4px 12px;
-}
-
-:global(.theme-cloud-canvas) .notif-panel.solid-panel,
-:global(.theme-material-light) .notif-panel.solid-panel,
-:global(.theme-office-access) .notif-panel.solid-panel,
-:global(.theme-nord-light) .notif-panel.solid-panel {
-  box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 12px;
+  width: 330px;
 }
 
 .notif-header {
@@ -186,29 +156,15 @@ const handleMarkAllRead = () => {
   justify-content: space-between;
   align-items: center;
   padding: var(--space-4) var(--space-5);
-  background: var(--bg-card);
+  background: var(--surface-card);
   border-bottom: 1px solid var(--border-color);
 }
 
 .notif-header-title {
-  font-size: var(--fs-body-lg);
-  font-weight: var(--fw-black);
+  font-size: var(--fs-section-title);
+  font-weight: var(--fw-bold);
   color: var(--text-primary);
   letter-spacing: -0.2px;
-}
-
-.mark-read-btn {
-  font-size: var(--fs-tiny);
-  color: var(--color-primary);
-  background: transparent;
-  cursor: pointer;
-  font-weight: var(--fw-bold);
-  transition: opacity 0.2s ease;
-}
-
-.mark-read-btn:hover {
-  opacity: 0.8;
-  text-decoration: underline;
 }
 
 .notif-list {
@@ -216,7 +172,7 @@ const handleMarkAllRead = () => {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  background: var(--bg-card);
+  background: var(--surface-card);
 }
 
 .notif-item {
@@ -225,7 +181,7 @@ const handleMarkAllRead = () => {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  transition: background 0.2s ease;
+  transition: background var(--dur-base) var(--ease-standard);
 }
 
 .notif-item:last-child {
@@ -250,50 +206,57 @@ const handleMarkAllRead = () => {
 }
 
 .notif-time {
-  font-size: var(--fs-tiny);
+  font-size: var(--fs-meta);
   color: var(--text-muted);
   font-weight: var(--fw-medium);
 }
 
-/* 描述文字：深色背景下高亮純白，淺色背景下純黑 */
 .notif-msg {
-  font-size: var(--fs-label);
+  font-size: var(--fs-meta);
   font-weight: var(--fw-medium);
-  color: var(--text-primary); /* 在深色主題自動為白色，淺色主題自動為黑色 */
+  color: var(--text-primary);
   line-height: var(--lh-normal);
   word-break: break-word;
 }
 
 :deep(.notif-handle) {
-  font-size: 0.7175em;
+  font-size: var(--fs-meta);
+  color: var(--text-muted);
   opacity: 0.65;
   font-weight: normal;
   margin: 0 1px;
 }
 
 .notif-empty {
-  padding: 2.2rem;
-  text-align: center;
-  font-size: var(--fs-label);
-  color: var(--text-muted);
-  background: var(--bg-card);
+  background: var(--surface-card);
 }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-  transform: translateY(-6px);
-}
-
-@media (max-width: 900px) {
+@media (max-width: 640px) {
   .bell-btn {
     background: transparent;
     border: none;
+  }
+}
+
+/* 手機：鈴鐺不在畫面最右邊（右側還有選單鈕），330px 的面板以鈴鐺右緣對齊
+   會往左超出螢幕。改成固定在手機頂列下方、左右各留邊距的滿版面板。 */
+@media (max-width: 640px) {
+  .bell-wrapper :deep(.dropdown-panel) {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 5rem);
+    left: var(--space-3);
+    right: var(--space-3);
+  }
+  .notif-panel {
+    width: auto;
+    max-height: min(70vh, 32rem);
+  }
+}
+
+@media (pointer: coarse) {
+  .bell-btn {
+    width: var(--control-height-lg);
+    height: var(--control-height-lg);
   }
 }
 </style>

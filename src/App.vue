@@ -1,69 +1,75 @@
 <template>
-  <div class="app-container" :class="currentTheme">
-    <Navigation
-      :current-view="currentView" 
-      :nickname="nickname"
-      :username="username"
-      @change-view="handleViewChange" 
-    />
+  <AppShell :theme="currentTheme">
+    <template #nav>
+      <Navigation
+        :current-view="currentView"
+        :nickname="nickname"
+        :username="username"
+        :refresh-key="refreshKey"
+        @change-view="handleViewChange"
+      />
+    </template>
 
-    <main class="main-content">
-      <Transition name="fade" mode="out-in">
-          <component
-            :is="currentViewComponent"
-            :key="currentView"
-            ref="viewRef"
-            :highlighted-id="highlightedId"
-            :nickname="nickname"
-            :username="username"
-            :current-theme="currentTheme"
-            @change-view="handleViewChange"
-            @open-search="searchOpen = true"
-            @trigger-crud="handleTriggerCrud"
-            @delete-done="triggerRefresh"
-            @navigate-detail="handleNavigate"
-            @navigate-to-view="handleNavigate"
-            @open-lightbox="(id) => updateUrl(currentView, id)"
-            @close-lightbox="handleCloseModalUrl"
-            @update-nickname="handleNicknameUpdate"
-            @update-user="handleUserUpdate"
-            @select-theme="handleThemeSelect"
-          />
-      </Transition>
-    </main>
+    <Transition name="fade" mode="out-in">
+      <component
+        :is="currentViewComponent"
+        :key="currentView"
+        ref="viewRef"
+        :highlighted-id="highlightedId"
+        :nickname="nickname"
+        :username="username"
+        :current-theme="currentTheme"
+        @change-view="handleViewChange"
+        @open-search="searchOpen = true"
+        @trigger-crud="handleTriggerCrud"
+        @delete-done="triggerRefresh"
+        @navigate-detail="handleNavigate"
+        @navigate-to-view="handleNavigate"
+        @open-lightbox="(id) => updateUrl(currentView, id)"
+        @close-lightbox="handleCloseModalUrl"
+        @update-nickname="handleNicknameUpdate"
+        @update-user="handleUserUpdate"
+        @select-theme="handleThemeSelect"
+      />
+    </Transition>
 
-    <!-- Global Search Modal (Cmd+K) -->
-    <SearchModal 
-      :is-open="searchOpen" 
-      @close="searchOpen = false"
-      @open="searchOpen = true"
-      @navigate="handleNavigate"
-    />
+    <template #overlays>
+      <SearchModal 
+        :is-open="searchOpen" 
+        @close="searchOpen = false"
+        @open="searchOpen = true"
+        @navigate="handleNavigate"
+      />
 
-    <!-- Universal CRUD Modal -->
-    <CRUDModal
-      :is-open="crudModalOpen"
-      :type="crudType"
-      :item="crudItem"
-      :current-theme="currentTheme"
-      :saving="crudSaving"
-      @close="crudModalOpen = false"
-      @save="handleSave"
-    />
-  </div>
+      <CRUDModal
+        :is-open="crudModalOpen"
+        :type="crudType"
+        :item="crudItem"
+        :current-theme="currentTheme"
+        :saving="crudSaving"
+        @close="crudModalOpen = false"
+        @save="handleSave"
+      />
+
+      <ToastHost />
+      <ConfirmDialog />
+    </template>
+  </AppShell>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, provide, readonly } from 'vue';
 import { initializeStorage, addOrUpdateItem } from './utils/storage';
 import { syncAllFromSheets, hasSheetsIntegration } from './utils/sheetsAPI';
 
-// 引入全域與 Modal 元件
+import AppShell from './components/layout/AppShell.vue';
 import Navigation from './components/Navigation.vue';
 import SearchModal from './components/SearchModal.vue';
 import CRUDModal from './components/CRUDModal.vue';
+import ToastHost from './components/ToastHost.vue';
+import ConfirmDialog from './components/ConfirmDialog.vue';
+import { toast } from './utils/toast';
 
-// 引入各視圖元件
 import Dashboard from './views/Dashboard.vue';
 import UIResearch from './views/UIResearch.vue';
 import MotionResearch from './views/MotionResearch.vue';
@@ -89,7 +95,6 @@ const viewComponentMap = {
 };
 const currentViewComponent = computed(() => viewComponentMap[currentView.value] || Dashboard);
 
-// 網址 Route 與 View 名稱雙向對照
 const VIEW_ROUTES = {
   Dashboard: 'dashboard',
   UIResearch: 'ui-research',
@@ -105,7 +110,6 @@ const ROUTE_VIEWS = Object.fromEntries(
   Object.entries(VIEW_ROUTES).map(([view, slug]) => [slug, view])
 );
 
-/** 更新網址 Hash (例如 #/ui-research 或 #/ui-research/2) */
 const updateUrl = (view, itemId = '') => {
   const slug = VIEW_ROUTES[view] || 'dashboard';
   let newHash = `#/${slug}`;
@@ -117,7 +121,6 @@ const updateUrl = (view, itemId = '') => {
   }
 };
 
-/** 從網址列同步讀取 View 與 Item ID */
 const syncViewFromUrl = () => {
   const hashStr = window.location.hash.replace(/^#\/?/, '').split('?')[0];
   const parts = hashStr.split('/');
@@ -143,31 +146,36 @@ const username = ref('@account');
 
 const currentTheme = ref('theme-cloud-canvas');
 
+// 主題 class 掛在 <html>：Teleport 到 body 的彈窗才吃得到主題，亮色主題捲動回彈、載入時也不會露出深色底。
+watch(currentTheme, (theme, previous) => {
+  const root = document.documentElement;
+  if (previous) root.classList.remove(previous);
+  [...root.classList].filter(c => c.startsWith('theme-')).forEach(c => root.classList.remove(c));
+  if (theme) root.classList.add(theme);
+}, { immediate: true });
+
 const isSyncing = ref(false);
+// 首次開啟、本機還沒有快取時，各頁面靠這個顯示骨架畫面，而不是空白或「沒有資料」
+provide('isSyncing', readonly(isSyncing));
 const crudModalOpen = ref(false);
 const crudType = ref('UI_RESEARCH');
 const crudItem = ref(null);
 const crudSaving = ref(false);
 
-// 被高亮的項目 ID（用於搜尋/關聯跳轉後自動定位）
 const highlightedId = ref('');
 
-// 初始化 LocalStorage 與偏好設定
 onMounted(async () => {
   initializeStorage();
   
-  // 優先根據網址帶入頁面（確保重整留在該頁）
   syncViewFromUrl();
   window.addEventListener('popstate', syncViewFromUrl);
   window.addEventListener('hashchange', syncViewFromUrl);
 
-  // 載入當前使用者與其偏好設定的雲端 Theme 佈景主題
   const u = getCurrentUser();
   nickname.value = u.nickname;
   username.value = u.username;
   currentTheme.value = getUserTheme();
 
-  // 從 Google Sheets 同步最新資料（背景執行，完成後還原該使用者選定之雲端 Theme）
   if (hasSheetsIntegration()) {
     isSyncing.value = true;
     try {
@@ -184,14 +192,14 @@ onMounted(async () => {
 
 const handleViewChange = (view) => {
   currentView.value = view;
-  highlightedId.value = ''; // 清除高亮
+  highlightedId.value = '';
   updateUrl(view);
   triggerRefresh();
 };
 
 const viewRef = ref(null);
 
-// 刷新目前頁面資料 (不強行銷毀 Remount View，保證 0 閃爍)
+// 不 remount view，避免閃爍
 const triggerRefresh = () => {
   refreshKey.value++;
   if (viewRef.value && typeof viewRef.value.loadData === 'function') {
@@ -199,14 +207,12 @@ const triggerRefresh = () => {
   }
 };
 
-// 處理來自各頁面的新增/編輯請求
 const handleTriggerCrud = ({ type, item }) => {
   crudType.value = type;
   crudItem.value = item || null;
   crudModalOpen.value = true;
 };
 
-// 處理來自首頁等快捷入口的新增
 const openCrudForCreate = (viewName) => {
   let storageKey = 'UI_RESEARCH';
   if (viewName === 'MotionResearch') storageKey = 'MOTION_RESEARCH';
@@ -215,11 +221,10 @@ const openCrudForCreate = (viewName) => {
   handleTriggerCrud({ type: storageKey, item: null });
 };
 
-// 處理表單儲存：先寫入本機（畫面已同步更新），儲存按鈕維持 loading，
-// 等雲端 Sheets 真的同步完成（成功或失敗都算「結束等待」）才關閉 Modal 並刷新頁面。
-// 同步失敗時 storage.js 的 rollbackWrite_ 已經跳出 alert 並還原本機資料，
-// 這裡讓 Modal 保持開啟，使用者可以直接看著表單重試或取消，不會誤以為存好了。
+// 等雲端同步結束才關閉 Modal：失敗時 storage.js 的 rollbackWrite_ 已提示並還原本機資料，
+// 保持開啟讓使用者直接重試或取消。
 const handleSave = async ({ type, item }) => {
+  const isEdit = !!crudItem.value;
   crudSaving.value = true;
   const { synced } = addOrUpdateItem(type, item);
   const result = await synced;
@@ -227,6 +232,8 @@ const handleSave = async ({ type, item }) => {
 
   if (result && result.success === false) return;
 
+  const title = item.title || item.name;
+  toast.success(`已${isEdit ? '更新' : '新增'}${title ? `「${title}」` : '資料'}`);
   crudModalOpen.value = false;
   highlightedId.value = '';
   updateUrl(currentView.value, '');
@@ -240,7 +247,6 @@ const handleNavigate = ({ view, id }) => {
   triggerRefresh();
 };
 
-// 處理關閉 Lightbox 彈窗時還原網址與清除 Focus 高亮效果
 const handleCloseModalUrl = () => {
   highlightedId.value = '';
   updateUrl(currentView.value, '');
@@ -249,7 +255,6 @@ const handleCloseModalUrl = () => {
   }
 };
 
-// 處理主題切換選擇與雲端備份儲存
 const handleThemeSelect = (themeClass) => {
   currentTheme.value = themeClass;
   saveUserTheme(themeClass);
@@ -269,21 +274,3 @@ const handleUserUpdate = (u) => {
 };
 
 </script>
-
-<style>
-/* 全域轉場動畫 (Airy Smooth Transition) */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.fade-enter-from {
-  opacity: 0;
-  transform: translateY(6px);
-}
-
-.fade-leave-to {
-  opacity: 0;
-  transform: translateY(-6px);
-}
-</style>

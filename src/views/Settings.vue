@@ -6,14 +6,12 @@
     />
 
     <div class="settings-layout">
-      <!-- LEFT COLUMN: Profile -->
       <section class="settings-panel glass-panel profile-panel">
         <div class="panel-label">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <Icon name="user" :size="16" />
           <span>Profile</span>
         </div>
 
-        <!-- 當前帳號與頭像狀態 -->
         <div class="profile-avatar-area">
           <div class="avatar-user-info">
             <div class="avatar-circle" :class="{ 'admin-circle': isAdmin }">
@@ -22,18 +20,14 @@
             <div class="avatar-meta">
               <div class="nickname-row">
                 <span class="avatar-nickname">{{ nickname || '訪客' }}</span>
-                <span v-if="isAdmin" class="admin-crown-wrap" title="已解鎖最高管理員權限">
-                  <svg class="crown-icon-svg" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M2 4l3 12h14l3-12-6 7-4-5-4 5-6-7z"/>
-                    <circle cx="12" cy="3.5" r="1.5"/>
-                  </svg>
+                <span v-if="isAdmin" class="admin-crown-wrap" title="管理員">
+                  <Icon name="crown" :size="14" class="crown-icon-svg" />
                 </span>
               </div>
               <span class="avatar-handle">{{ username || '@account' }}</span>
             </div>
           </div>
 
-          <!-- 已登入狀態：右上角「登出」按鈕 -->
           <button 
             v-if="isLoggedIn" 
             type="button" 
@@ -41,110 +35,95 @@
             @click="handleLogout" 
             title="登出目前帳號"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            <Icon name="logout" :size="13" />
           </button>
         </div>
 
         <div class="profile-separator"></div>
 
-        <!-- 未登入狀態：顯示 ACCOUNT ID 與密碼登入輸入框與登入按鈕 -->
         <form v-if="!isLoggedIn" @submit.prevent="handleQuickIDLogin" class="profile-form">
-          <!-- 曾經登入過、但權杖已失效：明講原因，否則使用者只會看到登出鍵消失與登入框冒出來 -->
+          <!-- 權杖已失效：明講原因，否則使用者只會看到登出鍵消失、登入框冒出來 -->
           <p v-if="isSessionExpired" class="session-expired-notice">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <Icon name="alert-circle" :size="14" />
             <span>登入已逾期，雲端儲存功能暫時無法使用。請重新輸入帳號密碼登入，登入後即可正常儲存。</span>
           </p>
-          <div class="field-group">
-            <label class="field-label">ACCOUNT ID</label>
+          <FormField id="settings-login-id" label="ACCOUNT ID" v-slot="{ id }">
             <div class="field-input-wrap">
-              <input 
-                v-model="quickInputID" 
-                type="text" 
-                placeholder="account" 
-                class="field-input" 
-                autocomplete="username"
-              />
+                <input 
+                  :id="id" 
+                  v-model="quickInputID" 
+                  type="text" 
+                  placeholder="account" 
+                  class="field-input" 
+                  autocomplete="username"
+                />
             </div>
-          </div>
+          </FormField>
 
-          <div class="field-group">
-            <label class="field-label">PASSWORD</label>
+          <FormField id="settings-login-password" label="PASSWORD" v-slot="{ id }">
             <div class="field-input-wrap password-wrap">
-              <input 
-                v-model="quickInputPassword" 
-                :type="showLoginPassword ? 'text' : 'password'" 
-                placeholder="password" 
-                class="field-input" 
-                autocomplete="current-password"
-              />
-              <button 
-                type="button" 
-                class="password-toggle-btn" 
-                @click="showLoginPassword = !showLoginPassword"
-                :title="showLoginPassword ? '隱藏密碼' : '顯示密碼'"
-              >
-                <svg v-if="showLoginPassword" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="23" x2="23" y2="1"></line></svg>
-                <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-              </button>
+                <input 
+                  :id="id" 
+                  v-model="quickInputPassword" 
+                  :type="showLoginPassword ? 'text' : 'password'" 
+                  placeholder="password" 
+                  class="field-input" 
+                  autocomplete="current-password"
+                />
+                <button 
+                  type="button" 
+                  class="password-toggle-btn" 
+                  @click="showLoginPassword = !showLoginPassword"
+                  :title="showLoginPassword ? '隱藏密碼' : '顯示密碼'"
+                >
+                  <Icon name="eye-off" :size="14" v-if="showLoginPassword" />
+                  <Icon name="eye" :size="14" v-else />
+                </button>
             </div>
-          </div>
+          </FormField>
 
           <p v-if="loginErrorMsg" class="auth-error-msg" style="margin-top: var(--space-1);">⚠️ {{ loginErrorMsg }}</p>
 
-          <button type="submit" class="save-btn" :disabled="isLoggingIn || !quickInputID.trim() || !quickInputPassword.trim()">
-            <svg v-if="isLoggingIn" class="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" stroke="none" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-            <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
-            {{ isLoggingIn ? '登入中...' : '登入帳號' }}
-          </button>
+          <BaseButton type="submit" size="lg" block :loading="isLoggingIn" loading-text="登入中…" :disabled="!quickInputID.trim() || !quickInputPassword.trim()">
+            <template #icon><Icon name="login" :size="14" /></template>
+            登入帳號
+          </BaseButton>
         </form>
 
-        <!-- 已登入狀態：顯示 ACCOUNT ID (唯讀) 與 NICKNAME 修改表單 -->
         <form v-else @submit.prevent="saveProfile" class="profile-form">
-          <div class="field-group">
-            <label class="field-label">ACCOUNT ID (帳號 ID)</label>
-            <p class="field-hint">由管理員於 Google Sheets 建立。點擊右側鑰匙圖示修改密碼。</p>
+          <FormField id="settings-account-id" label="ACCOUNT ID (帳號 ID)" description="由管理員於 Google Sheets 建立。點擊右側鑰匙圖示修改密碼。" v-slot="{ id, describedby }">
             <div class="field-input-wrap locked-wrap">
-              <input :value="username" type="text" class="field-input" readonly />
-              <button 
-                type="button" 
-                class="lock-toggle-btn" 
-                @click="openChangePasswordModal" 
-                title="點擊修改個人登入密碼"
-              >
-                <!-- 🔒 密碼鎖頭圖示 (標準 Lock SVG) -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-              </button>
+                <input :id="id" :aria-describedby="describedby" :value="username" type="text" class="field-input" readonly />
+                <button 
+                  type="button" 
+                  class="lock-toggle-btn" 
+                  @click="openChangePasswordModal" 
+                  title="點擊修改個人登入密碼"
+                >
+                  <Icon name="lock" :size="14" />
+                </button>
             </div>
-          </div>
+          </FormField>
 
-          <div class="field-group">
-            <label class="field-label">NICKNAME (顯示暱稱)</label>
-            <p class="field-hint">您在 Design LAB 各項目的顯示暱稱。</p>
-            <input v-model="localNickname" type="text" placeholder="Enter nickname" class="field-input" required />
-          </div>
+          <FormField id="settings-nickname" label="NICKNAME (顯示暱稱)" description="您在 Design LAB 各項目的顯示暱稱。" v-slot="{ id, describedby }">
+            <input :id="id" :aria-describedby="describedby" v-model="localNickname" type="text" placeholder="Enter nickname" class="field-input" required />
+          </FormField>
 
-          <button type="submit" class="save-btn" :disabled="!isNicknameChanged || savingNickname">
-            <svg v-if="savingNickname" class="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" stroke="none" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-            <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            {{ savingNickname ? '儲存中...' : '儲存暱稱修改' }}
-          </button>
+          <BaseButton type="submit" block :loading="savingNickname" :disabled="!isNicknameChanged">
+            <template #icon><Icon name="check" :size="14" /></template>
+            儲存暱稱修改
+          </BaseButton>
         </form>
 
-        <!-- 管理者專屬：彈窗開啟「團隊成員管理」按鈕 -->
         <div v-if="isAdmin" class="manage-users-block">
           <div class="profile-separator"></div>
-          <button 
-            type="button" 
-            class="manage-users-trigger-btn" 
-            @click="showUserMgmtModal = true"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-            <span>團隊成員管理</span>
-            <span class="user-count-badge">{{ (userProfiles && userProfiles.length) ? userProfiles.length : 0 }}</span>
-          </button>
+          <BaseButton variant="secondary" block @click="showUserMgmtModal = true">
+            <template #icon><Icon name="users" :size="15" /></template>
+            團隊成員管理
+            <template #end><span class="user-count-badge">{{ (userProfiles && userProfiles.length) ? userProfiles.length : 0 }}</span></template>
+          </BaseButton>
         </div>
 
-        <!-- Quni 帳號專屬：超級管理員開發者模擬模式控制區 -->
         <div v-if="isDeveloperAccount" class="dev-mode-block">
           <div class="profile-separator"></div>
           <div class="dev-mode-box">
@@ -158,71 +137,43 @@
                 <span class="pulse-dot"></span>
                 <span>正在模擬切換為：<strong>{{ nickname }} ({{ username }})</strong></span>
               </div>
-              <button type="button" class="stop-impersonate-btn" @click="handleStopImpersonate">
+              <BaseButton variant="danger" size="sm" @click="handleStopImpersonate">
                 退出模擬 (返回 Quni)
-              </button>
+              </BaseButton>
             </div>
 
             <div v-else class="dev-select-row">
-              <select v-model="targetImpersonateUser" class="field-input dev-select">
-                <option value="" disabled>-- 請選擇要模擬切換的帳號 --</option>
-                <option value="@guest">訪客 (@guest)</option>
-                <option 
-                  v-for="p in userProfiles" 
-                  :key="p.username" 
-                  :value="p.username"
-                  :disabled="p.username === '@quni_jhuang'"
-                >
-                  {{ p.nickname }} ({{ p.username }}) {{ p.role === 'ADMIN' ? '(管理員)' : '' }}
-                </option>
-              </select>
-              <button 
-                type="button" 
-                class="impersonate-trigger-btn" 
-                :disabled="!targetImpersonateUser"
-                @click="handleStartImpersonate"
-              >
+              <Select v-model="targetImpersonateUser" class="dev-select" :options="impersonateOptions" placeholder="請選擇要模擬切換的帳號" aria-label="要模擬切換的帳號" menu-title="模擬切換為" />
+              <BaseButton :disabled="!targetImpersonateUser" @click="handleStartImpersonate">
                 模擬切換
-              </button>
+              </BaseButton>
             </div>
           </div>
         </div>
 
-        <!-- 獨立彈窗 1：團隊成員管理 Modal 視窗 -->
-        <Teleport to="body">
-          <div v-if="showUserMgmtModal" class="modal-backdrop" :class="currentTheme" @click.self="showUserMgmtModal = false">
-            <div class="modal-card user-mgmt-modal glass-panel" role="dialog" aria-modal="true">
-              <div class="modal-header">
-                <h3>
-                  <svg class="crown-icon-svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M2 4l3 12h14l3-12-6 7-4-5-4 5-6-7z"/>
-                    <circle cx="12" cy="3.5" r="1.5"/>
-                  </svg>
-                  <span>團隊成員管理</span>
-                </h3>
-                <button type="button" class="close-btn" aria-label="關閉團隊成員管理" @click="showUserMgmtModal = false"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-              </div>
+        <BaseModal
+          :open="showUserMgmtModal"
+          size="md"
+          panel-class="user-mgmt-modal"
+          close-label="關閉團隊成員管理"
+          @close="showUserMgmtModal = false"
+        >
+          <template #header>
+            <Icon name="crown" :size="16" class="crown-icon-svg" />
+            <span>團隊成員管理</span>
+          </template>
 
-              <div class="modal-body user-mgmt-body">
-                <!-- 新增成員區塊 -->
+              <div class="base-modal-body user-mgmt-body">
                 <div class="um-section-box">
-                  <label class="um-section-label">新增成員帳號與設定身分</label>
-                  <form @submit.prevent="handleAddUser" class="add-user-modal-form">
-                    <input v-model="newUserNickname" type="text" placeholder="顯示暱稱 (如: Alex)" class="field-input" required />
-                    <input v-model="newUsername" type="text" placeholder="帳號 ID (如: @alex)" class="field-input" required />
-                    <select v-model="newUserRole" class="field-input role-select">
-                      <option value="User">一般使用者 (User)</option>
-                      <option value="Admin">管理員 (Admin)</option>
-                      <option value="Super Admin">最高管理員 (Super Admin)</option>
-                    </select>
-                    <button type="submit" class="add-member-btn" :disabled="isAddingUser">
-                      <svg v-if="isAddingUser" class="animate-spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" stroke="none" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                      <span>{{ isAddingUser ? '新增中…' : '+ 新增成員' }}</span>
-                    </button>
+                  <p id="add-member-heading" class="um-section-label">新增成員帳號與設定身分</p>
+                  <form @submit.prevent="handleAddUser" class="add-user-modal-form" aria-labelledby="add-member-heading">
+                    <input v-model="newUserNickname" aria-label="顯示暱稱" type="text" placeholder="顯示暱稱 (如: Alex)" class="field-input" required />
+                    <input v-model="newUsername" aria-label="帳號 ID" type="text" placeholder="帳號 ID (如: @alex)" class="field-input" required />
+                    <Select v-model="newUserRole" class="role-select" :options="ROLE_OPTIONS" aria-label="身分" />
+                    <BaseButton type="submit" class="add-member-btn" :loading="isAddingUser" loading-text="新增中…">+ 新增成員</BaseButton>
                   </form>
                 </div>
 
-                <!-- 成員名單區塊 -->
                 <div class="um-section-box">
                   <div class="um-list-header">
                     <span class="um-section-label">現有成員名單 (共 {{ (userProfiles && userProfiles.length) ? userProfiles.length : 0 }} 人)</span>
@@ -235,7 +186,6 @@
                         <span class="user-modal-handle">{{ p.username }}</span>
                       </div>
                       <div class="user-modal-right">
-                        <!-- 自訂排序按鈕群 (⬆️ 上移 / ⬇️ 下移) -->
                         <div class="user-reorder-btns">
                           <button
                             type="button"
@@ -244,8 +194,8 @@
                             @click="handleMoveUser(index, -1)"
                             title="向上移動成員順序"
                           >
-                            <svg v-if="reorderingUserIndex === index" class="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" stroke="none" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                            <svg v-else xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                            <Spinner v-if="reorderingUserIndex === index" :size="12" />
+                            <Icon name="chevron-up" :size="12" :stroke-width="2.5" v-else />
                           </button>
                           <button
                             type="button"
@@ -254,33 +204,30 @@
                             @click="handleMoveUser(index, 1)"
                             title="向下移動成員順序"
                           >
-                            <svg v-if="reorderingUserIndex === index" class="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" stroke="none" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                            <svg v-else xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            <Spinner v-if="reorderingUserIndex === index" :size="12" />
+                            <Icon name="chevron-down" :size="12" :stroke-width="2.5" v-else />
                           </button>
                         </div>
 
-                        <span class="user-role-tag" :class="(p.role || '').toLowerCase().includes('admin') ? 'admin' : 'user'">
-                          <span>{{ p.role || 'User' }}</span>
-                        </span>
-                        <button
-                          class="del-user-btn reset-pass-btn"
-                          :disabled="resettingUsername === p.username || deletingUsername === p.username"
+                        <Chip variant="status" :tone="isAdminRole(p.role) ? 'primary' : 'neutral'">{{ roleLabel(p.role) }}</Chip>
+                        <IconButton
+                          icon="lock"
+                          size="sm"
+                          label="重設為臨時密碼 123456，該成員下次登入需強制變更"
+                          :loading="resettingUsername === p.username"
+                          :disabled="deletingUsername === p.username"
                           @click="handleResetPassword(p.username)"
-                          title="重設為臨時密碼 123456，該成員下次登入需強制變更"
-                        >
-                          <svg v-if="resettingUsername === p.username" class="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" stroke="none" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                          <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                        </button>
-                        <button
-                          v-if="!(p.role || '').toLowerCase().includes('admin') && p.username !== '@quni_jhuang' && p.username !== '@ray_zhao'"
-                          class="del-user-btn"
-                          :disabled="deletingUsername === p.username || resettingUsername === p.username"
+                        />
+                        <IconButton
+                          v-if="!isAdminRole(p.role) && p.username !== '@quni_jhuang' && p.username !== '@ray_zhao'"
+                          icon="trash-2"
+                          size="sm"
+                          variant="delete"
+                          :label="`刪除成員 ${p.nickname}`"
+                          :loading="deletingUsername === p.username"
+                          :disabled="resettingUsername === p.username"
                           @click="handleDeleteUser(p.username)"
-                          title="刪除此成員"
-                        >
-                          <svg v-if="deletingUsername === p.username" class="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" stroke="none" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                          <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                        </button>
+                        />
                       </div>
                     </div>
                   </div>
@@ -288,157 +235,94 @@
                 </div>
               </div>
 
-              <div class="modal-footer">
-                <button class="cancel-btn" @click="showUserMgmtModal = false">關閉</button>
-              </div>
-            </div>
-          </div>
-        </Teleport>
+          <template #footer>
+            <BaseButton variant="secondary" @click="showUserMgmtModal = false">關閉</BaseButton>
+          </template>
+        </BaseModal>
 
-        <!-- 獨立彈窗 2：修改個人密碼 Modal 視窗 -->
-        <Teleport to="body">
-          <div v-if="showChangePassModal" class="modal-backdrop" :class="currentTheme" @click.self="showChangePassModal = false">
-            <div class="modal-card auth-modal glass-panel" role="dialog" aria-modal="true">
-              <div class="modal-header">
-                <h3>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                  <span>修改個人密碼 (Change Password)</span>
-                </h3>
-                <button type="button" class="close-btn" aria-label="關閉修改密碼" @click="showChangePassModal = false"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-              </div>
-              <div class="modal-body">
+        <BaseModal
+          :open="showChangePassModal"
+          size="sm"
+          panel-class="auth-modal"
+          close-label="關閉修改密碼"
+          @close="showChangePassModal = false"
+        >
+          <template #header>
+            <Icon name="lock" :size="16" />
+            <span>修改個人密碼 (Change Password)</span>
+          </template>
+
+              <div class="base-modal-body auth-modal-body">
                 <p class="auth-desc">修改帳號 <code>{{ username }}</code> 的個人登入密碼：</p>
 
-                <div class="field-group" style="margin-bottom: var(--space-3);">
-                  <label class="field-label">原密碼 (Current Password)</label>
-                  <input 
-                    v-model="oldPasswordInput" 
-                    type="password" 
-                    placeholder="請輸入原密碼 (預設: 123456)" 
-                    class="field-input" 
-                  />
-                </div>
+                <FormField id="settings-old-password" label="原密碼 (Current Password)" v-slot="{ id }">
+                  <input
+                      :id="id" 
+                      v-model="oldPasswordInput" 
+                      type="password" 
+                      placeholder="請輸入原密碼 (預設: 123456)" 
+                      class="field-input" 
+                    />
+                </FormField>
 
-                <div class="field-group" style="margin-bottom: var(--space-3);">
-                  <label class="field-label">新密碼 (New Password)</label>
-                  <input 
-                    v-model="newPasswordInput" 
-                    type="password" 
-                    placeholder="請輸入新密碼" 
-                    class="field-input" 
-                  />
-                </div>
+                <FormField id="settings-new-password" label="新密碼 (New Password)" v-slot="{ id }">
+                  <input
+                      :id="id" 
+                      v-model="newPasswordInput" 
+                      type="password" 
+                      placeholder="請輸入新密碼" 
+                      class="field-input" 
+                    />
+                </FormField>
 
-                <div class="field-group">
-                  <label class="field-label">確認新密碼 (Confirm New Password)</label>
-                  <input 
-                    v-model="confirmPasswordInput" 
-                    type="password" 
-                    placeholder="請再次輸入新密碼" 
-                    class="field-input" 
-                  />
-                </div>
+                <FormField id="settings-confirm-password" label="確認新密碼 (Confirm New Password)" v-slot="{ id }">
+                  <input
+                      :id="id" 
+                      v-model="confirmPasswordInput" 
+                      type="password" 
+                      placeholder="請再次輸入新密碼" 
+                      class="field-input" 
+                    />
+                </FormField>
 
                 <p v-if="passErrorMsg" class="auth-error-msg">⚠️ {{ passErrorMsg }}</p>
               </div>
-              <div class="modal-footer">
-                <button class="cancel-btn" @click="showChangePassModal = false">取消</button>
-                <button class="submit-btn" :disabled="isChangingPassword" @click="handleChangePasswordSubmit">
-                  <svg v-if="isChangingPassword" class="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" stroke="none" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                  {{ isChangingPassword ? '修改中…' : '確認修改密碼' }}
-                </button>
-              </div>
-            </div>
-          </div>
-        </Teleport>
 
+          <template #footer>
+            <BaseButton variant="secondary" @click="showChangePassModal = false">取消</BaseButton>
+                <BaseButton :loading="isChangingPassword" loading-text="修改中…" @click="handleChangePasswordSubmit">確認修改密碼</BaseButton>
+          </template>
+        </BaseModal>
 
       </section>
 
-
-      <!-- RIGHT COLUMN: Theme Picker -->
       <section class="settings-panel glass-panel theme-panel">
         <div class="panel-label">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 0 0 20 4 4 0 0 0 0-8 2 2 0 0 1 0-4 10 10 0 0 0 0-8z"></path></svg>
+          <Icon name="palette" :size="16" />
           <span>Appearance</span>
         </div>
 
-        <!-- Dark Section -->
-        <div class="theme-group">
-          <h3 class="theme-group-label">Dark Themes</h3>
-          <div class="theme-cards-row">
-            <div 
-              v-for="theme in darkThemes" 
-              :key="theme.class"
-              class="theme-card"
-              :class="[theme.class, { selected: currentTheme === theme.class }]"
-              @click="$emit('select-theme', theme.class)"
-            >
-              <div class="theme-preview" :style="theme.previewStyle">
-                <div class="preview-sidebar" :style="{ background: theme.sidebarColor }"></div>
-                <div class="preview-body">
-                  <div class="preview-line long" :style="{ background: theme.textColor }"></div>
-                  <div class="preview-line short" :style="{ background: theme.accentColor }"></div>
-                  <div class="preview-cards-row">
-                    <div class="preview-mini-card" :style="{ background: theme.cardColor, borderColor: theme.borderColor }"></div>
-                    <div class="preview-mini-card" :style="{ background: theme.cardColor, borderColor: theme.borderColor }"></div>
-                  </div>
-                </div>
-              </div>
-              <div class="theme-card-footer">
-                <div class="theme-name-wrap">
-                  <h4>{{ theme.name }}</h4>
-                  <span class="selected-indicator" v-if="currentTheme === theme.class">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Light Section -->
-        <div class="theme-group">
-          <h3 class="theme-group-label">Light Themes</h3>
-          <div class="theme-cards-row">
-            <div 
-              v-for="theme in lightThemes" 
-              :key="theme.class"
-              class="theme-card"
-              :class="[theme.class, { selected: currentTheme === theme.class }]"
-              @click="$emit('select-theme', theme.class)"
-            >
-              <div class="theme-preview" :style="theme.previewStyle">
-                <div class="preview-sidebar" :style="{ background: theme.sidebarColor }"></div>
-                <div class="preview-body">
-                  <div class="preview-line long" :style="{ background: theme.textColor }"></div>
-                  <div class="preview-line short" :style="{ background: theme.accentColor }"></div>
-                  <div class="preview-cards-row">
-                    <div class="preview-mini-card" :style="{ background: theme.cardColor, borderColor: theme.borderColor }"></div>
-                    <div class="preview-mini-card" :style="{ background: theme.cardColor, borderColor: theme.borderColor }"></div>
-                  </div>
-                </div>
-              </div>
-              <div class="theme-card-footer">
-                <div class="theme-name-wrap">
-                  <h4>{{ theme.name }}</h4>
-                  <span class="selected-indicator" v-if="currentTheme === theme.class">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ThemePicker :model-value="currentTheme" @update:model-value="$emit('select-theme', $event)" />
       </section>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import ThemePicker from '../components/ThemePicker.vue';
+import Chip from '../components/base/Chip.vue';
+import Select from '../components/base/Select.vue';
+import { toast } from '../utils/toast';
+import { confirmDialog } from '../utils/confirm';
+import BaseModal from '../components/base/BaseModal.vue';
+import FormField from '../components/base/FormField.vue';
+import IconButton from '../components/base/IconButton.vue';
+import Icon from '../components/base/Icon.vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import BaseButton from '../components/base/BaseButton.vue';
+import Spinner from '../components/base/Spinner.vue';
+import { identityVersion } from '../utils/identity';
 import PageHeader from '../components/PageHeader.vue';
-import NotificationBell from '../components/NotificationBell.vue';
 
 import {
   getUserProfiles,
@@ -463,9 +347,16 @@ const targetImpersonateUser = ref('');
 const impersonatorInfo = ref(getImpersonatorStatus());
 const isImpersonating = computed(() => impersonatorInfo.value.isImpersonating);
 
-// 身分模擬區塊僅對最高管理員 (Super Admin) 顯示（或正處於模擬狀態中時，方便看到「退出模擬」）；
-// 一律以伺服器記錄的角色為準，不再有任何帳號名稱字串可以取得這塊 UI。
-const isDeveloperAccount = computed(() => isImpersonating.value || isSuperAdminUser());
+// 身分模擬只對 Super Admin（或正在模擬中）顯示，一律以伺服器記錄的角色為準
+const isDeveloperAccount = computed(() => {
+  identityVersion.value; // 登出／權杖過期／身分模擬切換時重新判斷
+  props.username;
+  return isImpersonating.value || isSuperAdminUser();
+});
+
+// 身分標籤只顯示 Admin／User；Super Admin 的權限照舊保留
+const isAdminRole = (role) => /admin/i.test(role || '');
+const roleLabel = (role) => (isAdminRole(role) ? 'Admin' : 'User');
 
 const handleStartImpersonate = () => {
   if (!targetImpersonateUser.value) return;
@@ -474,7 +365,7 @@ const handleStartImpersonate = () => {
     impersonatorInfo.value = getImpersonatorStatus();
     emit('update-user', { nickname: targetUserObj.nickname, username: targetUserObj.username });
   } catch (e) {
-    alert(e.message);
+    toast.error('無法切換模擬帳號', { detail: e.message });
   }
 };
 
@@ -504,8 +395,6 @@ const handleMoveUser = async (index, delta) => {
   }
 };
 
-
-
 const props = defineProps({
   nickname: { type: String, required: true },
   username: { type: String, required: true },
@@ -518,10 +407,9 @@ const userProfiles = ref([]);
 const localNickname = ref(props.nickname);
 const localUsername = ref(props.username);
 
-// 顯示身分（帳號不是訪客）+ 手上真的還握著有效的 Session Token 才算「已登入」——
-// Token 過期時本機顯示身分不會自動消失，只看帳號會誤判成「還在登入中」，
-// 讓使用者看不到登入表單、無從重新登入（見 hasActiveSession() 的說明）。
+// Token 過期時本機顯示身分不會消失，只看帳號會誤判成已登入、看不到登入表單（見 hasActiveSession()）
 const isLoggedIn = computed(() => {
+  identityVersion.value; // 登出／權杖過期／身分模擬切換時重新判斷
   return !!(props.username && props.username !== '@guest' && props.username !== 'guest' && props.username !== '@account' && hasActiveSession());
 });
 
@@ -542,10 +430,26 @@ watch(() => props.username, (v) => {
   }
 }, { immediate: true });
 
+// 新增成員時可選的身分（選單不提供 Super Admin）
+const ROLE_OPTIONS = [
+  { value: 'User', label: '一般使用者 (User)' },
+  { value: 'Admin', label: '管理員 (Admin)' }
+];
+
+// 開發者模擬切換的帳號清單：訪客＋所有成員，自己不能選
+const impersonateOptions = computed(() => [
+  { value: '@guest', label: '訪客 (@guest)' },
+  ...(userProfiles.value || []).map(p => ({
+    value: p.username,
+    label: `${p.nickname} (${p.username})${isAdminRole(p.role) ? ' (管理員)' : ''}`,
+    disabled: p.username === '@quni_jhuang'
+  }))
+]);
+
 const showUserMgmtModal = ref(false);
 const newUserNickname = ref('');
 const newUsername = ref('');
-const newUserRole = ref('USER');
+const newUserRole = ref('User');
 
 const isAddingUser = ref(false);
 const handleAddUser = async () => {
@@ -559,28 +463,33 @@ const handleAddUser = async () => {
     });
     newUserNickname.value = '';
     newUsername.value = '';
-    newUserRole.value = 'USER';
+    newUserRole.value = 'User';
     refreshProfiles();
-    alert('成功新增成員並同步至 Google Sheets USERS 分頁！臨時密碼為 123456，該成員首次登入需強制變更密碼。');
+    toast.success('已新增成員', { detail: '已同步到 Google Sheets。臨時密碼是 123456，對方第一次登入時會被要求改密碼。', duration: 6000 });
   } catch (err) {
-    alert(err.message || '新增成員失敗！');
+    toast.error('新增成員失敗', { detail: err.message || '請稍後再試一次。' });
   } finally {
     isAddingUser.value = false;
   }
 };
 
-
 const deletingUsername = ref('');
 const handleDeleteUser = async (targetUsername) => {
   if (deletingUsername.value) return;
-  if (!confirm(`確定要刪除成員 ${targetUsername} 嗎？`)) return;
+  const ok = await confirmDialog({
+    title: `刪除成員 ${targetUsername}？`,
+    message: '對方將無法再登入 Design LAB。',
+    confirmText: '刪除成員',
+    danger: true
+  });
+  if (!ok) return;
   deletingUsername.value = targetUsername;
   try {
     await removeUserProfile(targetUsername);
     refreshProfiles();
-    alert('已成功刪除該成員！');
+    toast.success('已刪除成員', { detail: targetUsername });
   } catch (err) {
-    alert(err.message || '刪除成員失敗！');
+    toast.error('刪除成員失敗', { detail: err.message || '請稍後再試一次。' });
   } finally {
     deletingUsername.value = '';
   }
@@ -589,33 +498,39 @@ const handleDeleteUser = async (targetUsername) => {
 const resettingUsername = ref('');
 const handleResetPassword = async (targetUsername) => {
   if (resettingUsername.value) return;
-  if (!confirm(`確定要將 ${targetUsername} 的密碼重設為臨時密碼 123456 嗎？\n該成員下次登入時將被強制要求變更密碼。`)) return;
+  const ok = await confirmDialog({
+    title: `重設 ${targetUsername} 的密碼？`,
+    message: '密碼會改成臨時密碼 123456，對方下次登入時會被要求改密碼。',
+    confirmText: '重設密碼'
+  });
+  if (!ok) return;
   resettingUsername.value = targetUsername;
   try {
     const result = await adminResetPassword(targetUsername);
     if (result.success) {
-      alert(`已將 ${targetUsername} 的密碼重設為臨時密碼 123456，請通知該成員盡快登入並修改密碼。`);
+      toast.success('已重設密碼', { detail: `${targetUsername} 的密碼已改成 123456，請通知對方盡快登入並修改。`, duration: 6000 });
     } else {
-      alert(result.error || '重設密碼失敗！');
+      toast.error('重設密碼失敗', { detail: result.error || '請稍後再試一次。' });
     }
   } finally {
     resettingUsername.value = '';
   }
 };
 
+// 以目前 Session 對應的伺服器角色為準；Session 過期時 isAdminUser() 回 false，管理功能一起收起。
+// 依附 props.username：localStorage 不是響應式，身分模擬切換後才會重算。
+const isAdmin = computed(() => {
+  identityVersion.value; // 登出／權杖過期／身分模擬切換時重新判斷
+  props.username;
+  return isAdminUser();
+});
 
-// 是否為管理員（Super Admin / Admin）：一律以目前登入 Session 對應的伺服器角色為準，
-// 不再有任何帳號名稱字串可以繞過此判斷。Session 過期時 isAdminUser() 會回 false，
-// 皇冠與管理功能一起收起來，才不會出現「顯示管理員但什麼都存不了」的矛盾畫面。
-const isAdmin = computed(() => isAdminUser());
-
-// 本機還留著帳號顯示身分，但手上已經沒有有效 Session Token——也就是「登入已逾期」。
-// 這時要明講原因，否則使用者只會看到登出鍵不見、又跑出登入框，不知道發生什麼事。
+// 還留著顯示身分、但沒有有效 Token＝登入已逾期，要明講原因
 const isSessionExpired = computed(() => {
+  identityVersion.value; // 登出／權杖過期／身分模擬切換時重新判斷
   return !!(props.username && props.username !== '@guest' && props.username !== 'guest' && props.username !== '@account' && !hasActiveSession());
 });
 
-// 修改個人密碼狀態與處理方法
 const showChangePassModal = ref(false);
 const isChangingPassword = ref(false);
 const oldPasswordInput = ref('');
@@ -659,7 +574,7 @@ const handleChangePasswordSubmit = async () => {
   try {
     const result = await updateUserPassword(props.username, oldPasswordInput.value, newPasswordInput.value);
     if (result.success) {
-      alert('密碼修改成功！新密碼已儲存。');
+      toast.success('密碼已修改');
       showChangePassModal.value = false;
       mustChangePassword.value = false;
     } else {
@@ -684,15 +599,12 @@ const handleLogout = async () => {
   emit('update-nickname', u.nickname);
 };
 
-
-
 const refreshProfiles = () => {
   userProfiles.value = getUserProfiles();
 };
 
 watch(() => props.nickname, (v) => { localNickname.value = v; });
 watch(() => props.username, (v) => { localUsername.value = v; });
-
 
 const quickInputID = ref('');
 const quickInputPassword = ref('');
@@ -703,8 +615,7 @@ watch([quickInputID, quickInputPassword], () => {
   if (loginErrorMsg.value) loginErrorMsg.value = '';
 });
 
-// 登入成功但伺服器標示「必須變更密碼」時（例如新帳號的臨時密碼、或管理員重設過），
-// 強制先跳出修改密碼視窗，避免使用者一直用臨時密碼 123456 登入。
+// 伺服器標示必須變更密碼時（臨時密碼、管理員重設過）強制先改密碼
 const mustChangePassword = ref(false);
 const isLoggingIn = ref(false);
 
@@ -764,8 +675,7 @@ const saveProfile = async () => {
     const user = setCurrentUser(nick, props.username || '@quni_jhuang');
     const result = await user.synced;
     if (result && result.success === false) {
-      // 同步失敗：setCurrentUser 已經把本機暱稱／成員列表還原並提示錯誤，
-      // 這裡不要再樂觀把新暱稱套到畫面上，維持原本顯示的暱稱。
+      // 同步失敗時 setCurrentUser 已還原並提示，這裡不要樂觀更新暱稱
       return;
     }
     refreshProfiles();
@@ -776,101 +686,14 @@ const saveProfile = async () => {
   }
 };
 
-
-
+// 成員名單在雲端同步完成後才會更新：直接用網址進到設定頁時要跟著重讀
 onMounted(() => {
   refreshProfiles();
+  window.addEventListener('design-lab-storage-updated', refreshProfiles);
 });
-
-const darkThemes = [
-  {
-    class: 'theme-midnight-indigo',
-    name: 'Palenight Theme',
-    previewStyle: { background: '#0e0f14' },
-    sidebarColor: '#171926',
-    textColor: 'rgba(243,241,247,0.72)',
-    accentColor: '#8b5cc7',
-    cardColor: 'rgba(41,45,66,0.92)',
-    borderColor: 'rgba(201,203,234,0.12)'
-  },
-  {
-    class: 'theme-github-dark',
-    name: 'Graphite Blue',
-    previewStyle: { background: '#17191f' },
-    sidebarColor: '#14161c',
-    textColor: 'rgba(245,247,251,0.68)',
-    accentColor: '#78a9ff',
-    cardColor: 'rgba(35,39,49,0.9)',
-    borderColor: 'rgba(226,232,240,0.1)'
-  },
-  {
-    class: 'theme-obsidian-neon',
-    name: 'Ember Atelier',
-    previewStyle: { background: '#171412' },
-    sidebarColor: '#12100f',
-    textColor: 'rgba(255,247,237,0.68)',
-    accentColor: '#e5a86b',
-    cardColor: 'rgba(41,35,31,0.9)',
-    borderColor: 'rgba(255,237,213,0.1)'
-  },
-  {
-    class: 'theme-nord-dark',
-    name: 'Nord Polar Night',
-    previewStyle: { background: '#2e3440' },
-    sidebarColor: '#3b4252',
-    textColor: 'rgba(216,222,233,0.6)',
-    accentColor: '#88c0d0',
-    cardColor: 'rgba(59,66,82,0.85)',
-    borderColor: 'rgba(216,222,233,0.1)'
-  }
-];
-
-const lightThemes = [
-  {
-    class: 'theme-cloud-canvas',
-    name: 'Cloud Canvas',
-    previewStyle: { background: '#f8f9fc' },
-    sidebarColor: '#eef0f5',
-    textColor: 'rgba(15,23,42,0.5)',
-    accentColor: '#2563eb',
-    cardColor: 'rgba(255,255,255,0.92)',
-    borderColor: 'rgba(15,23,42,0.06)'
-  },
-  {
-    class: 'theme-material-light',
-    name: 'Material Light',
-    previewStyle: { background: '#fafafa' },
-    sidebarColor: '#f0f0f0',
-    textColor: 'rgba(33,33,33,0.6)',
-    accentColor: 'hsl(174 42% 50%)',
-    cardColor: 'rgba(255,255,255,0.95)',
-    borderColor: 'rgba(0,0,0,0.08)'
-  },
-  {
-    class: 'theme-office-access',
-    name: 'Office Access',
-    previewStyle: { background: '#f3f2f1' },
-    sidebarColor: '#faf9f8',
-    textColor: 'rgba(50,49,48,0.68)',
-    accentColor: '#b23a3f',
-    cardColor: '#ffffff',
-    borderColor: 'rgba(50,49,48,0.12)'
-  },
-
-
-
-
-  {
-    class: 'theme-nord-light',
-    name: 'Nord Snow',
-    previewStyle: { background: '#eceff4' },
-    sidebarColor: '#e5e9f0',
-    textColor: 'rgba(46,52,64,0.6)',
-    accentColor: '#5e81ac',
-    cardColor: 'rgba(255,255,255,0.95)',
-    borderColor: 'rgba(46,52,64,0.08)'
-  }
-];
+onUnmounted(() => {
+  window.removeEventListener('design-lab-storage-updated', refreshProfiles);
+});
 
 </script>
 
@@ -878,20 +701,18 @@ const lightThemes = [
 .settings-view {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-stack);
 }
 
-/* Main layout: profile left, themes right */
 .settings-layout {
   display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: var(--space-4);
+  grid-template-columns: 320px minmax(0, 1fr); /* minmax(0, …)：欄寬不被內容的最小寬度撐開 */
+  gap: var(--grid-gap);
   align-items: start;
 }
 
-/* Panel shared style */
 .settings-panel {
-  padding: var(--space-7);
+  padding: var(--panel-padding);
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
@@ -901,7 +722,7 @@ const lightThemes = [
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: var(--fs-caption);
+  font-size: var(--fs-meta);
   font-weight: var(--fw-semibold);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -914,7 +735,6 @@ const lightThemes = [
 
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
-/* ── Quni 專屬開發者模擬模式區塊 ────────────── */
 .dev-mode-block {
   margin-top: var(--space-4);
 }
@@ -922,7 +742,7 @@ const lightThemes = [
 .dev-mode-box {
   background: var(--glow-primary);
   border: 1px dashed var(--color-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: var(--space-4);
   display: flex;
   flex-direction: column;
@@ -936,56 +756,31 @@ const lightThemes = [
 }
 
 .dev-badge {
-  background: var(--color-primary);
-  color: #ffffff;
+  background: var(--action-primary);
+  color: var(--action-on-primary);
   font-size: var(--fs-meta);
   font-weight: var(--fw-bold);
-  padding: var(--space-1) var(--space-2);
-  border-radius: 99px;
+  padding: var(--space-1) var(--space-4);
+  border-radius: var(--radius-full);
   box-shadow: var(--shadow-sm);
 }
 
 .dev-select-row {
   display: flex;
+  flex-direction: column;
   gap: var(--space-2);
-  align-items: center;
 }
 
 .dev-select {
   flex: 1;
-  font-size: var(--fs-label);
-  padding: var(--space-2) var(--space-3);
-}
-
-.impersonate-trigger-btn {
-  background: var(--color-primary);
-  color: var(--color-on-primary);
-  border: 1px solid var(--color-primary);
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-sm);
-  font-size: var(--fs-label);
-  font-weight: var(--fw-bold);
-  cursor: pointer;
-  white-space: nowrap;
-  box-shadow: var(--shadow-sm);
-  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
-}
-
-.impersonate-trigger-btn:hover:not(:disabled) {
-  background: var(--bg-hover);
-  color: var(--color-primary);
-}
-
-.impersonate-trigger-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  min-width: 0;
 }
 
 .impersonating-active-banner {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  background: rgba(220, 38, 38, 0.1);
+  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
   border: 1px solid var(--color-danger);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
@@ -995,52 +790,33 @@ const lightThemes = [
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: var(--fs-label);
+  font-size: var(--fs-body);
   color: var(--text-primary);
 }
 
 .pulse-dot {
+  position: relative;
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--color-danger);
-  box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
-  animation: pulse-red 1.6s infinite;
+  background: var(--action-danger);
+}
+
+/* 往外擴散的光圈：只動 transform／opacity */
+.pulse-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--action-danger);
+  animation: pulse-red 1.6s ease-out 3; /* 播 3 次就停，不無限閃爍 */
 }
 
 @keyframes pulse-red {
-  0% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
-  }
-  70% {
-    transform: scale(1);
-    box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
-  }
-  100% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
-  }
+  from { transform: scale(1); opacity: 0.6; }
+  to { transform: scale(2.5); opacity: 0; }
 }
 
-.stop-impersonate-btn {
-  background: var(--color-danger);
-  color: #ffffff;
-  border: 1px solid var(--color-danger);
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-sm);
-  font-size: var(--fs-meta);
-  font-weight: var(--fw-bold);
-  cursor: pointer;
-  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
-}
-
-.stop-impersonate-btn:hover {
-  background: var(--bg-hover);
-  color: var(--color-danger);
-}
-
-/* ========= PROFILE PANEL ========= */
 .profile-avatar-area {
   display: flex;
   align-items: center;
@@ -1059,18 +835,18 @@ const lightThemes = [
   align-items: center;
   gap: var(--space-1);
   padding: var(--space-2);
-  border-radius: 8px;
-  background: rgba(239, 68, 68, 0.1);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
   color: var(--color-danger);
   font-size: var(--fs-meta);
   font-weight: var(--fw-semibold);
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition: background-color var(--dur-base) var(--ease-standard), border-color var(--dur-base) var(--ease-standard), color var(--dur-base) var(--ease-standard);
 }
 
 .logout-btn:hover {
-  background: var(--color-danger);
-  color: #ffffff;
+  background: var(--action-danger);
+  color: var(--action-on-danger);
   border-color: var(--color-danger);
 }
 
@@ -1087,9 +863,9 @@ const lightThemes = [
 
 .avatar-letter {
   font-family: var(--font-title);
-  font-size: var(--fs-h2);
+  font-size: var(--fs-glyph);
   font-weight: var(--fw-bold);
-  color: #fff;
+  color: var(--action-on-primary);
 }
 
 .avatar-meta {
@@ -1099,13 +875,13 @@ const lightThemes = [
 }
 
 .avatar-nickname {
-  font-size: var(--fs-h3);
+  font-size: var(--fs-section-title);
   font-weight: var(--fw-bold);
   color: var(--text-primary);
 }
 
 .avatar-handle {
-  font-size: var(--fs-caption);
+  font-size: var(--fs-meta);
   color: var(--text-muted);
 }
 
@@ -1120,22 +896,8 @@ const lightThemes = [
   gap: var(--space-2);
 }
 
-.field-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.field-label {
-  font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
 .field-hint {
-  font-size: var(--fs-tiny);
+  font-size: var(--fs-meta);
   color: var(--text-muted);
   margin-bottom: var(--space-1);
 }
@@ -1162,7 +924,7 @@ const lightThemes = [
 .field-input-wrap input[readonly] {
   color: var(--text-muted);
   cursor: not-allowed;
-  background: rgba(128, 128, 128, 0.06);
+  background: var(--bg-subtle);
 }
 
 .field-input {
@@ -1173,7 +935,7 @@ const lightThemes = [
   border-radius: var(--radius-sm);
   font-size: var(--fs-body);
   color: var(--text-primary);
-  transition: border-color 0.18s ease;
+  transition: border-color var(--dur-fast) var(--ease-standard);
 }
 
 .field-input::placeholder {
@@ -1186,203 +948,11 @@ const lightThemes = [
   outline: none;
 }
 
-
-.save-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  background: var(--color-primary);
-  color: #fff;
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-sm);
-  font-size: var(--fs-body);
-  font-weight: var(--fw-semibold);
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-}
-
-.save-btn:hover:not(:disabled) {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
-}
-
-.save-btn:disabled {
-  background: rgba(128, 128, 128, 0.1);
-  border: 1px solid var(--border-color);
-  color: var(--text-muted);
-  cursor: not-allowed;
-}
-
-
-/* ========= THEME PANEL ========= */
-.theme-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-/* Light themes first, dark themes second. */
-.theme-panel .theme-group:nth-child(2) {
-  order: 3;
-}
-
-.theme-panel .theme-group:nth-child(3) {
-  order: 2;
-}
-
-.theme-group-label {
-  font-size: var(--fs-caption);
-  /* font-weight 跟 h3 本身的規則一樣是 --fw-semibold，不重複寫 */
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-  padding-bottom: var(--space-1);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.theme-cards-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-4);
-}
-
-.theme-card {
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
-  background: var(--bg-card);
-  cursor: pointer;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transition: border-color 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease;
-  position: relative;
-}
-
-.theme-card:hover {
-  border-color: var(--border-color-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.theme-card.selected {
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-md);
-  background: var(--bg-elevated);
-}
-
-/* Mini Preview */
-.theme-preview {
-  height: 90px;
-  display: flex;
-  overflow: hidden;
-  margin: 8px 8px 0 8px;
-  border-radius: 8px;
-  border: 1px solid rgba(128, 128, 128, 0.15);
-  box-shadow: var(--shadow-inset);
-}
-
-.preview-sidebar {
-  width: 26%;
-  min-width: 26%;
-}
-
-.preview-body {
-  flex: 1;
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.preview-line {
-  height: 4px;
-  border-radius: 2px;
-}
-
-.preview-line.long {
-  width: 75%;
-}
-
-.preview-line.short {
-  width: 45%;
-}
-
-.preview-cards-row {
-  display: flex;
-  gap: 5px;
-  margin-top: auto;
-}
-
-.preview-mini-card {
-  flex: 1;
-  height: 22px;
-  border-radius: var(--radius-xs);
-  border: 1px solid;
-}
-
-/* Theme footer */
-.theme-card-footer {
-  padding: var(--space-3);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  flex: 1;
-}
-
-.theme-name-wrap {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.theme-name-wrap h4 {
-  font-size: var(--fs-body);
-  font-weight: var(--fw-bold);
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.selected-indicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--color-primary);
-  color: #ffffff;
-  flex-shrink: 0;
-  box-shadow: var(--shadow-sm);
-}
-
-@media (max-width: 1366px) {
-  .theme-cards-row {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 1132px) {
+@media (max-width: 1359px) {
   .settings-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
-
-@media (max-width: 768px) {
-  .theme-cards-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 480px) {
-  .theme-cards-row {
-    grid-template-columns: 1fr;
-  }
-}
-
-
 
 .locked-wrap,
 .password-wrap {
@@ -1406,7 +976,7 @@ const lightThemes = [
   justify-content: center;
   cursor: pointer;
   padding: var(--space-1);
-  transition: color 0.2s ease;
+  transition: color var(--dur-base) var(--ease-standard);
   z-index: 2;
 }
 
@@ -1423,32 +993,8 @@ const lightThemes = [
   pointer-events: none;
 }
 
-/* 管理成員觸發按鈕 (Personal Settings Panel) */
 .manage-users-block {
   margin-top: var(--space-2);
-}
-
-.manage-users-trigger-btn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-  background: var(--bg-hover);
-  border: 1px solid var(--border-color-hover);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  font-size: var(--fs-label);
-  font-weight: var(--fw-semibold);
-  cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-}
-
-.manage-users-trigger-btn:hover {
-  background: var(--glow-primary);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
 }
 
 .user-count-badge {
@@ -1457,105 +1003,21 @@ const lightThemes = [
   font-size: var(--fs-meta);
   font-weight: var(--fw-bold);
   padding: var(--space-1) var(--space-2);
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--border-color);
-}
-
-/* Auth Modal & User Management Modal (100% 連動當前 Appearance 主題色) */
-.auth-modal,
-.user-mgmt-modal {
-  background: var(--bg-elevated);
-  border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
-  color: var(--text-primary);
-  box-shadow: var(--shadow-lg);
-  border-radius: var(--modal-radius);
-  max-height: var(--modal-max-height);
-}
-
-/* 標頭對齊與隔線 */
-.auth-modal .modal-header,
-.user-mgmt-modal .modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-5);
-  padding-bottom: var(--space-3);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.auth-modal .modal-header h3,
-.user-mgmt-modal .modal-header h3 {
-  font-size: var(--fs-h3);
-  font-weight: var(--fw-bold);
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.auth-modal .close-btn,
-.user-mgmt-modal .close-btn {
-  width: var(--modal-control-size);
-  height: var(--modal-control-size);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  font-size: var(--fs-h2);
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: var(--space-1);
-  line-height: var(--lh-none);
-  transition: color 0.18s ease;
-}
-
-.auth-modal .close-btn:hover,
-.user-mgmt-modal .close-btn:hover {
-  color: var(--text-primary);
-}
-
-.auth-modal .close-btn:focus-visible,
-.user-mgmt-modal .close-btn:focus-visible {
-  outline: 3px solid var(--color-focus);
-  outline-offset: 3px;
-}
-
-/* 底部對齊與隔線 */
-.auth-modal .modal-footer,
-.user-mgmt-modal .modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: var(--space-3);
-  margin-top: var(--space-5);
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--border-color);
-}
-
-/* User Management Modal 特殊佈局 */
-.user-mgmt-modal {
-  width: 92%;
-  max-width: 620px;
-  border-radius: var(--modal-radius);
-  padding: var(--space-6);
-  margin: auto;
-  max-height: var(--modal-max-height);
 }
 
 .user-mgmt-body {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-  overflow-y: auto;
-  padding-right: var(--space-1);
 }
 
 .um-section-box {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  background: var(--bg-card);
+  background: var(--surface-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: var(--space-4);
@@ -1568,7 +1030,6 @@ const lightThemes = [
   letter-spacing: 0.5px;
 }
 
-/* 新增成員 4 欄 Grid (暱稱 + 帳號 ID + 身分選單 + 按鈕) */
 .add-user-modal-form {
   display: grid;
   grid-template-columns: 1fr 1fr 1.15fr auto;
@@ -1576,12 +1037,11 @@ const lightThemes = [
   align-items: center;
 }
 
-.add-user-modal-form .field-input,
-.add-user-modal-form .role-select {
+.add-user-modal-form .field-input {
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-3);
-  font-size: var(--fs-label);
-  transition: border-color 0.18s ease;
+  font-size: var(--fs-body);
+  transition: border-color var(--dur-fast) var(--ease-standard);
 }
 
 .add-user-modal-form .field-input::placeholder {
@@ -1589,59 +1049,17 @@ const lightThemes = [
   opacity: 0.85;
 }
 
-.add-user-modal-form .field-input:focus,
-.add-user-modal-form .role-select:focus {
+.add-user-modal-form .field-input:focus {
   border-color: var(--color-primary);
   outline: none;
 }
 
-.role-select {
-  cursor: pointer;
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-}
-
-.role-select option {
-  background: var(--bg-elevated);
-  color: var(--text-primary);
-}
-
-.add-member-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-5);
-  background: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  color: var(--color-on-primary);
-  font-size: var(--fs-meta);
-  font-weight: var(--fw-semibold);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  white-space: nowrap;
-  box-shadow: var(--shadow-sm);
-  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
-}
-
-.add-member-btn:hover:not(:disabled) {
-  background: var(--bg-hover);
-  color: var(--color-primary);
-}
-
-.add-member-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* 成員清單：極簡扁平 List 視圖 (無獨立卡片粗框) */
 .user-modal-list {
   display: flex;
   flex-direction: column;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  background: var(--bg-card);
+  background: var(--surface-card);
   overflow: hidden;
   max-height: 280px;
   overflow-y: auto;
@@ -1656,7 +1074,7 @@ const lightThemes = [
   border: none;
   border-bottom: 1px solid var(--border-color);
   border-radius: 0;
-  transition: background-color 0.15s ease;
+  transition: background-color var(--dur-fast) var(--ease-standard);
 }
 
 .user-modal-card:last-child {
@@ -1679,13 +1097,13 @@ const lightThemes = [
 }
 
 .user-modal-name {
-  font-size: var(--fs-label);
+  font-size: var(--fs-body);
   font-weight: var(--fw-semibold);
   color: var(--text-primary);
 }
 
 .user-modal-handle {
-  font-size: var(--fs-tiny);
+  font-size: var(--fs-meta);
   color: var(--text-muted);
   font-family: monospace;
 }
@@ -1696,7 +1114,6 @@ const lightThemes = [
   gap: var(--space-3);
 }
 
-/* 自訂成員排序按鈕群 (⬆️ 上移 / ⬇️ 下移) */
 .user-reorder-btns {
   display: flex;
   flex-direction: column;
@@ -1716,13 +1133,13 @@ const lightThemes = [
   justify-content: center;
   cursor: pointer;
   padding: 0;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition: background-color var(--dur-base) var(--ease-standard), border-color var(--dur-base) var(--ease-standard), color var(--dur-base) var(--ease-standard);
 }
 
 .order-btn:hover:not(:disabled) {
-  background: var(--color-primary);
+  background: var(--action-primary);
   border-color: var(--color-primary);
-  color: #ffffff;
+  color: var(--action-on-primary);
   transform: scale(1.08);
 }
 
@@ -1731,15 +1148,11 @@ const lightThemes = [
   cursor: not-allowed;
 }
 
-
-
-
 .nickname-row {
   display: flex;
   align-items: center;
   gap: var(--space-1);
 }
-
 
 .admin-crown-wrap {
   display: inline-flex;
@@ -1754,7 +1167,6 @@ const lightThemes = [
   stroke: var(--color-warning);
   fill: color-mix(in srgb, var(--color-warning) 20%, transparent);
   filter: drop-shadow(0 0 3px color-mix(in srgb, var(--color-warning) 35%, transparent));
-  transition: transform 0.2s ease;
 }
 
 .crown-icon-svg.micro {
@@ -1763,82 +1175,20 @@ const lightThemes = [
   margin-right: 3px;
 }
 
-.admin-crown-wrap:hover .crown-icon-svg {
-  transform: scale(1.2);
-}
-
-
 .user-info {
   display: flex;
   align-items: center;
   gap: var(--space-2);
 }
 
-.user-role-tag {
-  font-size: var(--fs-tiny);
-  font-weight: var(--fw-semibold);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-xs);
-}
-.user-role-tag.admin {
-  background: var(--glow-primary);
-  color: var(--color-primary);
-}
-.user-role-tag.user {
-  background: var(--bg-subtle);
-  color: var(--text-secondary);
-}
-
-.del-user-btn {
-  background: transparent;
-  border: none;
-  font-size: var(--fs-label);
-  cursor: pointer;
-  opacity: 0.6;
-  transition: opacity 0.2s ease;
-}
-
-.del-user-btn:hover:not(:disabled) {
-  opacity: 1;
-}
-
-.del-user-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
-.reset-pass-btn:hover:not(:disabled) {
-  color: var(--color-primary);
-}
-
-
-/* Auth Modal (管理者驗證彈窗)：容器本身的底色/邊框/尺寸跟
-   User Management Modal 不一樣（見下面單獨這條），標頭／關閉鈕的樣式
-   已經跟 User Management Modal 共用同一份（在 .auth-modal, .user-mgmt-modal
-   那組規則裡），這裡不重複寫。 */
-.auth-modal {
-  width: 90%;
-  max-width: 440px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color-hover);
-  border-radius: var(--modal-radius);
-  padding: var(--space-7);
-  box-shadow: var(--shadow-lg);
-  margin: auto;
-  display: flex;
-  flex-direction: column;
-  color: var(--text-primary);
-  max-height: var(--modal-max-height);
-}
-
-.auth-modal .modal-body {
+.auth-modal-body {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
 }
 
 .auth-desc {
-  font-size: var(--fs-label);
+  font-size: var(--fs-body);
   color: var(--text-secondary);
   line-height: var(--lh-normal);
 }
@@ -1849,61 +1199,12 @@ const lightThemes = [
 }
 
 .auth-error-msg {
-  color: #ef4444;
+  color: var(--color-danger);
   font-size: var(--fs-meta);
   font-weight: var(--fw-semibold);
   display: flex;
   align-items: center;
   gap: var(--space-2);
-}
-
-/* 其餘 modal-footer 樣式跟 User Management Modal 共用，這裡只有
-   margin-top 特別留大一點（space-6 而不是共用版的 space-5） */
-.auth-modal .modal-footer {
-  margin-top: var(--space-6);
-}
-
-.auth-modal .cancel-btn {
-  padding: var(--space-2) var(--space-5);
-  border-radius: var(--radius-md);
-  background: var(--bg-hover);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  font-size: var(--fs-label);
-  font-weight: var(--fw-semibold);
-  cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.auth-modal .cancel-btn:hover {
-  background: var(--bg-subtle);
-  color: var(--text-primary);
-}
-
-.auth-modal .submit-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-5);
-  border-radius: var(--radius-sm);
-  background: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  color: var(--color-on-primary);
-  font-size: var(--fs-label);
-  font-weight: var(--fw-semibold);
-  box-shadow: var(--shadow-sm);
-  cursor: pointer;
-  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
-}
-
-.auth-modal .submit-btn:hover:not(:disabled) {
-  background: var(--bg-hover);
-  color: var(--color-primary);
-}
-
-.auth-modal .submit-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .session-expired-notice {
@@ -1912,9 +1213,9 @@ const lightThemes = [
   gap: var(--space-2);
   margin: 0 0 var(--space-3);
   padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--color-warning, #d97706);
+  border: 1px solid var(--color-warning);
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--color-warning, #d97706) 10%, transparent);
+  background: color-mix(in srgb, var(--color-warning) 10%, transparent);
   color: var(--text-primary);
   font-size: var(--fs-meta);
   line-height: 1.5;
@@ -1923,17 +1224,16 @@ const lightThemes = [
 .session-expired-notice svg {
   flex-shrink: 0;
   margin-top: 2px;
-  color: var(--color-warning, #d97706);
+  color: var(--color-warning);
 }
 
-
 @media (max-width: 640px) {
+  /* 表單是 Grid 排版（不是 flex），要改欄數才會生效；手機改成一欄一列 */
   .add-user-modal-form {
-    flex-direction: column;
+    grid-template-columns: minmax(0, 1fr);
     align-items: stretch;
   }
   .add-user-modal-form .field-input,
-  .add-user-modal-form .role-select,
   .add-user-modal-form .add-member-btn {
     width: 100%;
   }
@@ -1946,10 +1246,24 @@ const lightThemes = [
     width: 100%;
     justify-content: space-between;
   }
-  .user-mgmt-modal,
-  .auth-modal {
-    width: 95%;
-    padding: var(--space-5) var(--space-4);
+}
+
+/* 觸控裝置：這幾個按鈕嵌在標題或輸入框裡，外觀維持原尺寸，
+   用看不見的延伸點擊區把可點範圍撐到至少 44px */
+@media (pointer: coarse) {
+  .logout-btn {
+    position: relative;
+  }
+  .logout-btn::after,
+  .lock-toggle-btn::after,
+  .password-toggle-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--control-height-lg);
+    height: var(--control-height-lg);
+    transform: translate(-50%, -50%);
   }
 }
 </style>

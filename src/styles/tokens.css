@@ -1,116 +1,97 @@
-/* ============================================================
-   DESIGN TOKENS — 字體載入、Tailwind 主題 token、CSS 變數、8 套主題
-
-   這份檔案只放「值」，不放任何選擇器的實際排版/樣式規則——
-   排版規則屬於 base.css（全域基礎元素）或 components.css（跨頁共用元件）。
-   ============================================================ */
+/* 只放值，不放排版規則（排版在 base.css／components.css） */
 
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
-/* ============================================================
-   TAILWIND CSS v4.3.3 — DESIGN TOKEN ARCHITECTURE
-   ============================================================ */
 @theme {
-  /* 字體家族一律以下面 :root 區塊的 --font-title / --font-body / --font-code
-     為準（全站實際用 var() 引用的也是這 3 個）。這裡不再重複宣告
-     --font-sans / --font-display / --font-mono / --font-body，避免同一個
-     字體 token 在 @theme 與 :root 兩處各自維護一份、數值卻不一致。 */
+  /* 字體 token 只在 :root 宣告（--font-title / --font-body / --font-code），這裡不重複，避免兩處數值不一致 */
 
-  /* 幾何與排版比例（--radius-sm/md/lg/xl 全站大量使用，:root 不再重複宣告） */
+  /* --radius-* 只在這裡宣告，:root 不重複 */
   --radius-xs: 4px;
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
   --radius-xl: 18px;
   --radius-2xl: 22px;
+  --radius-full: 999px; /* 膠囊、圓點、進度條 */
 }
 
-/* ============================================================
-   GOOGLE FONTS & LOCAL FALLBACKS
-   ============================================================ */
-@font-face {
-  font-family: 'LINE Seed TW';
-  src: local('LINE Seed TW'), local('LINE Seed TW Regular'), local('LINESeedTW-Regular'), local('LINESeedTW_OTF_Rg');
-  font-weight: 400 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'LINE Seed TW';
-  src: local('LINE Seed TW Bold'), local('LINESeedTW-Bold'), local('LINESeedTW_OTF_Bd');
-  font-weight: 600 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* ============================================================
-   BASE TOKENS & DEFAULT PALETTE (Midnight Slate)
-   ============================================================ */
 :root {
-  /* Typography Scale */
-  --fs-display: 2.25rem;
-  --fs-h1: 1.625rem;
-  --fs-h2: 1.25rem;
-  --fs-h3: 1rem;
-  --fs-body-lg: 0.9375rem;
-  --fs-body: 0.875rem;
-  --fs-label: 0.8125rem;
-  --fs-meta: 0.75rem;
-  --fs-caption: 0.75rem;
-  --fs-tiny: 0.625rem;
+  /* Typography：7 個文字角色，一個角色只對應一個字級（字重／行高寫在角色旁）
+     手機（≤640）只有頁面標題會縮成 20px，覆寫在 base.css */
+  --fs-page-title: 1.625rem;     /* 26 · 頁面標題 h1          800 / 1.25，字距 -0.025em */
+  --fs-section-title: 1rem;      /* 16 · 區塊／彈窗標題        700 / 1.3 */
+  --fs-lightbox-title: 1.375rem; /* 22 · 燈箱標題（區塊標題的例外） 800 */
+  --fs-card-title: 0.9375rem;    /* 15 · 卡片標題              700 / 1.35，單行省略 */
+  --fs-body: 0.8125rem;           /* 14 · 內文、描述、輸入框      400 / 1.55，長段落 1.7 */
+  --fs-meta: 0.8125rem;       /* 13 · 表單 label（700）／按鈕（600） */
+  --fs-meta: 0.75rem;            /* 12 · 輔助資訊：日期、說明、chip  500 */
+  --fs-badge: 0.625rem;          /* 10 · 數字／按鍵徽章（唯一允許 10px 的地方）700 */
+  --fs-glyph: 1.25rem;           /* 20 · 不是文字角色：關閉 ×、頭像字母、佔位字、大數字 */
 
-  /* Font Weights */
-  --fw-light: 300;
   --fw-regular: 400;
   --fw-medium: 500;
   --fw-semibold: 600;
   --fw-bold: 700;
   --fw-black: 800;
 
-  /* Line Heights */
+  --lh-none: 1;
   --lh-tight: 1.25;
+  --lh-heading: 1.3;
+  --lh-card-title: 1.35;
   --lh-normal: 1.55;
   --lh-relaxed: 1.7;
 
-  /* Spacing Scale */
-  /* 全站 440 處左右的 padding/margin/gap 幾乎都是用 rem 寫的，這裡也
-     改成 rem（跟原本的 px 是同一個實際大小，root font-size 沒被覆寫過），
-     這樣才吃得到瀏覽器「僅放大字級」這類無障礙設定，不會跟其他都用
-     rem 的間距不同步。 */
+  /* 用 rem：才會跟著瀏覽器「僅放大字級」的設定縮放 */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
   --space-4: 1rem;
   --space-5: 1.25rem;
   --space-6: 1.5rem;
-  --space-7: 1.75rem; /* 全站有 3 處剛好卡在 1.5rem 跟 2rem 中間，補上這一階 */
   --space-8: 2rem;
-  --space-container: clamp(16px, 2vw, 32px);
+  /* 三層節奏：兄弟元素之間一律用父層的 gap，不用個別元素的 margin */
+  --space-section: 2.5rem;           /* 40 · 區塊之間（首頁：總覽 → 最新更新 → 精選內容） */
+  --space-stack: var(--space-4);     /* 16 · 區塊內堆疊（頁首 → 篩選列 → 網格，所有頁一致） */
+  --space-heading: var(--space-3);   /* 12 · 區塊標題 → 內容 */
+  --grid-gap: var(--space-4);        /* 16 · 卡片網格、看板欄；≥1920 放大到 20（base.css） */
+  /* 元件內距 */
+  --card-padding: var(--space-3) var(--space-4) var(--space-4); /* 內容卡 12 / 16 / 16 */
+  --select-card-padding: var(--space-2) var(--space-3);          /* 選擇卡 8 / 12 */
+  --panel-padding: var(--space-6);   /* 24 · 設定頁面板 */
+  --space-container: clamp(24px, 2vw, 32px); /* 桌機頁面外距；其他級距在 base.css 覆寫 */
 
-  /* Font Families */
   --font-title: 'Outfit', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-body: 'Outfit', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-code: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
 
-  /* Layout */
-  --sidebar-width: 260px;
-  --header-height: 64px;
-  /* --radius-sm/md/lg/xl 已在上面的 @theme 區塊定義過，這裡不重複宣告 */
-  --control-height-sm: 34px;
-  --control-height-md: 38px;
-  --control-height-lg: 42px;
+  /* 斷點（全站唯一依據；CSS 變數不能寫進 media query，各檔案照這裡的數值寫）
+     超寬 ≥1920   @media (min-width: 1920px)  側欄 260、內容最寬 1720 置中、外距 32
+     桌機 1360–1919（預設，不寫 media）     側欄 260、外距 clamp(24, 2vw, 32)
+     筆電 1024–1359 @media (max-width: 1359px) 外距 24
+     平板 641–1023  @media (max-width: 1023px) 72px 圖示側欄
+     手機 ≤640     @media (max-width: 640px)  頂列＋抽屜、外距 16–20
+     另外：480 只給極窄時兩欄選項改一欄；觸控裝置用 @media (pointer: coarse)；
+     放在不同容器裡的元件（篩選列、主題卡）改用 @container 依容器寬度排版。 */
 
-  /* Modal system */
+  --sidebar-width: 260px;
+  /* 按鈕與輸入框共用的高度：sm 卡片內／工具列、md 預設、lg 手機主要動作（觸控最小 44） */
+  --control-height-sm: 32px;
+  --control-height-md: 38px;
+  --control-height-lg: 44px;
+
+  /* Modal system（外框統一由 components/base/BaseModal.vue 負責） */
   --modal-radius: var(--radius-xl);
   --modal-max-height: 90vh;
-  --modal-backdrop: rgba(3, 7, 18, 0.68);
+  --modal-fixed-height: min(600px, 90vh); /* 內容多、要固定高度的彈窗（管理精選、媒體庫） */
+  --modal-sm: 440px;  /* 確認、修改密碼 */
+  --modal-md: 720px;  /* 表單、搜尋、成員管理 */
+  --modal-lg: 860px;  /* 管理精選、媒體庫 */
+  --modal-xl: 1040px; /* 燈箱 */
   --modal-padding: 1.25rem;
   --modal-header-padding: 0.5rem 1.25rem;
   --modal-control-size: 40px;
 
-  /* Default Surface Colors (Midnight Slate) */
   --bg-primary: #0e1117;
   --bg-secondary: #141822;
   --bg-card: #161b26;
@@ -133,42 +114,84 @@
   --color-accent: #10b981;
   --color-danger: #ef4444;
   --color-warning: #f59e0b;
+  --color-info: #0ea5e9;
   --color-on-primary: #ffffff;
+  --color-on-danger: #ffffff;
   --color-success: var(--color-accent);
   --color-error: var(--color-danger);
   --color-divider: var(--border-color);
   --color-focus: var(--color-primary);
 
-  --z-base: 1;
-  --z-sticky: 100;
-  --z-drawer: 200;
-  --z-overlay: 1000;
-  --z-toast: 1100;
-  --z-lightbox: 1200;
-  --z-fullscreen: 1300;
+  /* 層級（z-index）：全域圖層一律用這組 token，由低到高排列。
+     只在元件內部比先後的小數字（1–9，例如卡片封面上的圓點壓過外連按鈕）可以直接寫。 */
+  --z-base: 1;              /* 內容網格 */
+  --z-raised: 10;           /* 壓在內容上的區塊（篩選列）、元件內浮起的按鈕 */
+  --z-dropdown: 100;        /* 下拉選單、通知面板、提示框 */
+  --z-sticky: 200;          /* 固定側欄、手機頂列 */
+  --z-drawer: 300;          /* 手機抽屜與它的遮罩 */
+  --z-modal: 1000;          /* 彈窗 */
+  --z-modal-stacked: 1100;  /* 從彈窗裡再開的彈窗（例如表單裡開媒體庫） */
+  --z-lightbox: 1200;       /* 詳情燈箱 */
+  --z-confirm: 1250;        /* 確認對話框：蓋過任何彈窗與燈箱 */
+  --z-fullscreen: 1300;     /* 全螢幕看圖 */
+  --z-toast: 1400;          /* 提示訊息必須蓋過所有彈窗，才看得到儲存結果 */
 
-  /* Theme-aware depth tokens: hue comes from each theme's primary colour. */
+  /* 動態：hover 顏色類用 fast、位移與淡入用 base、彈窗進場與位置移動用 slow、圖片放大用 media。
+     離場比進場快；循環動畫只用在「進行中」狀態（骨架、spinner）。 */
+  --dur-instant: 100ms;     /* 按下（active）回饋 */
+  --dur-fast: 150ms;        /* 顏色、背景、邊框的 hover */
+  --dur-base: 200ms;        /* 位移 hover、下拉、換頁淡入、Toast */
+  --dur-slow: 300ms;        /* 彈窗與燈箱進場、卡片補位 */
+  --dur-media: 350ms;       /* 封面圖放大 */
+  --ease-standard: ease;                          /* 顏色類變化 */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);     /* 進場 */
+  --ease-move: cubic-bezier(0.2, 0.8, 0.2, 1);    /* 位置移動 */
+
   --shadow-color: #000000;
   --shadow-sm: 0 1px 3px color-mix(in srgb, var(--shadow-color) 16%, transparent);
   --shadow-md: 0 4px 12px color-mix(in srgb, var(--shadow-color) 22%, transparent);
   --shadow-lg: 0 12px 28px color-mix(in srgb, var(--shadow-color) 30%, transparent);
-  --shadow-media: 0 20px 50px color-mix(in srgb, var(--shadow-color) 42%, transparent);
-  /* 共用於通知面板與全螢幕媒體的主題陰影 */
   --shadow-surface: rgba(0, 0, 0, 0.1) 0px 4px 12px;
   --shadow-up: 0 -4px 20px color-mix(in srgb, var(--shadow-color) 24%, transparent);
   --shadow-inset: inset 0 0 10px color-mix(in srgb, var(--shadow-color) 10%, transparent);
+  /* 陰影配色規則：一般陰影（下拉選單、彈窗、面板）用中性灰的 --shadow-color；
+     只有 hover 狀態帶主色光暈，用下面這兩個。 */
+  --shadow-hover: 0 4px 12px color-mix(in srgb, var(--color-primary) 22%, transparent);
+  --shadow-hover-sm: 0 1px 3px color-mix(in srgb, var(--color-primary) 16%, transparent);
 
-  --glow-primary: rgba(99, 102, 241, 0.08);
-  --glow-secondary: rgba(129, 140, 248, 0.08);
+  /* 淡色光暈底：一律由主色推算，不寫死顏色（實際值在檔案最下方跟著各主題重算） */
+  --glow-primary: color-mix(in srgb, var(--color-primary) 10%, transparent);
+
+  /* ── 語意層（元件只能引用這一層；上面的 --bg-* / --color-* 是各主題的原始色）──
+     表面：page 頁面底 → card 卡片／面板 → raised 浮在內容上（下拉、通知、Toast、提示）
+           → overlay 彈窗與燈箱本體。raised 與 overlay 目前同值，語意分開以便日後各自調整。
+     動作：主要動作的實底色、hover 色與其上的文字色；危險動作同理。
+     遮罩：所有彈窗／抽屜共用 --scrim；全螢幕看圖需要近乎全黑的底，另用 --scrim-media。 */
+  --surface-page: var(--bg-primary);
+  --surface-card: var(--bg-card);
+  --surface-card-hover: var(--bg-card-hover);
+  --surface-raised: var(--bg-elevated);
+  --surface-overlay: var(--bg-elevated);
+  --action-primary: var(--color-primary);
+  --action-primary-hover: color-mix(in srgb, var(--color-primary) 85%, var(--text-primary));
+  --action-on-primary: var(--color-on-primary);
+  --action-danger: var(--color-danger);
+  --action-danger-hover: color-mix(in srgb, var(--color-danger) 85%, var(--text-primary));
+  --action-on-danger: var(--color-on-danger);
+  --scrim: rgba(3, 7, 18, 0.66);
+  --scrim-media: rgba(0, 0, 0, 0.92);
+  --scrim-blur: 8px;
+  /* 疊在圖片／影片上的顏色：底下是照片，不跟主題變，一律深色遮罩＋白字 */
+  --media-shade: rgba(0, 0, 0, 0.5);
+  --media-shade-strong: rgba(0, 0, 0, 0.72);
+  --media-surface: #0d1117; /* 圖片、影片還沒載入前的底色 */
+  --on-media: #ffffff;
+  --on-media-muted: rgba(255, 255, 255, 0.72);
+  --on-media-soft: rgba(255, 255, 255, 0.15);
+  --on-media-border: rgba(255, 255, 255, 0.3);
 }
 
-/* ============================================================
-   8 THEME SPECIFICATIONS (CALIBRATED & CONTRAST-CERTIFIED)
-   ============================================================ */
-
-/* DARK 1 — Midnight Indigo (Palenight-inspired Purple Slate)
-   舊名 .theme-midnight-slate 已在 userStore.js 的 getUserTheme() 做一次性
-   轉換，畫面上不會再套用這個 class，所以這裡不用留別名選擇器。 */
+/* DARK 1 — Midnight Indigo（舊名 .theme-midnight-slate 已在 userStore.js 的 getUserTheme() 轉換，不需別名） */
 .theme-midnight-indigo {
   --bg-primary: #0e0f14;
   --bg-secondary: #1f2231;
@@ -178,8 +201,8 @@
   --border-color: rgba(201, 203, 234, 0.12);
   --border-color-hover: rgba(139, 92, 199, 0.7);
   --text-primary: #f3f1f7;
-  --text-secondary: #b1b4d0;
-  --text-muted: #747b9f;
+  --text-secondary: #c8cae0;
+  --text-muted: #aaafc5;
   --color-primary: #8b5cc7;
   --color-secondary: #c792ea;
   --color-accent: #89ddff;
@@ -188,12 +211,11 @@
   --bg-hover: rgba(139, 92, 199, 0.16);
   --bg-input: rgba(201, 203, 234, 0.055);
   --sidebar-bg: #171926;
-  --shadow-color: #8b5cc7;
+  --shadow-color: #000000;
   --shadow-surface: rgba(0, 0, 0, 0.36) 0px 4px 12px;
 }
 
-/* DARK 2 — GitHub Dark / Graphite Workshop
-   舊名 .theme-charcoal-ember 同樣已在 getUserTheme() 轉換，不再需要別名。 */
+/* DARK 2 — GitHub Dark / Graphite Workshop（舊名 .theme-charcoal-ember 同上） */
 .theme-github-dark {
   --bg-primary: #17191f;
   --bg-secondary: #1d2028;
@@ -204,7 +226,7 @@
   --border-color-hover: rgba(120, 169, 255, 0.62);
   --text-primary: #f5f7fb;
   --text-secondary: #b9c1cf;
-  --text-muted: #8993a4;
+  --text-muted: #a1a9b7;
   --color-primary: #78a9ff;
   --color-secondary: #a8c7ff;
   --color-accent: #7dd3a8;
@@ -213,8 +235,9 @@
   --bg-hover: rgba(120, 169, 255, 0.12);
   --bg-input: rgba(226, 232, 240, 0.05);
   --sidebar-bg: #14161c;
-  --shadow-color: #78a9ff;
+  --shadow-color: #000000;
   --shadow-surface: rgba(0, 0, 0, 0.36) 0px 4px 12px;
+  --color-on-primary: #0d1117;
 }
 
 /* DARK 3 — Obsidian Neon (Warm Ink + Copper) */
@@ -228,7 +251,7 @@
   --border-color-hover: rgba(229, 168, 107, 0.65);
   --text-primary: #fff7ed;
   --text-secondary: #d6c4b2;
-  --text-muted: #9d8978;
+  --text-muted: #b1a294;
   --color-primary: #e5a86b;
   --color-secondary: #f0c08a;
   --color-accent: #81c8b0;
@@ -237,8 +260,9 @@
   --bg-hover: rgba(229, 168, 107, 0.13);
   --bg-input: rgba(255, 237, 213, 0.05);
   --sidebar-bg: #12100f;
-  --shadow-color: #e5a86b;
+  --shadow-color: #000000;
   --shadow-surface: rgba(0, 0, 0, 0.36) 0px 4px 12px;
+  --color-on-primary: #171412;
 }
 
 /* DARK 4 — Nord Polar Night */
@@ -248,11 +272,11 @@
   --bg-card: #2e3440;
   --bg-card-hover: #3b4252;
   --bg-elevated: #434c5e;
-  --border-color: rgba(216, 222, 233, 0.07);
+  --border-color: rgba(216, 222, 233, 0.1);
   --border-color-hover: #88c0d0;
   --text-primary: #eceff4;
   --text-secondary: #d8dee9;
-  --text-muted: #94a3b8;
+  --text-muted: #b4bfcd;
   --color-primary: #88c0d0;
   --color-secondary: #81a1c1;
   --color-accent: #a3be8c;
@@ -260,8 +284,10 @@
   --bg-hover: rgba(136, 192, 208, 0.08);
   --bg-input: rgba(236, 239, 244, 0.04);
   --sidebar-bg: #111620;
-  --shadow-color: #88c0d0;
+  --shadow-color: #000000;
   --shadow-surface: rgba(0, 0, 0, 0.36) 0px 4px 12px;
+  --color-danger: #ff6e78;
+  --color-on-primary: #242933;
 }
 
 /* LIGHT 1 — Cloud Canvas (Airy Crisp Pure White + Royal Azure) */
@@ -271,19 +297,19 @@
   --bg-card: #fbfcfe;
   --bg-card-hover: #f4f7fb;
   --bg-elevated: #f7f9fc;
-  --border-color: rgba(15, 23, 42, 0.05);
+  --border-color: rgba(15, 23, 42, 0.1);
   --border-color-hover: rgba(37, 99, 235, 0.35);
   --text-primary: #0f172a;
   --text-secondary: #475569;
-  --text-muted: #64748b;
+  --text-muted: #627288;
   --color-primary: #2563eb;
   --color-secondary: #3b82f6;
   --color-accent: #059669;
   --bg-subtle: rgba(15, 23, 42, 0.03);
   --bg-hover: rgba(37, 99, 235, 0.06);
-  --bg-input: rgba(15, 23, 42, 0.03);;
+  --bg-input: rgba(15, 23, 42, 0.03);
   --sidebar-bg: #f1f5fa;
-  --shadow-color: #2563eb;
+  --shadow-color: #64748b;
   --shadow-surface: rgba(0, 0, 0, 0.1) 0px 4px 12px;
 }
 
@@ -294,11 +320,11 @@
   --bg-card: #fbfcfe;
   --bg-card-hover: #f4f7fb;
   --bg-elevated: #f7f9fc;
-  --border-color: rgba(30, 41, 59, 0.05);
+  --border-color: rgba(30, 41, 59, 0.1);
   --border-color-hover: hsl(174 42% 50% / 0.55);
   --text-primary: #0f172a;
   --text-secondary: #334155;
-  --text-muted: #64748b;
+  --text-muted: #627288;
   --color-primary: hsl(174 42% 50%);
   --color-secondary: hsl(174 42% 38%);
   --color-accent: #75a66b;
@@ -306,8 +332,9 @@
   --bg-hover: hsl(174 42% 50% / 0.1);
   --bg-input: rgba(30, 41, 59, 0.035);
   --sidebar-bg: #f1f5fa;
-  --shadow-color: hsl(174 42% 50%);
+  --shadow-color: #64748b;
   --shadow-surface: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+  --color-on-primary: #fff;
 }
 
 /* LIGHT 3 — Office Access (Office Red + Paper White) */
@@ -317,11 +344,11 @@
   --bg-card: #ffffff;
   --bg-card-hover: #f8f8f8;
   --bg-elevated: #ffffff;
-  --border-color: rgba(50, 49, 48, 0.05);
+  --border-color: rgba(50, 49, 48, 0.12);
   --border-color-hover: rgba(178, 58, 63, 0.5);
   --text-primary: #323130;
   --text-secondary: #605e5c;
-  --text-muted: #797775;
+  --text-muted: #6f6d6b;
   --color-primary: #b23a3f;
   --color-secondary: #8f2d32;
   --color-accent: #2f7d68;
@@ -329,7 +356,7 @@
   --bg-hover: rgba(178, 58, 63, 0.09);
   --bg-input: rgba(50, 49, 48, 0.045);
   --sidebar-bg: #faf9f8;
-  --shadow-color: #b23a3f;
+  --shadow-color: #605e5c;
   --shadow-surface: rgba(0, 0, 0, 0.1) 0px 4px 12px;
 }
 
@@ -340,11 +367,11 @@
   --bg-card: #fbfcfe;
   --bg-card-hover: #f4f7fb;
   --bg-elevated: #f7f9fc;
-  --border-color: rgba(76, 86, 106, 0.05);
+  --border-color: rgba(76, 86, 106, 0.13);
   --border-color-hover: #5e81ac;
   --text-primary: #2e3440;
   --text-secondary: #4c566a;
-  --text-muted: #7b88a1;
+  --text-muted: #63718b;
   --color-primary: #5e81ac;
   --color-secondary: #81a1c1;
   --color-accent: #88c0d0;
@@ -352,7 +379,7 @@
   --bg-hover: rgba(94, 129, 172, 0.07);
   --bg-input: rgba(46, 52, 64, 0.035);
   --sidebar-bg: #e5ebf3;
-  --shadow-color: #5e81ac;
+  --shadow-color: #4c566a;
   --shadow-surface: rgba(0, 0, 0, 0.1) 0px 4px 12px;
 }
 
@@ -370,7 +397,58 @@
   --shadow-sm: 0 1px 3px color-mix(in srgb, var(--shadow-color) 16%, transparent);
   --shadow-md: 0 4px 12px color-mix(in srgb, var(--shadow-color) 22%, transparent);
   --shadow-lg: 0 12px 28px color-mix(in srgb, var(--shadow-color) 30%, transparent);
-  --shadow-media: 0 20px 50px color-mix(in srgb, var(--shadow-color) 42%, transparent);
   --shadow-up: 0 -4px 20px color-mix(in srgb, var(--shadow-color) 24%, transparent);
   --shadow-inset: inset 0 0 10px color-mix(in srgb, var(--shadow-color) 10%, transparent);
+  --shadow-hover: 0 4px 12px color-mix(in srgb, var(--color-primary) 22%, transparent);
+  --shadow-hover-sm: 0 1px 3px color-mix(in srgb, var(--color-primary) 16%, transparent);
+}
+
+/* 衍生值（var()／color-mix）必須跟主題 class 定義在同一個元素上：只寫在 :root 會先用預設色算好再繼承，
+   主題換了也不會跟著變。明列 8 個主題，不用 [class*="theme-"]，避免誤中 .theme-card 這類元件 class。 */
+.theme-midnight-indigo,
+.theme-github-dark,
+.theme-obsidian-neon,
+.theme-nord-dark,
+.theme-cloud-canvas,
+.theme-material-light,
+.theme-office-access,
+.theme-nord-light {
+  --glow-primary: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  --color-success: var(--color-accent);
+  --color-error: var(--color-danger);
+  --color-divider: var(--border-color);
+  --color-focus: var(--color-primary);
+  /* 語意層（說明見 :root）：引用原始色的部分要在主題元素上重算 */
+  --surface-page: var(--bg-primary);
+  --surface-card: var(--bg-card);
+  --surface-card-hover: var(--bg-card-hover);
+  --surface-raised: var(--bg-elevated);
+  --surface-overlay: var(--bg-elevated);
+  --action-primary: var(--color-primary);
+  --action-primary-hover: color-mix(in srgb, var(--color-primary) 85%, var(--text-primary));
+  --action-on-primary: var(--color-on-primary);
+  --action-danger: var(--color-danger);
+  --action-danger-hover: color-mix(in srgb, var(--color-danger) 85%, var(--text-primary));
+  --action-on-danger: var(--color-on-danger);
+}
+
+/* 亮色主題家族：語意色改用深色，放在白色卡片／淡色底上 ≥ 4.5:1。
+   預設的 #ef4444 / #f59e0b 在白底上只有 3.7 / 2.1，當文字看不清楚。 */
+.theme-cloud-canvas,
+.theme-material-light,
+.theme-office-access,
+.theme-nord-light {
+  color-scheme: light; /* 原生捲軸、表單元件跟著亮色 */
+  --color-danger: #b91c1c;
+  --color-warning: #b45309;
+  --color-success: #15803d;
+}
+
+/* 暗色主題家族：危險色是淺紅，上面的文字改用深色才看得清楚 */
+.theme-midnight-indigo,
+.theme-github-dark,
+.theme-obsidian-neon,
+.theme-nord-dark {
+  color-scheme: dark; /* 原生捲軸、表單元件跟著暗色 */
+  --color-on-danger: var(--bg-primary);
 }

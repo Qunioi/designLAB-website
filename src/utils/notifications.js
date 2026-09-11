@@ -1,6 +1,3 @@
-// ================================================
-// notifications.js — 設計部通知、過期清理與 Google Sheets 同步
-// ================================================
 
 import { pushToSheet, hasSheetsIntegration } from './sheetsAPI';
 export { checkDeletePermission } from './storage';
@@ -11,7 +8,6 @@ const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
 
 import { getCurrentUser as getUserFromStore } from './userStore';
 
-/** 取得目前登入使用者完整資訊 (包含 ADMIN / USER 權限身分) */
 export function getCurrentUser() {
   const u = getUserFromStore();
   return {
@@ -22,7 +18,6 @@ export function getCurrentUser() {
   };
 }
 
-/** 判斷是否為訪客身分 */
 export function isGuestUser(user) {
   const u = user || getCurrentUser();
   const uname = (u.username || '').toLowerCase();
@@ -30,7 +25,7 @@ export function isGuestUser(user) {
   return uname === '@guest' || uname === 'guest' || nick === '訪客' || u.role === 'GUEST';
 }
 
-/** 取得所有有效通知（自動針對一般使用者過濾「僅與自己相關」的訊息，且過濾已讀超過 3 天的訊息，徹底排除訪客記錄） */
+/** 排除訪客產生的記錄；已讀超過 3 天的隱藏；一般使用者只看與自己相關的 */
 export function getNotifications() {
   let list = [];
   try {
@@ -40,7 +35,6 @@ export function getNotifications() {
     list = getInitialNotifications();
   }
 
-  // 篩選 0：徹底過濾訪客 (@guest / 訪客) 所產生的任何異動記錄
   list = list.filter(n => {
     const trig = String(n.triggeredBy || '').toLowerCase();
     const msg = String(n.message || '').toLowerCase();
@@ -48,7 +42,6 @@ export function getNotifications() {
   });
 
   const now = Date.now();
-  // 篩選 1：未讀訊息永久保留；已讀訊息若超過 3 天則自動清除隱藏
   let validNotifications = list.filter(n => {
     if (!n.read) return true;
     const readTime = n.readAt ? new Date(n.readAt).getTime() : (n.createdAt ? new Date(n.createdAt).getTime() : 0);
@@ -56,7 +49,7 @@ export function getNotifications() {
     return (now - readTime) < THREE_DAYS_MS;
   });
 
-  // 篩選 2：個人化訊息過濾（管理者可看全量；一般使用者僅看與自己切身相關的訊息）
+  // 管理者看全部，一般使用者只看自己發起、自己的文章被異動、指定給自己的
   const currentUser = getCurrentUser();
   const myUser = (currentUser.username || '').toLowerCase();
   const myNick = (currentUser.nickname || '').toLowerCase();
@@ -68,18 +61,14 @@ export function getNotifications() {
       const target = String(n.targetUser || n.targetUsername || '').toLowerCase();
       const author = String(n.originalAuthor || n.creatorUsername || '').toLowerCase();
 
-      // 1. 自己發起的動作 (如: 自己新增文章)
       const isTriggeredByMe = triggered.includes(myUser) || (myNick && triggered.includes(myNick));
-      // 2. 自己的文章/提案被編輯異動
       const isMyArticleAffected = author.includes(myUser) || (myNick && author.includes(myNick));
-      // 3. 指定發給自己的訊息
       const isTargetedToMe = target.includes(myUser) || (myNick && target.includes(myNick));
 
       return isTriggeredByMe || isMyArticleAffected || isTargetedToMe;
     });
   }
 
-  // 由新到舊強效倒序排序 (最新時間在上)
   validNotifications.sort((a, b) => {
     const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
     const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
@@ -90,7 +79,6 @@ export function getNotifications() {
 }
 
 
-/** 初始化範例通知 */
 function getInitialNotifications() {
   const now = new Date();
   const initial = [
@@ -124,12 +112,11 @@ function getInitialNotifications() {
 }
 
 
-/** 新增一筆通知並自動同步至 Google Sheets NOTIFICATIONS 表單 (訪客身分不記錄) */
 export function addNotification({ title, message, triggeredBy, type = 'edit', originalAuthor = '', targetUser = '' }) {
   const currentUser = getCurrentUser();
   const trig = triggeredBy || currentUser.fullName;
 
-  // ⚠️ 訪客操作不產生任何通知
+  // 訪客操作不產生通知
   if (isGuestUser(currentUser) || String(trig).includes('@guest') || String(trig).includes('訪客')) {
     return null;
   }
@@ -155,7 +142,6 @@ export function addNotification({ title, message, triggeredBy, type = 'edit', or
   notifications.unshift(newNotif);
   localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications));
 
-  // 背景同步推送至 Google Sheets 的 NOTIFICATIONS 工作表
   if (hasSheetsIntegration()) {
     pushToSheet('NOTIFICATIONS', newNotif);
   }
@@ -163,13 +149,11 @@ export function addNotification({ title, message, triggeredBy, type = 'edit', or
   return newNotif;
 }
 
-/** 徹底洗淨移除字串中的所有表情符號 (Emoji) */
 export function stripEmoji(text) {
   if (!text || typeof text !== 'string') return '';
   return text.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[👤👑🛠️⚡🔴↩️]/gu, '').trim();
 }
 
-/** 依據閱讀者身分 (ADMIN / USER) 動態格式化通知 HTML 內文 */
 export function formatNotificationMessage(n, currentUser) {
   if (!n) return '';
   const user = currentUser || getCurrentUser();
@@ -182,7 +166,6 @@ export function formatNotificationMessage(n, currentUser) {
 
   let resultStr = '';
   if (isAdmin) {
-    // 【管理員視角】：明確呈現「誰」建立、「誰」編輯、「誰」刪除
     if (n.type === 'add') {
       resultStr = `${triggered} 建立了全新案例 ${titlePart}`;
     } else if (n.type === 'edit') {
@@ -194,11 +177,9 @@ export function formatNotificationMessage(n, currentUser) {
     } else {
       resultStr = rawMsg;
     }
-    // 洗淨 Emoji 並把 (@id) 轉為小字
     resultStr = stripEmoji(resultStr);
     return resultStr.replace(/\s*(\(@[\w.-]+\))/g, ' <span class="notif-handle">$1</span>');
   } else {
-    // 【一般使用者視角】
     if (n.type === 'add') {
       resultStr = `您已成功建立了全新案例 ${titlePart}`;
     } else if (n.type === 'edit') {
@@ -210,7 +191,6 @@ export function formatNotificationMessage(n, currentUser) {
     } else {
       resultStr = rawMsg;
     }
-    // 洗淨 Emoji 並徹底移除 (@id)
     resultStr = stripEmoji(resultStr);
     return resultStr.replace(/\s*\(@[\w.-]+\)/g, '');
   }
@@ -222,7 +202,6 @@ function extractTitle(msg) {
   return match ? match[0] : `《${msg}》`;
 }
 
-/** 新增全新案例/提案發布通知 */
 export function notifyItemAdd({ itemTitle, creatorName, creatorUsername }) {
   const currentUser = getCurrentUser();
   if (isGuestUser(currentUser)) return null;
@@ -240,7 +219,6 @@ export function notifyItemAdd({ itemTitle, creatorName, creatorUsername }) {
   });
 }
 
-/** 新增案例/提案被編輯通知 */
 export function notifyItemEdit({ itemTitle, originalAuthor, editorName }) {
   const currentUser = getCurrentUser();
   if (isGuestUser(currentUser)) return null;
@@ -257,7 +235,6 @@ export function notifyItemEdit({ itemTitle, originalAuthor, editorName }) {
   });
 }
 
-/** 新增案例/提案被刪除通知 */
 export function notifyItemDelete({ itemTitle, originalAuthor, deleterName }) {
   const currentUser = getCurrentUser();
   if (isGuestUser(currentUser)) return null;
@@ -274,13 +251,12 @@ export function notifyItemDelete({ itemTitle, originalAuthor, deleterName }) {
   });
 }
 
-/** 取得未讀通知數量 */
 export function getUnreadNotificationCount() {
   const notifications = getNotifications();
   return notifications.filter(n => !n.read).length;
 }
 
-/** 將全部通知設為已讀，並記錄已讀時間 readAt (供 3 天過期邏輯判斷) */
+/** readAt 供 3 天過期判斷 */
 export function markAllNotificationsAsRead() {
   const notifications = getNotifications();
   const nowStr = new Date().toISOString();

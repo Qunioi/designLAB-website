@@ -1,12 +1,10 @@
 <template>
   <nav class="navigation-sidebar glass-panel" aria-label="主要導覽">
-    <!-- Logo -->
     <div class="logo-area">
       <div class="logo-icon">D</div>
       <span class="logo-text">Design<span class="logo-highlight">LAB</span></span>
     </div>
 
-    <!-- Menu Links -->
     <div class="menu-links">
       <button
         v-for="item in menuItems"
@@ -18,16 +16,16 @@
         :title="item.labelZh"
         @click="handleChangeView(item.view)"
       >
-        <span class="menu-icon" v-html="item.icon"></span>
+        <span class="menu-icon"><Icon :name="item.icon" :size="18" /></span>
         <div class="menu-label-group">
           <span class="menu-title-zh">{{ item.labelZh }}</span>
           <span class="menu-subtitle-en">{{ item.labelEn }}</span>
         </div>
+        <span v-if="item.storageKey && showCount(item)" class="menu-count" :aria-label="`共 ${itemCounts[item.view]} 筆`">{{ itemCounts[item.view] }}</span>
         <span class="compact-tooltip" aria-hidden="true">{{ item.labelZh }}</span>
       </button>
     </div>
 
-    <!-- User Profile Footer (點擊後進入 Settings 頁面) -->
     <button
       type="button"
       class="sidebar-footer"
@@ -37,7 +35,7 @@
       @click="handleChangeView('Settings')"
     >
       <div class="user-avatar-group">
-        <div class="user-avatar"><span class="settings-icon-svg"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span></div>
+        <div class="user-avatar"><span class="settings-icon-svg"><Icon name="settings" :size="18" /></span></div>
         <div class="user-info">
           <div class="user-name">{{ nickname }}</div>
           <div class="user-role">{{ username }}</div>
@@ -66,7 +64,7 @@
           @click="isMobileMenuOpen = !isMobileMenuOpen"
         >
           <span class="mobile-menu-icon" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            <Icon name="menu" :size="18" />
           </span>
         </button>
       </div>
@@ -80,9 +78,7 @@
               <div class="mobile-drawer-title">主要導覽</div>
               <div class="mobile-drawer-subtitle">{{ nickname }} · {{ username }}</div>
             </div>
-            <button type="button" class="mobile-drawer-close" aria-label="關閉導覽" @click="closeMobileMenu">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
+            <CloseButton label="關閉導覽" @click="closeMobileMenu" />
           </div>
 
           <div class="mobile-menu-links">
@@ -96,11 +92,12 @@
               :aria-label="item.labelZh"
               @click="handleChangeView(item.view)"
             >
-              <span class="menu-icon" v-html="item.icon"></span>
+              <span class="menu-icon"><Icon :name="item.icon" :size="18" /></span>
               <div class="menu-label-group">
                 <span class="menu-title-zh">{{ item.labelZh }}</span>
                 <span class="menu-subtitle-en">{{ item.labelEn }}</span>
               </div>
+              <span v-if="item.storageKey && showCount(item)" class="menu-count" :aria-label="`共 ${itemCounts[item.view]} 筆`">{{ itemCounts[item.view] }}</span>
             </button>
           </div>
 
@@ -112,7 +109,7 @@
             @click="handleChangeView('Settings')"
           >
             <div class="user-avatar-group">
-              <div class="user-avatar"><span class="settings-icon-svg"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span></div>
+              <div class="user-avatar"><span class="settings-icon-svg"><Icon name="settings" :size="18" /></span></div>
               <div class="user-info">
                 <div class="user-name">個人設定</div>
                 <div class="user-role">{{ nickname }} · {{ username }}</div>
@@ -127,11 +124,16 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import CloseButton from './base/CloseButton.vue';
+import Icon from './base/Icon.vue';
+import { computed, ref, watch, onMounted, onUnmounted, inject } from 'vue';
+import { identityVersion } from '../utils/identity';
 import NotificationBell from './NotificationBell.vue';
 import { getCurrentUser } from '../utils/userStore';
+import { getStorageData } from '../utils/storage';
 
 const isGuest = computed(() => {
+  identityVersion.value; // 登出／權杖過期／身分模擬切換時重新判斷
   const u = getCurrentUser();
   const uname = (u.username || '').toLowerCase();
   return !uname || uname === '@guest' || uname === '@account' || u.nickname === '訪客';
@@ -149,6 +151,11 @@ const props = defineProps({
   username: {
     type: String,
     required: true
+  },
+  // App.vue 在雲端同步完成、儲存或刪除後會遞增這個值，側邊選單的筆數跟著重算
+  refreshKey: {
+    type: Number,
+    default: 0
   }
 });
 
@@ -160,44 +167,77 @@ const menuItems = [
     view: 'Dashboard', 
     labelZh: '首頁',
     labelEn: 'Dashboard', 
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7"></path><path d="M5 9v11h14V9"></path><path d="M9 20v-6h6v6"></path></svg>`
+    icon: 'home'
   },
   { 
     view: 'UIResearch', 
+    storageKey: 'UI_RESEARCH',
     labelZh: 'UI 設計研究', 
     labelEn: 'UI Research', 
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2.05V18h6v-1.25c0-.85.4-1.55 1-2.05A7 7 0 0 0 12 2Z"></path></svg>`
+    icon: 'lightbulb'
   },
   { 
     view: 'MotionResearch', 
+    storageKey: 'MOTION_RESEARCH',
     labelZh: '動態研究',
     labelEn: 'Motion Research', 
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>`
+    icon: 'video'
   },
   { 
     view: 'Competitor', 
+    storageKey: 'COMPETITORS',
     labelZh: '競品分析',
     labelEn: 'Competitor Research', 
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="14"></line><line x1="12" y1="20" x2="12" y2="8"></line><line x1="18" y1="20" x2="18" y2="4"></line></svg>`
+    icon: 'bar-chart'
   },
   { 
     view: 'AICenter', 
+    storageKey: 'AI_CENTER',
     labelZh: 'AI 工具中心', 
     labelEn: 'AI Center', 
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"></path><path d="m19 16 .8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16Z"></path></svg>`
+    icon: 'sparkles'
   },
   { 
     view: 'Resources', 
+    storageKey: 'RESOURCES',
     labelZh: '設計資源',
     labelEn: 'Resources', 
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path></svg>`
+    icon: 'folder-rounded'
   }
 ];
+
+// localStorage 不是響應式：靠 refreshKey 與 design-lab-storage-updated 事件重算筆數
+const storageVersion = ref(0);
+const handleStorageUpdated = () => {
+  storageVersion.value++;
+};
+onMounted(() => window.addEventListener('design-lab-storage-updated', handleStorageUpdated));
+onUnmounted(() => window.removeEventListener('design-lab-storage-updated', handleStorageUpdated));
+
+const itemCounts = computed(() => {
+  const _ = [props.refreshKey, storageVersion.value];
+  const counts = {};
+  menuItems.forEach(item => {
+    if (item.storageKey) counts[item.view] = getStorageData(item.storageKey).length;
+  });
+  return counts;
+});
+
+const isSyncing = inject('isSyncing', ref(false));
+const showCount = (item) => !(isSyncing.value && !itemCounts.value[item.view]);
+
+// 不在選單裡、但仍可用網址進入的頁面（優化提案刻意不放進導覽）
+const HIDDEN_VIEW_LABELS = {
+  Proposals: { labelZh: '優化提案', labelEn: 'Proposals' }
+};
 
 const currentViewLabel = computed(() => {
   const matchedItem = menuItems.find((item) => item.view === props.currentView);
   if (matchedItem) {
     return matchedItem;
+  }
+  if (HIDDEN_VIEW_LABELS[props.currentView]) {
+    return HIDDEN_VIEW_LABELS[props.currentView];
   }
 
   return {
@@ -232,7 +272,7 @@ watch(() => props.currentView, () => {
   border-radius: var(--radius-2xl);
   background: var(--sidebar-bg);
   border: 1px solid var(--border-color);
-  z-index: 100;
+  z-index: var(--z-sticky);
   padding: var(--space-2) var(--space-1);
 }
 
@@ -248,21 +288,21 @@ watch(() => props.currentView, () => {
 .logo-icon {
   width: 28px;
   height: 28px;
-  border-radius: 8px;
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+  border-radius: var(--radius-sm);
+  background: var(--action-primary);
+  color: var(--action-on-primary);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: var(--fw-black);
-  font-size: var(--fs-label);
+  font-size: calc(var(--fs-glyph) * 0.65);
   font-family: var(--font-title);
   box-shadow: var(--shadow-sm);
 }
 
 .logo-text {
   font-family: var(--font-title);
-  font-size: var(--fs-h3);
+  font-size: var(--fs-section-title);
   font-weight: var(--fw-black);
   letter-spacing: -0.02em;
 }
@@ -287,7 +327,7 @@ watch(() => props.currentView, () => {
   gap: var(--space-3);
   padding: var(--space-3) var(--space-3);
   color: var(--text-secondary);
-  transition: color 0.18s ease, background-color 0.18s ease;
+  transition: color var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
   width: 100%;
   text-align: left;
   border-radius: var(--radius-sm);
@@ -306,6 +346,12 @@ watch(() => props.currentView, () => {
   font-weight: var(--fw-semibold);
 }
 
+/* 圖示固定尺寸，圖示列空間不夠時也不會被壓扁 */
+.menu-icon svg {
+  flex-shrink: 0;
+  min-width: 18px;
+}
+
 .menu-item.active .menu-icon {
   color: var(--color-primary);
 }
@@ -318,7 +364,8 @@ watch(() => props.currentView, () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+  min-width: 18px;
+  transition: color var(--dur-base) var(--ease-standard), background-color var(--dur-base) var(--ease-standard), transform var(--dur-base) var(--ease-standard);
   flex-shrink: 0;
 }
 
@@ -330,18 +377,18 @@ watch(() => props.currentView, () => {
 }
 
 .menu-title-zh {
-  font-size: var(--fs-label);
+  font-size: var(--fs-meta);
   font-weight: var(--fw-medium);
   color: var(--text-primary);
-  transition: color 0.18s ease;
+  transition: color var(--dur-fast) var(--ease-standard);
 }
 
 .menu-subtitle-en {
-  font-size: var(--fs-tiny);
+  font-size: var(--fs-meta);
   color: var(--text-muted);
   letter-spacing: 0.02em;
   margin-top: var(--space-1);
-  transition: color 0.18s ease;
+  transition: color var(--dur-fast) var(--ease-standard);
 }
 
 .menu-item.active .menu-title-zh {
@@ -353,14 +400,38 @@ watch(() => props.currentView, () => {
   color: var(--color-secondary);
 }
 
+.menu-count {
+  margin-left: auto;
+  min-width: 1.5rem;
+  padding: 0 var(--space-1);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5rem;
+  text-align: center;
+  color: var(--text-muted);
+  border-radius: var(--radius-full);
+  transition: color var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
+}
+
+.menu-item:hover .menu-count {
+  color: var(--text-secondary);
+}
+
+.menu-item.active .menu-count,
+.mobile-menu-item.active .menu-count {
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
 .sidebar-footer {
   display: flex;
   align-items: center;
   padding: var(--space-3) var(--space-3);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: color 0.25s ease, background-color 0.25s ease, border-color 0.25s ease;
+  transition: color var(--dur-base) var(--ease-standard), background-color var(--dur-base) var(--ease-standard), border-color var(--dur-base) var(--ease-standard);
   margin-top: auto;
   width: 100%;
 }
@@ -396,8 +467,8 @@ watch(() => props.currentView, () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--fs-h3);
-  transition: color 0.25s ease, background-color 0.25s ease, border-color 0.25s ease;
+  font-size: calc(var(--fs-glyph) * 0.8);
+  transition: color var(--dur-base) var(--ease-standard), background-color var(--dur-base) var(--ease-standard), border-color var(--dur-base) var(--ease-standard);
   flex-shrink: 0;
 }
 
@@ -409,13 +480,13 @@ watch(() => props.currentView, () => {
 }
 
 .user-name {
-  font-size: var(--fs-label);
+  font-size: var(--fs-meta);
   font-weight: var(--fw-semibold);
   color: var(--text-primary);
 }
 
 .user-role {
-  font-size: var(--fs-tiny);
+  font-size: var(--fs-meta);
   color: var(--text-muted);
 }
 
@@ -425,12 +496,11 @@ watch(() => props.currentView, () => {
 
 .mobile-nav-trigger,
 .mobile-menu-item,
-.mobile-settings-entry,
-.mobile-drawer-close {
+.mobile-settings-entry {
   font-family: var(--font-body);
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   .navigation-sidebar {
     width: 60px;
     padding: var(--space-6) var(--space-2);
@@ -440,6 +510,7 @@ watch(() => props.currentView, () => {
   }
   .logo-text,
   .menu-label-group,
+  .navigation-sidebar .menu-count,
   .user-info {
     display: none;
   }
@@ -448,12 +519,12 @@ watch(() => props.currentView, () => {
     position: absolute;
     left: calc(100% + 10px);
     top: 50%;
-    z-index: 300;
+    z-index: var(--z-dropdown);
     display: block;
     padding: var(--space-2) var(--space-3);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    background: var(--bg-elevated);
+    border-radius: var(--radius-sm);
+    background: var(--surface-raised);
     color: var(--text-primary);
     font-size: var(--fs-meta);
     line-height: var(--lh-tight);
@@ -462,7 +533,7 @@ watch(() => props.currentView, () => {
     pointer-events: none;
     transform: translate(-4px, -50%);
     box-shadow: var(--shadow-md);
-    transition: opacity 0.15s ease, transform 0.15s ease;
+    transition: opacity var(--dur-fast) var(--ease-standard), transform var(--dur-fast) var(--ease-standard);
   }
 
   .navigation-sidebar .menu-item:hover .compact-tooltip,
@@ -475,26 +546,28 @@ watch(() => props.currentView, () => {
     padding: 0 0 var(--space-6) 0;
     justify-content: center;
   }
+  /* 圖示列只有 34px 寬：左右不留內距，圖示才有完整的 18px（左右各 12px 時只剩 8px，
+     Safari 會把圖示壓扁成一條線） */
   .menu-item {
     justify-content: center;
-    padding: var(--space-3);
+    padding: var(--space-3) 0;
   }
   .menu-item.active {
-    padding-left: var(--space-3);
-    border-left: none;
-    background: var(--bg-hover);
-    border-radius: 12px;
+    padding-left: 0;
   }
   .sidebar-footer {
     justify-content: center;
-    padding: var(--space-2);
+    padding-left: 0;
+  }
+  .user-avatar-group {
+    padding-left: 0;
   }
   .menu-links {
     margin-top: var(--space-4);
   }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 640px) {
   .navigation-sidebar {
     display: none;
   }
@@ -508,16 +581,14 @@ watch(() => props.currentView, () => {
     top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
     left: 1rem;
     right: 1rem;
-    z-index: 220;
+    z-index: var(--z-sticky);
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-4);
     padding: var(--space-1) var(--space-2) var(--space-1) var(--space-4);
     background: var(--sidebar-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    box-shadow: var(--shadow-md);
+    border-radius: var(--radius-xl);
   }
 
   .mobile-nav-brand {
@@ -535,13 +606,13 @@ watch(() => props.currentView, () => {
   }
 
   .mobile-brand-text {
-    font-size: var(--fs-body-lg);
+    font-size: var(--fs-section-title);
     font-weight: var(--fw-black);
     color: var(--text-primary);
   }
 
   .mobile-current-view {
-    font-size: var(--fs-tiny);
+    font-size: var(--fs-meta);
     color: var(--text-secondary);
     white-space: nowrap;
     overflow: hidden;
@@ -565,7 +636,7 @@ watch(() => props.currentView, () => {
     border-radius: var(--radius-md);
     color: var(--text-primary);
     cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: background-color var(--dur-base) var(--ease-standard), color var(--dur-base) var(--ease-standard);
   }
 
   .mobile-menu-btn:hover {
@@ -584,10 +655,10 @@ watch(() => props.currentView, () => {
   .mobile-nav-backdrop {
     position: fixed;
     inset: 0;
-    z-index: 250;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    z-index: var(--z-drawer);
+    background: var(--scrim);
+    -webkit-backdrop-filter: blur(var(--scrim-blur));
+    backdrop-filter: blur(var(--scrim-blur));
     display: flex;
     align-items: flex-start;
     justify-content: flex-end;
@@ -599,7 +670,7 @@ watch(() => props.currentView, () => {
     max-height: calc(100vh - env(safe-area-inset-top, 0px) - 1.5rem);
     background: var(--sidebar-bg);
     border: 1px solid var(--border-color);
-    border-radius: 20px;
+    border-radius: var(--radius-2xl);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -621,22 +692,9 @@ watch(() => props.currentView, () => {
   }
 
   .mobile-drawer-subtitle {
-    font-size: var(--fs-tiny);
+    font-size: var(--fs-meta);
     color: var(--text-muted);
     margin-top: var(--space-1);
-  }
-
-  .mobile-drawer-close {
-    width: 44px;
-    height: 44px;
-    border-radius: var(--radius-md);
-    background: var(--bg-subtle);
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
   }
 
   .mobile-menu-links {
@@ -656,7 +714,7 @@ watch(() => props.currentView, () => {
     border-radius: var(--radius-lg);
     color: var(--text-secondary);
     text-align: left;
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    transition: background-color var(--dur-base) var(--ease-standard), border-color var(--dur-base) var(--ease-standard), color var(--dur-base) var(--ease-standard);
   }
 
   /* The desktop compact-sidebar rule hides this group below 1024px. The
@@ -718,12 +776,15 @@ watch(() => props.currentView, () => {
     border-radius: var(--radius-lg);
     background: var(--bg-subtle);
     border: 1px solid var(--border-color);
-    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    transition: background-color var(--dur-base) var(--ease-standard), color var(--dur-base) var(--ease-standard), transform var(--dur-base) var(--ease-standard);
   }
 
   .mobile-drawer-enter-active,
   .mobile-drawer-leave-active {
-    transition: opacity 0.2s ease;
+    transition: opacity var(--dur-base) var(--ease-standard);
+  }
+  .mobile-drawer-leave-active {
+    transition-duration: var(--dur-fast); /* 離場比進場快 */
   }
 
   .mobile-drawer-enter-from,

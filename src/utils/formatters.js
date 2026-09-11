@@ -1,12 +1,4 @@
-/**
- * 通用資料格式化與解析工具
- */
 
-/**
- * 自動補齊網址通訊協定 (當缺少 http:// 或 https:// 時自動添加 https://)
- * @param {string} url
- * @returns {string}
- */
 export function ensureProtocol(url) {
   if (!url || typeof url !== 'string') return '';
   const trimmed = url.trim();
@@ -87,11 +79,6 @@ export function parseLines(val) {
   return source.map(line => String(line).trim()).filter(Boolean);
 }
 
-/**
- * 格式化日期時間字串為「YYYY-MM-DD HH:mm:ss」(年月日 時分秒)
- * @param {string|Date|number} dateVal
- * @returns {string}
- */
 export function formatDateTime(dateVal) {
   if (!dateVal) return '';
   let d = new Date(dateVal);

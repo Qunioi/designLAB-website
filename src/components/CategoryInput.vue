@@ -1,67 +1,61 @@
 <template>
+  <!-- 可輸入、也可從歷史類型點選的欄位（combobox）。只能從固定選項挑的情境請用 base/Select.vue -->
   <div class="category-input-container" ref="containerRef">
     <div class="input-wrapper">
       <input
         ref="inputRef"
+        :id="inputId || undefined"
         type="text"
         :value="modelValue"
+        role="combobox"
+        :aria-expanded="String(isFocused)"
+        aria-haspopup="listbox"
+        aria-autocomplete="list"
         @input="handleInput"
         @focus="handleFocus"
         @blur="handleBlur"
-        :placeholder="placeholder || '請輸入或點選建議分類...'"
+        @keydown.esc="isFocused = false"
+        :placeholder="placeholder || '請輸入或點選建議類型...'"
         :required="required"
         class="category-input-field"
       />
       <button
         type="button"
         class="dropdown-toggle-btn"
+        tabindex="-1"
         @click.stop="toggleDropdown"
         title="切換建議選單"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="arrow-icon"
-          :class="{ open: isFocused }"
-        >
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
+        <Icon name="chevron-down" :size="12" :stroke-width="2.2" class="arrow-icon" :class="{ open: isFocused }" />
       </button>
     </div>
 
-    <!-- 自訂高質感歷史建議選單 (只在 Focus 有焦點時展示) -->
     <Transition name="fade">
-      <div v-if="isFocused" class="category-dropdown-menu glass-panel" @mousedown.prevent>
-        <div class="dropdown-header">
-          <span>{{ searchKeyword ? `篩選結果 (${filteredOptions.length})` : '歷史添加過的分類 (點擊快速套用)' }}</span>
+      <div v-if="isFocused" class="category-dropdown-menu dropdown-surface" @mousedown.prevent>
+        <div class="dropdown-heading">
+          <span>{{ searchKeyword ? `篩選結果 (${filteredOptions.length})` : '歷史添加過的類型 (點擊快速套用)' }}</span>
         </div>
-        
-        <div class="options-list" v-if="filteredOptions.length > 0">
+
+        <div class="options-list" v-if="filteredOptions.length > 0" role="listbox">
           <button
             type="button"
             v-for="opt in filteredOptions"
-            :key="opt"
+            :key="opt.value"
             class="option-item"
-            :class="{ active: opt === modelValue }"
-            @click="selectOption(opt)"
+            :class="{ active: opt.value === modelValue }"
+            role="option"
+            :aria-selected="opt.value === modelValue"
+            @click="selectOption(opt.value)"
           >
-            <span>{{ opt }}</span>
-            <svg v-if="opt === modelValue" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="check-icon"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>{{ opt.label }}</span>
+            <Icon name="check" :size="14" :stroke-width="2.5" v-if="opt.value === modelValue" class="check-icon" />
           </button>
         </div>
 
-        <!-- 當打字找不到匹配歷史分類時，顯示新增自訂分類提示 -->
         <div class="no-options-item" v-else-if="searchKeyword">
-          <span>無符合「{{ searchKeyword }}」的歷史分類</span>
+          <span>無符合「{{ searchKeyword }}」的歷史類型</span>
           <button type="button" class="create-new-btn" @click="selectOption(searchKeyword)">
-            ＋ 點擊使用新分類「{{ searchKeyword }}」
+            ＋ 點擊使用新類型「{{ searchKeyword }}」
           </button>
         </div>
       </div>
@@ -70,6 +64,7 @@
 </template>
 
 <script setup>
+import Icon from './base/Icon.vue';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
@@ -77,6 +72,7 @@ const props = defineProps({
     type: String,
     default: ''
   },
+  // 字串陣列，或 { value, label } 物件陣列（存的是 value、畫面上顯示 label）
   options: {
     type: Array,
     default: () => []
@@ -88,6 +84,10 @@ const props = defineProps({
   required: {
     type: Boolean,
     default: false
+  },
+  inputId: {
+    type: String,
+    default: ''
   }
 });
 
@@ -96,6 +96,10 @@ const emit = defineEmits(['update:modelValue']);
 const isFocused = ref(false);
 const containerRef = ref(null);
 const inputRef = ref(null);
+
+const normalizedOptions = computed(() => (props.options || [])
+  .filter(opt => opt !== null && opt !== undefined && opt !== '')
+  .map(opt => (typeof opt === 'object' ? { value: String(opt.value), label: String(opt.label ?? opt.value) } : { value: String(opt), label: String(opt) })));
 
 const searchKeyword = computed(() => (props.modelValue || '').trim());
 
@@ -124,20 +128,16 @@ const toggleDropdown = () => {
   }
 };
 
-const selectOption = (opt) => {
-  emit('update:modelValue', opt);
+const selectOption = (value) => {
+  emit('update:modelValue', value);
   isFocused.value = false;
 };
 
 const filteredOptions = computed(() => {
-  if (!props.options || props.options.length === 0) return [];
+  const list = normalizedOptions.value;
   const q = searchKeyword.value.toLowerCase();
-  
-  if (!q) return props.options;
-  
-  return props.options.filter(opt =>
-    opt && String(opt).toLowerCase().includes(q)
-  );
+  if (!q) return list;
+  return list.filter(opt => opt.label.toLowerCase().includes(q));
 });
 
 const handleClickOutside = (e) => {
@@ -178,7 +178,7 @@ onUnmounted(() => {
   color: var(--text-primary);
   padding: var(--space-2) var(--space-3);
   outline: none;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition: background-color var(--dur-base) var(--ease-standard), border-color var(--dur-base) var(--ease-standard), color var(--dur-base) var(--ease-standard);
   font-family: var(--font-body);
 }
 
@@ -191,6 +191,7 @@ onUnmounted(() => {
   border-color: var(--color-primary);
   outline: none;
 }
+
 
 .dropdown-toggle-btn {
   position: absolute;
@@ -205,7 +206,7 @@ onUnmounted(() => {
   justify-content: center;
   cursor: pointer;
   padding: var(--space-1);
-  transition: transform 0.2s ease, color 0.2s ease;
+  transition: transform var(--dur-base) var(--ease-standard), color var(--dur-base) var(--ease-standard);
 }
 
 .dropdown-toggle-btn:hover {
@@ -218,22 +219,11 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   max-height: min(240px, 32vh);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-surface);
   overflow-y: auto;
-  z-index: 20;
+  z-index: var(--z-dropdown);
   overscroll-behavior: contain;
 }
 
-.dropdown-header {
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--fs-tiny);
-  font-weight: var(--fw-bold);
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border-color);
-}
 
 .options-list {
   list-style: none;
@@ -248,10 +238,10 @@ onUnmounted(() => {
   min-height: 40px;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
-  font-size: var(--fs-label);
+  font-size: var(--fs-meta);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
   background: transparent;
   border: none;
   width: 100%;
@@ -292,7 +282,7 @@ onUnmounted(() => {
   font-size: var(--fs-meta);
   font-weight: var(--fw-semibold);
   cursor: pointer;
-  transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+  transition: color var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard);
   text-align: center;
 }
 
@@ -301,6 +291,6 @@ onUnmounted(() => {
   border-color: var(--color-primary);
 }
 
-.fade-enter-active, .fade-leave-active { transition: opacity 0.18s ease; }
+.fade-enter-active, .fade-leave-active { transition: opacity var(--dur-fast) var(--ease-standard); }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>

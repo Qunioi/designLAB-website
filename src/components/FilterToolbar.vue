@@ -1,41 +1,38 @@
 <template>
   <div class="filter-toolbar-wrapper">
-    <!-- 上方搜尋框與篩選下拉按鈕工具列 -->
     <div class="filter-toolbar glass-panel">
-      <div class="search-box">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        <input
-          :value="searchQuery"
-          @input="$emit('update:searchQuery', $event.target.value)"
-          type="text"
-          :placeholder="searchPlaceholder"
-        />
-      </div>
+      <SearchInput
+        class="search-box"
+        :model-value="searchQuery"
+        :placeholder="searchPlaceholder"
+        @update:model-value="$emit('update:searchQuery', $event)"
+      />
 
       <div v-if="showAdvanced" class="filter-options">
-        <!-- 分類/標籤多選選單 -->
-        <div
+        <Dropdown
           v-for="f in filters"
           :key="f.field"
           class="custom-tag-dropdown"
+          align="end"
         >
-          <button
-            type="button"
-            class="filter-dropdown-btn"
-            :class="{ active: activeDropdown === f.field || getSelectedCount(f.field) > 0 }"
-            :aria-expanded="activeDropdown === f.field ? 'true' : 'false'"
-            :aria-label="`篩選${getFilterZhTitle(f)}`"
-            @click.stop="$emit('toggle-dropdown', f.field)"
-          >
-            <svg v-if="f.field === 'tags'" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
-            <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-            <span>{{ getFilterButtonLabel(f) }}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="arrow"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </button>
+          <template #trigger="{ open, toggle, triggerProps }">
+            <button
+              type="button"
+              class="filter-dropdown-btn"
+              :class="{ active: open || getSelectedCount(f.field) > 0 }"
+              v-bind="triggerProps"
+              :aria-label="`篩選${getFilterZhTitle(f)}`"
+              @click="toggle"
+            >
+              <Icon name="tag" :size="14" v-if="f.field === 'tags'" />
+              <Icon name="filter" :size="14" v-else />
+              <span>{{ getFilterButtonLabel(f) }}</span>
+              <Icon name="chevron-down" :size="12" class="arrow" />
+            </button>
+          </template>
 
-          <Transition name="fade">
-            <div class="tag-dropdown-menu glass-panel" v-if="activeDropdown === f.field" @click.stop>
-              <div class="tag-dropdown-header">
+            <div class="tag-dropdown-menu">
+              <div class="dropdown-heading">
                 <span>選擇 {{ f.zhLabel || getFilterZhTitle(f) }} (可多選)</span>
                 <button class="clear-btn" v-if="getSelectedCount(f.field) > 0" @click="$emit('clear-filter-field', f.field)">清除全部</button>
               </div>
@@ -55,41 +52,29 @@
                 </label>
               </div>
             </div>
-          </Transition>
-        </div>
+        </Dropdown>
 
-        <!-- 高級篩選與排序整合選單 (採用圖一控制器/調音器 Sliders Icon) -->
-        <div class="custom-tag-dropdown">
-          <button
-            type="button"
-            class="filter-dropdown-btn adv-filter-btn"
-            :class="{ active: activeDropdown === 'adv_filter' || isAdvActive }"
-            :aria-expanded="activeDropdown === 'adv_filter' ? 'true' : 'false'"
-            aria-label="更多篩選與排序"
-            @click.stop="$emit('toggle-dropdown', 'adv_filter')"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="4" y1="21" x2="4" y2="14"></line>
-              <line x1="4" y1="10" x2="4" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12" y2="3"></line>
-              <line x1="20" y1="21" x2="20" y2="16"></line>
-              <line x1="20" y1="12" x2="20" y2="3"></line>
-              <line x1="1" y1="14" x2="7" y2="14"></line>
-              <line x1="9" y1="8" x2="15" y2="8"></line>
-              <line x1="17" y1="16" x2="23" y2="16"></line>
-            </svg>
-            <span>更多</span>
-            <span v-if="activeAdvBadgeCount > 0" class="adv-active-count">{{ activeAdvBadgeCount }}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="arrow"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </button>
+        <Dropdown class="custom-tag-dropdown" align="end">
+          <template #trigger="{ open, toggle, triggerProps }">
+            <button
+              type="button"
+              class="filter-dropdown-btn adv-filter-btn"
+              :class="{ active: open || isAdvActive }"
+              v-bind="triggerProps"
+              aria-label="更多篩選與排序"
+              @click="toggle"
+            >
+              <Icon name="sliders" :size="15" />
+              <span>更多</span>
+              <span v-if="activeAdvBadgeCount > 0" class="adv-active-count">{{ activeAdvBadgeCount }}</span>
+              <Icon name="chevron-down" :size="12" class="arrow" />
+            </button>
+          </template>
 
-          <Transition name="fade">
-            <div class="tag-dropdown-menu glass-panel adv-filter-panel" v-if="activeDropdown === 'adv_filter'" @click.stop>
-              <!-- 1. 排序選擇區塊 -->
+            <div class="tag-dropdown-menu adv-filter-panel">
               <div class="adv-panel-section">
                 <div class="adv-section-title">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+                  <Icon name="arrow-down" :size="13" />
                   <span>日期與名稱排序</span>
                 </div>
                 <div class="sort-grid-options">
@@ -108,11 +93,10 @@
 
               <div class="adv-panel-divider"></div>
 
-              <!-- 2. 建立者選擇區塊 -->
               <div class="adv-panel-section" v-if="creatorOptions && creatorOptions.length">
                 <div class="adv-section-title between">
                   <div class="title-left">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <Icon name="user" :size="13" />
                     <span>依建立者篩選</span>
                   </div>
                   <button class="clear-btn" v-if="selectedCreators && selectedCreators.length > 0" @click="$emit('clear-creators')">清除建立者</button>
@@ -134,38 +118,39 @@
                 </div>
               </div>
             </div>
-          </Transition>
-        </div>
+        </Dropdown>
       </div>
     </div>
 
-    <!-- 已選條件 Chip 膠囊條 -->
     <div class="selected-tags-chips" v-if="totalSelectedChipsCount > 0">
       <span class="chips-label">已選條件：</span>
       <div class="chip-list">
         <template v-for="f in filters" :key="f.field">
-          <div v-for="opt in multiFilterValues[f.field]" :key="opt" class="tag-chip">
+          <div v-for="opt in multiFilterValues[f.field]" :key="opt" class="filter-chip">
             <small class="chip-category-prefix">{{ getFilterEnglishTitle(f) }}:</small>
             <span>{{ f.field === 'tags' ? '#' + opt : opt }}</span>
             <button class="chip-remove-btn" @click="$emit('remove-option', { field: f.field, opt })" title="移除條件">
-              <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              <Icon name="close" :size="8" :stroke-width="3" />
             </button>
           </div>
         </template>
       </div>
-      <button class="reset-all-tags-btn" @click="$emit('reset-all')">清除全部篩選</button>
+      <BaseButton variant="ghost" size="sm" class="reset-all-tags-btn" @click="$emit('reset-all')">清除全部篩選</BaseButton>
     </div>
   </div>
 </template>
 
 <script setup>
+import SearchInput from './base/SearchInput.vue';
+import Icon from './base/Icon.vue';
+import BaseButton from './base/BaseButton.vue';
+import Dropdown from './base/Dropdown.vue';
 import { computed } from 'vue';
 
 const props = defineProps({
   searchQuery: { type: String, default: '' },
   searchPlaceholder: { type: String, default: '搜尋...' },
   filters: { type: Array, default: () => [] },
-  activeDropdown: { type: String, default: '' },
   multiFilterValues: { type: Object, default: () => ({}) },
   dynamicOptions: { type: Object, default: () => ({}) },
   creatorOptions: { type: Array, default: () => [] },
@@ -177,7 +162,6 @@ const props = defineProps({
 
 defineEmits([
   'update:searchQuery',
-  'toggle-dropdown',
   'clear-filter-field',
   'toggle-option',
   'remove-option',
@@ -217,7 +201,7 @@ const getFilterZhTitle = (f) => {
   switch (f.field) {
     case 'motionType': return '動畫類型';
     case 'tools': return '製作工具';
-    case 'category': return '分類';
+    case 'category': return '類型';
     case 'tags': return '主題標籤';
     default: return f.field;
   }
@@ -245,6 +229,10 @@ const getFilterButtonLabel = (f) => {
 
 <style scoped>
 .filter-toolbar-wrapper {
+  /* container 會讓這層變成新的疊層，所以層級要設在這裡，下拉選單才蓋得過卡片網格 */
+  container: filter-bar / inline-size;
+  position: relative;
+  z-index: var(--z-raised);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
@@ -253,12 +241,12 @@ const getFilterButtonLabel = (f) => {
 
 .filter-toolbar {
   position: relative;
-  z-index: 100;
+  z-index: var(--z-raised);
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: var(--space-3) var(--space-3);
-  background: var(--bg-card);
+  background: var(--surface-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   gap: var(--space-3);
@@ -266,43 +254,13 @@ const getFilterButtonLabel = (f) => {
   box-sizing: border-box;
 }
 
-/* 搜尋框：固定合適寬度，不無限擴張擠壓篩選按鈕 */
 .search-box {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  height: 36px;
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-md);
+  /* 外觀由 SearchInput 負責，這裡只管在篩選列裡佔多寬 */
   width: 260px;
   flex: 0 1 260px;
   min-width: 140px;
-  transition: border-color 0.2s;
-  box-sizing: border-box;
 }
 
-.search-box:focus-within {
-  border-color: var(--color-primary);
-}
-
-.search-box input {
-  font-size: var(--fs-label);
-  width: 100%;
-  min-height: 0;
-  background: transparent;
-  color: var(--text-primary);
-  border: none;
-  outline: none;
-}
-
-.search-box svg {
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
-
-/* 篩選按鈕區塊 */
 .filter-options {
   display: flex;
   gap: var(--space-2);
@@ -325,11 +283,11 @@ const getFilterButtonLabel = (f) => {
   background: var(--bg-input);
   border: 1px solid var(--border-color);
   padding: var(--space-1) var(--space-3);
-  border-radius: 9px;
-  font-size: 12px;
+  border-radius: var(--radius-md);
+  font-size: var(--fs-meta);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+  transition: color var(--dur-base) var(--ease-standard), background-color var(--dur-base) var(--ease-standard), border-color var(--dur-base) var(--ease-standard);
   font-family: var(--font-body);
   height: 36px;
   white-space: nowrap;
@@ -349,43 +307,26 @@ const getFilterButtonLabel = (f) => {
 }
 
 .filter-dropdown-btn .arrow {
-  transition: transform 0.2s ease;
+  transition: transform var(--dur-base) var(--ease-standard);
 }
 
 .filter-dropdown-btn.active .arrow {
   transform: rotate(180deg);
 }
 
-/* 下拉選單：安全定位，不跑出螢幕 */
+/* 下拉內容：外框（背景、框線、陰影、位置）由 Dropdown 負責，這裡只管尺寸與內距 */
 .tag-dropdown-menu {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  width: 240px;
-  max-width: min(280px, 90vw);
-  max-height: 320px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: var(--space-3);
-  z-index: 500;
-  box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  box-sizing: border-box;
+  width: 240px;
+  max-width: min(280px, 90vw);
+  max-height: 320px;
+  padding: var(--space-3);
 }
 
-.tag-dropdown-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: var(--fs-tiny);
-  color: var(--text-muted);
-  font-weight: var(--fw-semibold);
-  padding-bottom: var(--space-2);
-  white-space: nowrap;
-  border-bottom: 1px solid var(--border-color);
+.tag-dropdown-menu .dropdown-heading {
+  padding: 0 0 var(--space-2);
 }
 
 .clear-btn {
@@ -419,7 +360,7 @@ const getFilterButtonLabel = (f) => {
   font-size: var(--fs-meta);
   color: var(--text-primary);
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background var(--dur-fast) var(--ease-standard);
 }
 
 .tag-option-item:hover {
@@ -456,7 +397,7 @@ const getFilterButtonLabel = (f) => {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: var(--fs-tiny);
+  font-size: var(--fs-meta);
   font-weight: var(--fw-bold);
   color: var(--text-muted);
   letter-spacing: 0.02em;
@@ -480,14 +421,14 @@ const getFilterButtonLabel = (f) => {
 
 .sort-chip-btn {
   padding: var(--space-2) var(--space-2);
-  font-size: var(--fs-tiny);
+  font-size: var(--fs-meta);
   font-weight: var(--fw-medium);
   color: var(--text-secondary);
   background: var(--bg-hover);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+  transition: color var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard);
   text-align: center;
 }
 
@@ -497,8 +438,8 @@ const getFilterButtonLabel = (f) => {
 }
 
 .sort-chip-btn.selected {
-  background: var(--color-primary);
-  color: #ffffff;
+  background: var(--action-primary);
+  color: var(--action-on-primary);
   border-color: var(--color-primary);
   font-weight: var(--fw-bold);
   box-shadow: var(--shadow-sm);
@@ -518,11 +459,11 @@ const getFilterButtonLabel = (f) => {
   min-width: 17px;
   height: 17px;
   padding: 0 4px;
-  background: var(--color-primary);
-  color: #ffffff;
+  background: var(--action-primary);
+  color: var(--action-on-primary);
   font-size: var(--fs-meta);
   font-weight: var(--fw-bold);
-  border-radius: 99px;
+  border-radius: var(--radius-full);
 }
 
 .selected-tags-chips {
@@ -537,7 +478,7 @@ const getFilterButtonLabel = (f) => {
 }
 
 .chips-label {
-  font-size: var(--fs-label);
+  font-size: var(--fs-meta);
   font-weight: var(--fw-semibold);
   color: var(--text-muted);
 }
@@ -548,29 +489,29 @@ const getFilterButtonLabel = (f) => {
   flex-wrap: wrap;
 }
 
-.tag-chip {
+.filter-chip {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  background: var(--color-primary);
-  color: #ffffff;
+  background: var(--action-primary);
+  color: var(--action-on-primary);
   border: 1px solid var(--color-primary);
   box-shadow: var(--shadow-sm);
   font-size: var(--fs-meta);
   font-weight: var(--fw-semibold);
   padding: var(--space-1) var(--space-3);
-  border-radius: 99px;
+  border-radius: var(--radius-full);
   line-height: var(--lh-tight);
   
 }
-.tag-chip span {
+.filter-chip span {
   text-box: trim-both cap alphabetic;
 }
 
 .chip-category-prefix {
   opacity: 0.9;
   font-weight: var(--fw-semibold);
-  color: #ffffff;
+  color: var(--action-on-primary);
 }
 
 .chip-remove-btn {
@@ -580,35 +521,25 @@ const getFilterButtonLabel = (f) => {
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  font-size: var(--fs-tiny);
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.25);
+  font-size: var(--fs-meta);
+  color: var(--action-on-primary);
+  background: color-mix(in srgb, var(--action-on-primary) 25%, transparent);
   cursor: pointer;
-  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+  transition: color var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard);
   border: none;
 }
 
 .chip-remove-btn:hover {
-  background: rgba(255, 255, 255, 0.45);
-  color: #ffffff;
+  background: color-mix(in srgb, var(--action-on-primary) 45%, transparent);
+  color: var(--action-on-primary);
 }
 
 .reset-all-tags-btn {
-  font-size: var(--fs-meta);
-  color: var(--text-secondary);
-  cursor: pointer;
   margin-left: auto;
-  background: none;
-  border: none;
 }
 
-.reset-all-tags-btn:hover {
-  color: var(--color-danger);
-  text-decoration: underline;
-}
-
-/* 響應式斷點：平板與中螢幕 (<= 960px) */
-@media (max-width: 960px) {
+/* 容器寬度 ≤920px 時直排（平板一定會落在這裡；1024–1250 的筆電內容區也不夠放一排） */
+@container filter-bar (max-width: 920px) {
   .filter-toolbar {
     flex-direction: column;
     align-items: stretch;
@@ -630,23 +561,27 @@ const getFilterButtonLabel = (f) => {
     font-size: var(--fs-meta);
     padding: var(--space-1) var(--space-2);
   }
-  .search-box,
+  /* 直排時選單改成靠左展開，最後一個（更多）靠右，才不會超出畫面 */
+  .custom-tag-dropdown :deep(.dropdown-panel) {
+    left: 0;
+    right: auto;
+  }
+  .custom-tag-dropdown:last-child :deep(.dropdown-panel) {
+    left: auto;
+    right: 0;
+  }
+  .tag-dropdown-menu {
+    width: min(260px, calc(100vw - 2.5rem));
+  }
+}
+
+@media (pointer: coarse) {
   .filter-dropdown-btn {
     min-height: 44px;
     height: 44px;
   }
-  .tag-dropdown-menu {
-    left: 0;
-    right: auto;
-    width: min(260px, calc(100vw - 2.5rem));
-  }
-  .custom-tag-dropdown:last-child .tag-dropdown-menu {
-    left: auto;
-    right: 0;
-  }
 }
 
-/* 手機極窄螢幕 (<= 480px) */
 @media (max-width: 480px) {
   .filter-options {
     display: grid;

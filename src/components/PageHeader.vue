@@ -9,17 +9,11 @@
       <div class="header-actions">
         <slot name="actions" />
 
-        <!-- 通知鈴鐺組件 (訪客登入不顯示，行動版下收納至頂部 Header 欄內) -->
         <NotificationBell v-if="showNotification && !isGuest" class="page-header-bell" />
 
-        <button
-          v-if="addBtnLabel && !isGuest"
-          type="button"
-          class="add-btn"
-          @click="$emit('add-click')"
-        >
+        <BaseButton variant="primary" class="add-btn" v-if="addBtnLabel && !isGuest" type="button" @click="$emit('add-click')">
           {{ addBtnLabel }}
-        </button>
+        </BaseButton>
       </div>
     </div>
 
@@ -28,7 +22,9 @@
 </template>
 
 <script setup>
+import BaseButton from './base/BaseButton.vue';
 import { computed } from 'vue';
+import { identityVersion } from '../utils/identity';
 import NotificationBell from './NotificationBell.vue';
 import { getCurrentUser } from '../utils/userStore';
 
@@ -54,6 +50,7 @@ defineProps({
 defineEmits(['add-click']);
 
 const isGuest = computed(() => {
+  identityVersion.value; // 登出／權杖過期／身分模擬切換時重新判斷
   const u = getCurrentUser();
   const uname = (u.username || '').toLowerCase();
   return !uname || uname === '@guest' || uname === '@account' || u.nickname === '訪客';
@@ -65,7 +62,6 @@ const isGuest = computed(() => {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  margin-bottom: var(--space-1);
   padding-top: var(--space-1);
 }
 
@@ -105,24 +101,11 @@ const isGuest = computed(() => {
 }
 
 /* Navigation owns the notification entry on every mobile layout. Keep the
-   page-level action for desktop only so tablet widths do not duplicate it. */
-@media (max-width: 1024px) {
+   page-level action above phone width (the phone top bar has its own bell). */
+@media (max-width: 640px) {
   .page-header-bell {
     display: none;
   }
 }
 
-@media (max-width: 640px) {
-  .page-title {
-    font-size: var(--fs-h2);
-  }
-  .add-btn {
-    padding: var(--space-2) var(--space-3);
-    font-size: var(--fs-meta);
-    border-radius: var(--radius-sm);
-  }
-  .page-subtitle {
-    font-size: var(--fs-meta);
-  }
-}
 </style>

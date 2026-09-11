@@ -1,243 +1,205 @@
 <template>
-  <Transition name="modal-fade">
-    <div
-      v-if="isOpen"
-      class="modal-backdrop"
-      @pointerdown="handleBackdropPointerDown"
-      @click="handleBackdropClick"
-    >
-      <div :class="['modal-container', 'glass-panel', currentTheme]" role="dialog" aria-modal="true" aria-labelledby="crud-modal-title" @click.stop>
-        <div class="modal-header">
-          <h2 id="crud-modal-title">{{ isEdit ? '編輯' : '新增' }} - {{ typeLabel }}</h2>
-          <button type="button" class="close-btn" aria-label="關閉表單" @click="close"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-        </div>
-
+  <!-- 點遮罩、按 Esc 都不關閉，避免填到一半的內容遺失 -->
+  <BaseModal
+    :open="isOpen"
+    size="md"
+    :title="`${isEdit ? '編輯' : '新增'} - ${typeLabel}`"
+    close-label="關閉表單"
+    :close-on-backdrop="false"
+    :close-on-esc="false"
+    @close="close"
+  >
         <form @submit.prevent="handleSubmit" novalidate class="modal-form">
-          <div class="modal-body">
-          <!-- UI Research Form -->
+          <div ref="modalBodyRef" class="base-modal-body">
           <div v-if="type === 'UI_RESEARCH'" class="form-grid">
-            <div class="form-group full-width">
-              <label>標題 <span class="required">*</span></label>
-              <input v-model="form.title" type="text" placeholder="請輸入標題" required />
-            </div>
-            <div class="form-group">
-              <label>分類 <span class="required">*</span></label>
-              <CategoryInput v-model="form.category" :options="historyCategories" placeholder="例如：Layout, User Flow, Visual Style" required />
-            </div>
-            <div class="form-group">
-              <label>來源網址</label>
-              <input v-model="form.sourceUrl" type="url" required @blur="form.sourceUrl = ensureProtocol(form.sourceUrl)" placeholder="例如：https://linear.app" />
-            </div>
-            <div class="form-group full-width">
-              <label>圖片上傳<span class="field-help-inline">JPG / JPEG / PNG / GIF / WEBP</span> <span class="required">*</span><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></label>
-              <ImagePathInput v-model="form.cover" required />
-            </div>
-            <div class="form-group full-width">
-              <label>研究重點</label>
-              <textarea v-model="form.takeaways" rows="3" required placeholder="請輸入詳細的研究心得或設計分析..."></textarea>
-            </div>
-            <div class="form-group full-width">
-              <label>值得參考<span class="field-help-inline">選填，一行一項，會顯示成條列重點</span></label>
-              <textarea v-model="form.highlights" rows="3" placeholder="例如：&#10;設計變數集中管理，減少重複設定&#10;支援多主題與品牌切換"></textarea>
-            </div>
-            <div class="form-group full-width">
-              <label>適用情境<span class="field-help-inline">按 Enter 新增標籤，可點選歷史標籤</span></label>
-              <TagInput v-model="form.tags" :suggested-tags="historyTags" placeholder="輸入標籤如：Bento Grid, SaaS..." />
-            </div>
+            <FormField :id="fieldId('title')" label="標題" :required="isRequired('title')" :error="errors.title" field="title" full v-slot="{ id, invalid, describedby }">
+              <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.title" :required="isRequired('title')" type="text" placeholder="請輸入標題" />
+            </FormField>
+            <FormField :id="fieldId('category')" label="類型" :required="isRequired('category')" :error="errors.category" field="category" v-slot="{ id }">
+              <CategoryInput :input-id="id" v-model="form.category" :required="isRequired('category')" :options="historyCategories" placeholder="請選擇或新增類型" />
+            </FormField>
+            <FormField :id="fieldId('sourceUrl')" label="網址" v-slot="{ id, invalid, describedby }">
+              <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.sourceUrl" :required="isRequired('sourceUrl')" type="url" @blur="form.sourceUrl = ensureProtocol(form.sourceUrl)" placeholder="請貼上研究簡報、Demo 或相關完整內容連結" />
+            </FormField>
+            <FormField :id="fieldId('cover')" label="封面圖" :required="isRequired('cover')" help="JPG / JPEG / PNG / GIF / WEBP" :error="errors.cover" field="cover" full group>
+              <template #label-extra><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></template>
+              <template #default="{ labelId }">
+                <ImagePathInput :aria-labelledby="labelId" v-model="form.cover" :required="isRequired('cover')" />
+              </template>
+            </FormField>
+            <FormField :id="fieldId('takeaways')" label="研究重點" :required="isRequired('takeaways')" :error="errors.takeaways" field="takeaways" full v-slot="{ id, invalid, describedby }">
+              <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.takeaways" :required="isRequired('takeaways')" rows="3" placeholder="請輸入研究重點"></textarea>
+            </FormField>
+            <FormField :id="fieldId('highlights')" label="值得參考" help="一行一項，會顯示成條列重點" full v-slot="{ id, invalid, describedby }">
+              <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.highlights" :required="isRequired('highlights')" rows="3" placeholder="請輸入值得參考項目"></textarea>
+            </FormField>
+            <FormField :id="fieldId('tags')" label="適用情境" help="按 Enter 新增標籤，可點選歷史標籤" full v-slot="{ id }">
+              <TagInput :input-id="id" v-model="form.tags" :suggested-tags="historyTags" placeholder="請新增或選擇標籤" />
+            </FormField>
           </div>
 
-          <!-- Motion Research Form -->
           <div v-else-if="type === 'MOTION_RESEARCH'" class="form-grid">
-            <div class="form-group full-width">
-              <label>標題 <span class="required">*</span></label>
-              <input v-model="form.title" type="text" placeholder="例如：Dynamic Island 彈性轉場動畫" required />
-            </div>
-            <div class="form-group">
-              <label>動畫類型<span class="field-help-inline">可輸入或從建議選取</span> <span class="required">*</span></label>
-              <CategoryInput v-model="form.motionType" :options="historyCategories" placeholder="例如：Micro-interaction, Drag & Drop" required />
-            </div>
-            <div class="form-group">
-              <label>來源網址 <span class="required">*</span></label>
-              <input v-model="form.sourceUrl" type="url" required @blur="form.sourceUrl = ensureProtocol(form.sourceUrl)" placeholder="請貼上來源網址" />
-            </div>
-            <div class="form-group full-width">
-              <label>影片檔案<span class="field-help-inline">MP4 / WEBM / MOV</span> <span class="required">*</span><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></label>
-              <FileUploader v-model="form.videoUrl" accept="video/mp4,video/webm,video/quicktime" placeholder="選擇影片檔案" />
-            </div>
-            <div class="form-group full-width">
-              <label>圖片上傳<span class="field-help-inline">JPG / JPEG / PNG / GIF / WEBP</span> <span class="required">*</span><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></label>
-              <ImagePathInput v-model="form.cover" />
-            </div>
-            <div class="form-group full-width">
-              <label>效果解析</label>
-              <textarea v-model="form.takeaways" rows="4" required placeholder="請描述此動畫的物理特性與可借鏡處..."></textarea>
-            </div>
-            <div class="form-group full-width">
-              <label>適用情境<span class="field-help-inline">按 Enter 新增標籤，可點選歷史標籤</span></label>
-              <TagInput v-model="form.tags" :suggested-tags="historyTags" placeholder="輸入標籤如：Spring Animation, iOS..." />
-            </div>
-            <div class="form-group full-width">
-              <label>製作工具<span class="field-help-inline">按 Enter 新增標籤，可點選歷史製作工具；會自動變成下面「實作資訊」表格的第一列</span> <span class="required">*</span></label>
-              <TagInput v-model="form.tools" :suggested-tags="historyTools" placeholder="輸入製作工具如：SwiftUI, Vue, GSAP..." />
-            </div>
-            <div class="form-group full-width">
-              <label>實作資訊<span class="field-help-inline">選填，「製作工具」以外的欄位名稱與內容都可自訂、新增或刪除</span></label>
-              <KeyValueListInput v-model="form.implInfo" />
-            </div>
+            <FormField :id="fieldId('title')" label="標題" :required="isRequired('title')" :error="errors.title" field="title" full v-slot="{ id, invalid, describedby }">
+              <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.title" :required="isRequired('title')" type="text" placeholder="請輸入標題" />
+            </FormField>
+            <FormField :id="fieldId('motionType')" label="類型" :required="isRequired('motionType')" :error="errors.motionType" field="motionType" v-slot="{ id }">
+              <CategoryInput :input-id="id" v-model="form.motionType" :required="isRequired('motionType')" :options="historyCategories" placeholder="請選擇或新增類型" />
+            </FormField>
+            <FormField :id="fieldId('sourceUrl')" label="網址" v-slot="{ id, invalid, describedby }">
+              <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.sourceUrl" :required="isRequired('sourceUrl')" type="url" @blur="form.sourceUrl = ensureProtocol(form.sourceUrl)" placeholder="請貼上研究簡報、Demo 或相關完整內容連結" />
+            </FormField>
+            <FormField :id="fieldId('cover')" label="封面圖" :required="isRequired('cover')" help="JPG / JPEG / PNG / GIF / WEBP" :error="errors.cover" field="cover" full group>
+              <template #label-extra><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></template>
+              <template #default="{ labelId }">
+                <ImagePathInput :aria-labelledby="labelId" v-model="form.cover" :required="isRequired('cover')" />
+              </template>
+            </FormField>
+            <FormField :id="fieldId('videoUrl')" label="影片" :required="isRequired('videoUrl')" help="MP4 / WEBM / MOV" :error="errors.videoUrl" field="videoUrl" full group>
+              <template #label-extra><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></template>
+              <template #default="{ labelId }">
+                <FileUploader :aria-labelledby="labelId" v-model="form.videoUrl" :required="isRequired('videoUrl')" accept="video/mp4,video/webm,video/quicktime" placeholder="選擇影片檔案" />
+              </template>
+            </FormField>
+            <FormField :id="fieldId('takeaways')" label="動態重點" :required="isRequired('takeaways')" :error="errors.takeaways" field="takeaways" full v-slot="{ id, invalid, describedby }">
+              <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.takeaways" :required="isRequired('takeaways')" rows="4" placeholder="請輸入動態重點"></textarea>
+            </FormField>
+            <FormField :id="fieldId('tools')" label="製作工具" :required="isRequired('tools')" help="按 Enter 新增標籤，可點選歷史製作工具" :error="errors.tools" field="tools" full v-slot="{ id }">
+              <TagInput :input-id="id" v-model="form.tools" :suggested-tags="historyTools" placeholder="請新增或選擇製作工具" />
+            </FormField>
+            <FormField :id="fieldId('tags')" label="適用情境" help="按 Enter 新增標籤，可點選歷史標籤" full v-slot="{ id }">
+              <TagInput :input-id="id" v-model="form.tags" :suggested-tags="historyTags" placeholder="請新增或選擇標籤" />
+            </FormField>
+            <!-- <div class="form-group full-width">
+              <label :id="`${fieldId('implInfo')}-label`">實作資訊<span class="field-help-inline">欄位名稱與內容都可自訂、新增或刪除</span></label>
+              <KeyValueListInput :aria-labelledby="`${fieldId('implInfo')}-label`" role="group" v-model="form.implInfo" />
+            </div> -->
           </div>
 
-          <!-- Competitor Research Form -->
           <div v-else-if="type === 'COMPETITORS'" class="form-grid">
-            <div class="form-group">
-              <label>競品名稱 <span class="required">*</span></label>
-              <input v-model="form.name" type="text" placeholder="例如：Figma" required />
-            </div>
-            <div class="form-group">
-              <label>競品分類 <span class="required">*</span></label>
-              <select v-model="form.category" class="status-select">
-                <option value="Web">Web 應用</option>
-                <option value="行動裝置">行動裝置</option>
-              </select>
-            </div>
-            <div class="form-group full-width">
-              <label>標籤<span class="field-help-inline">按 Enter 新增標籤，可點選下方歷史建議標籤</span></label>
-              <TagInput v-model="form.tags" :suggested-tags="historyTags" placeholder="輸入標籤如：Mobile UX, Fintech..." />
-            </div>
-            <div class="form-group full-width">
-              <label>官方網址</label>
-              <input v-model="form.url" type="url" required @blur="form.url = ensureProtocol(form.url)" placeholder="例如：https://figma.com" />
-            </div>
-            <div class="form-group full-width">
-              <label>圖片上傳<span class="field-help-inline">JPG / JPEG / PNG / GIF / WEBP</span> <span class="required">*</span><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></label>
-              <ImagePathInput v-model="form.screenshot" required />
-            </div>
-            <div class="form-group full-width">
-              <label>值得參考與借鏡之處</label>
-              <textarea v-model="form.takeaways" rows="3" required placeholder="我們如何參考此競品的優點、避免其缺點？" ></textarea>
-            </div>
-            <div class="form-group full-width">
-              <label>優點 (Pros)</label>
-              <textarea v-model="form.pros" rows="2" required placeholder="請輸入競品設計優點，可條列..." ></textarea>
-            </div>
-            <div class="form-group full-width">
-              <label>缺點 (Cons)</label>
-              <textarea v-model="form.cons" rows="2" required placeholder="請輸入競品設計缺點，可條列..." ></textarea>
-            </div>
+            <FormField :id="fieldId('name')" label="標題" :required="isRequired('name')" :error="errors.name" field="name" full v-slot="{ id, invalid, describedby }">
+              <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.name" :required="isRequired('name')" type="text" placeholder="請輸入標題" />
+            </FormField>
+            <FormField :id="fieldId('category')" label="類型" :required="isRequired('category')" :error="errors.category" field="category" v-slot="{ id }">
+              <CategoryInput :input-id="id" v-model="form.category" :required="isRequired('category')" :options="historyCategories" placeholder="請選擇或新增類型" />
+            </FormField>
+            <FormField :id="fieldId('url')" label="網址" v-slot="{ id, invalid, describedby }">
+              <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.url" :required="isRequired('url')" type="url" @blur="form.url = ensureProtocol(form.url)" placeholder="請貼上競品網址" />
+            </FormField>
+            <FormField :id="fieldId('screenshot')" label="封面圖" :required="isRequired('screenshot')" help="JPG / JPEG / PNG / GIF / WEBP" :error="errors.screenshot" field="screenshot" full group>
+              <template #label-extra><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></template>
+              <template #default="{ labelId }">
+                <ImagePathInput :aria-labelledby="labelId" v-model="form.screenshot" :required="isRequired('screenshot')" />
+              </template>
+            </FormField>
+            <FormField :id="fieldId('takeaways')" label="值得參考與借鏡之處" :required="isRequired('takeaways')" :error="errors.takeaways" field="takeaways" full v-slot="{ id, invalid, describedby }">
+              <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.takeaways" :required="isRequired('takeaways')" rows="3" placeholder="請輸入值得參考與借鏡之處" ></textarea>
+            </FormField>
+            <FormField :id="fieldId('pros')" label="優點 (Pros)" :required="isRequired('pros')" :error="errors.pros" field="pros" full v-slot="{ id, invalid, describedby }">
+              <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.pros" :required="isRequired('pros')" rows="2" placeholder="請輸入競品設計優點，可條列..." ></textarea>
+            </FormField>
+            <FormField :id="fieldId('cons')" label="缺點 (Cons)" :required="isRequired('cons')" :error="errors.cons" field="cons" full v-slot="{ id, invalid, describedby }">
+              <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.cons" :required="isRequired('cons')" rows="2" placeholder="請輸入競品設計缺點，可條列..." ></textarea>
+            </FormField>
+            <FormField :id="fieldId('tags')" label="相關標籤" help="按 Enter 新增標籤，可點選歷史標籤" full v-slot="{ id }">
+              <TagInput :input-id="id" v-model="form.tags" :suggested-tags="historyTags" placeholder="請新增或選擇標籤" />
+            </FormField>
           </div>
 
-          <!-- AI Center Form -->
           <div v-else-if="type === 'AI_CENTER'" class="form-grid">
-            <div class="form-group full-width">
-              <label>AI 工具名稱 <span class="required">*</span></label>
-              <input v-model="form.name" type="text" placeholder="例如：Midjourney v6" required />
-            </div>
-            <div class="form-group">
-              <label>工具分類 <span class="required">*</span></label>
-              <CategoryInput v-model="form.category" :options="historyCategories" placeholder="例如：圖像生成、研究分析" required />
-            </div>
-            <div class="form-group">
-              <label>AI 工具網址 <span class="required">*</span></label>
-              <input v-model="form.url" type="url" @blur="form.url = ensureProtocol(form.url)" placeholder="例如：https://chatgpt.com" required />
-            </div>
-            <div class="form-group full-width">
-              <label>工具封面<span class="field-help-inline">JPG / JPEG / PNG / GIF / WEBP</span> <span class="required">*</span><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></label>
-              <ImagePathInput v-model="form.cover" required />
-            </div>
-            <div class="form-group full-width">
-              <label>工具簡介 <span class="required">*</span></label>
-              <textarea v-model="form.useCase" rows="4" placeholder="例如：概念插畫生成、配色風格探索..." required></textarea>
-            </div>
-            <div class="form-group full-width">
-              <label>提示詞 <span class="required">*</span></label>
-              <textarea v-model="form.prompt" rows="3" placeholder="請輸入經測試效果良好的 Prompt..." required></textarea>
-            </div>
-            <div class="form-group full-width">
-              <label>適合用途<span class="field-help-inline">選填，按 Enter 新增標籤，可點選歷史標籤</span></label>
-              <TagInput v-model="form.tags" :suggested-tags="historyTags" placeholder="輸入適合用途如：Landing Page, Dashboard..." />
-            </div>
-            <div class="form-group full-width">
-              <label>工作流程<span class="field-help-inline">請用 → 分隔步驟</span> <span class="required">*</span></label>
-              <textarea v-model="form.workflow" rows="2" placeholder="例如：ChatGPT 優化 Prompt -> Midjourney 生成 -> Figma 局部微調" required></textarea>
-            </div>
+            <FormField :id="fieldId('name')" label="標題" :required="isRequired('name')" :error="errors.name" field="name" full v-slot="{ id, invalid, describedby }">
+              <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.name" :required="isRequired('name')" type="text" placeholder="請輸入標題" />
+            </FormField>
+            <FormField :id="fieldId('category')" label="類型" :required="isRequired('category')" :error="errors.category" field="category" v-slot="{ id }">
+              <CategoryInput :input-id="id" v-model="form.category" :required="isRequired('category')" :options="historyCategories" placeholder="請選擇或新增類型" />
+            </FormField>
+            <FormField :id="fieldId('url')" label="網址" v-slot="{ id, invalid, describedby }">
+              <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.url" :required="isRequired('url')" type="url" @blur="form.url = ensureProtocol(form.url)" placeholder="請貼上工具網址" />
+            </FormField>
+            <FormField :id="fieldId('cover')" label="封面圖" :required="isRequired('cover')" help="JPG / JPEG / PNG / GIF / WEBP" :error="errors.cover" field="cover" full group>
+              <template #label-extra><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></template>
+              <template #default="{ labelId }">
+                <ImagePathInput :aria-labelledby="labelId" v-model="form.cover" :required="isRequired('cover')" />
+              </template>
+            </FormField>
+            <FormField :id="fieldId('useCase')" label="工具簡介" :required="isRequired('useCase')" :error="errors.useCase" field="useCase" full v-slot="{ id, invalid, describedby }">
+              <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.useCase" :required="isRequired('useCase')" rows="4" placeholder="請輸入工具簡介"></textarea>
+            </FormField>
+            <FormField :id="fieldId('prompt')" label="提示詞" :required="isRequired('prompt')" :error="errors.prompt" field="prompt" full v-slot="{ id, invalid, describedby }">
+              <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.prompt" :required="isRequired('prompt')" rows="3" placeholder="請輸入經測試效果良好的提示詞"></textarea>
+            </FormField>
+            <FormField :id="fieldId('tags')" label="適合用途" help="按 Enter 新增標籤，可點選歷史標籤" full v-slot="{ id }">
+              <TagInput :input-id="id" v-model="form.tags" :suggested-tags="historyTags" placeholder="請新增或選擇標籤" />
+            </FormField>
+            <FormField :id="fieldId('workflow')" label="工作流程" :required="isRequired('workflow')" help="請用 -> 分隔步驟" :error="errors.workflow" field="workflow" full v-slot="{ id, invalid, describedby }">
+              <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.workflow" :required="isRequired('workflow')" rows="2" placeholder="請輸入分隔步驟"></textarea>
+            </FormField>
           </div>
 
-          <!-- Resources Form -->
           <div v-else-if="type === 'RESOURCES'" class="form-grid">
-            <div class="form-group">
-              <label>資源分類 <span class="required">*</span></label>
-              <CategoryInput v-model="form.category" :options="historyCategories" placeholder="例如：設計靈感, Icon, Font, UI元件" required />
-            </div>
-            <div class="form-group">
-              <label>網站名稱 <span class="required">*</span></label>
-              <input v-model="form.name" type="text" placeholder="例如：Awwwards" required />
-            </div>
-            <div class="form-group full-width">
-              <label>網站 URL <span class="required">*</span></label>
-              <input v-model="form.url" type="text" @blur="form.url = ensureProtocol(form.url)" placeholder="例如：https://awwwards.com" required />
-            </div>
-            <div class="form-group full-width">
-              <label>圖片上傳<span class="field-help-inline">JPG / JPEG / PNG / GIF / WEBP</span><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></label>
-              <ImagePathInput v-model="form.screenshot" />
-            </div>
-            <div class="form-group full-width">
-              <label>標籤<span class="field-help-inline">按 Enter 新增標籤，可點選歷史標籤</span></label>
-              <TagInput v-model="form.tags" :suggested-tags="historyTags" placeholder="輸入標籤如：Web Design, Motion..." />
-            </div>
-            <div class="form-group full-width">
-              <label>網站簡短說明</label>
-              <textarea v-model="form.desc" rows="3" placeholder="簡述網站特色與用途..."></textarea>
-            </div>
-            <div class="form-group full-width">
-              <label>推薦用途<span class="field-help-inline">選填</span></label>
-              <textarea v-model="form.usage" rows="2" placeholder="例如：提案前的靈感探索、設計趨勢研究..."></textarea>
-            </div>
+            <FormField :id="fieldId('name')" label="標題" :required="isRequired('name')" :error="errors.name" field="name" full v-slot="{ id, invalid, describedby }">
+              <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.name" :required="isRequired('name')" type="text" placeholder="例如：Awwwards" />
+            </FormField>
+            <FormField :id="fieldId('category')" label="類型" :required="isRequired('category')" :error="errors.category" field="category" v-slot="{ id }">
+              <CategoryInput :input-id="id" v-model="form.category" :required="isRequired('category')" :options="historyCategories" placeholder="例如：設計靈感, Icon, Font, UI元件" />
+            </FormField>
+            <FormField :id="fieldId('url')" label="網址" v-slot="{ id, invalid, describedby }">
+              <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.url" :required="isRequired('url')" type="text" @blur="form.url = ensureProtocol(form.url)" placeholder="例如：https://awwwards.com" />
+            </FormField>
+            <FormField :id="fieldId('screenshot')" label="封面圖" :required="isRequired('screenshot')" help="JPG / JPEG / PNG / GIF / WEBP" :error="errors.screenshot" field="screenshot" full group>
+              <template #label-extra><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></template>
+              <template #default="{ labelId }">
+                <ImagePathInput :aria-labelledby="labelId" v-model="form.screenshot" :required="isRequired('screenshot')" />
+              </template>
+            </FormField>
+            <FormField :id="fieldId('tags')" label="適合尋找" help="按 Enter 新增標籤，可點選歷史標籤" full v-slot="{ id }">
+              <TagInput :input-id="id" v-model="form.tags" :suggested-tags="historyTags" placeholder="請新增或選擇標籤" />
+            </FormField>
+            <FormField :id="fieldId('desc')" label="資源介紹" full v-slot="{ id, invalid, describedby }">
+              <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.desc" :required="isRequired('desc')" rows="3" placeholder="請輸入資源介紹"></textarea>
+            </FormField>
+            <FormField :id="fieldId('usage')" label="推薦用途" full v-slot="{ id, invalid, describedby }">
+              <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.usage" :required="isRequired('usage')" rows="2" placeholder="請輸入推薦用途"></textarea>
+            </FormField>
           </div>
 
-          <!-- Proposals Form -->
           <div v-else-if="type === 'PROPOSALS'" class="form-grid">
-            <div class="form-group">
-              <label>優化提案名稱 <span class="required">*</span></label>
-              <input v-model="form.title" type="text" placeholder="例如：內部首頁 Bento Grid 改版提案" required />
-            </div>
-            <div class="form-group">
-              <label>提案狀態</label>
-              <select v-model="form.status" class="status-select">
-                <option value="Idea">提案想法 (Idea)</option>
-                <option value="Evaluating">評估中</option>
-                <option value="Prototype">驗證中</option>
-                <option value="Approved">已採納</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>關聯的研究案</label>
-              <input v-model="form.relatedResearch" type="text" placeholder="例如：Linear Bento Grid (UI Research)" />
-            </div>
-            <div class="form-group">
-              <label>Figma Prototype 連結</label>
-              <input v-model="form.figmaLink" type="text" @blur="form.figmaLink = ensureProtocol(form.figmaLink)" placeholder="請輸入 Figma 連結" />
-            </div>
-            <div class="form-group full-width">
-              <label>預期效益與評估說明</label>
-              <textarea v-model="form.impact" rows="4" placeholder="評估將帶來哪些體驗提升或數據成長？"></textarea>
-            </div>
+            <FormField :id="fieldId('title')" label="優化提案名稱" :required="isRequired('title')" :error="errors.title" field="title" v-slot="{ id, invalid, describedby }">
+              <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.title" :required="isRequired('title')" type="text" placeholder="例如：內部首頁 Bento Grid 改版提案" />
+            </FormField>
+            <FormField :id="fieldId('status')" label="提案狀態" v-slot="{ id }">
+              <Select :id="id" v-model="form.status" :options="PROPOSAL_STATUS_OPTIONS" menu-title="選擇提案狀態" placeholder="請選擇提案狀態" />
+            </FormField>
+            <FormField :id="fieldId('relatedResearch')" label="關聯的研究案" v-slot="{ id, invalid, describedby }">
+              <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.relatedResearch" :required="isRequired('relatedResearch')" type="text" placeholder="例如：Linear Bento Grid (UI Research)" />
+            </FormField>
+            <FormField :id="fieldId('figmaLink')" label="Figma Prototype 連結" v-slot="{ id, invalid, describedby }">
+              <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.figmaLink" :required="isRequired('figmaLink')" type="text" @blur="form.figmaLink = ensureProtocol(form.figmaLink)" placeholder="請輸入 Figma 連結" />
+            </FormField>
+            <FormField :id="fieldId('impact')" label="預期效益與評估說明" full v-slot="{ id, invalid, describedby }">
+              <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.impact" :required="isRequired('impact')" rows="4" placeholder="評估將帶來哪些體驗提升或數據成長？"></textarea>
+            </FormField>
           </div>
 
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn-cancel" @click="close">取消</button>
-            <button type="submit" class="btn-save" :disabled="saving" :aria-busy="saving">
-              <svg v-if="saving" class="animate-spin btn-save-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-              {{ saving ? '儲存中...' : '儲存資料' }}
-            </button>
+          <div class="base-modal-footer">
+            <p v-if="errorCount" class="form-error-summary base-modal-status" role="alert">還有 {{ errorCount }} 個必填欄位未完成</p>
+            <BaseButton variant="secondary" type="button" @click="close">取消</BaseButton>
+            <BaseButton variant="primary" :loading="saving" type="submit">
+              儲存資料
+            </BaseButton>
           </div>
         </form>
-      </div>
-    </div>
-  </Transition>
+  </BaseModal>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import Select from './base/Select.vue';
+import BaseModal from './base/BaseModal.vue';
+import FormField from './base/FormField.vue';
+import Icon from './base/Icon.vue';
+import BaseButton from './base/BaseButton.vue';
+import { scrollBehavior } from '../utils/motion';
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import TagInput from './TagInput.vue';
 import CategoryInput from './CategoryInput.vue';
 import FileUploader from './FileUploader.vue';
@@ -263,8 +225,7 @@ const props = defineProps({
     type: String,
     default: 'theme-cloud-canvas'
   },
-  // 儲存＋雲端同步是否還在進行中：由父層在 @save 之後、資料實際同步完成前設為 true，
-  // 按鈕顯示 loading 並鎖住，避免使用者誤以為已經存好、或重複送出。
+  // 由父層在 @save 後設為 true，直到雲端同步結束（見 App.vue）
   saving: {
     type: Boolean,
     default: false
@@ -273,9 +234,6 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'save']);
 
-// 只有從遮罩開始的點擊才關閉，避免從彈窗內拖曳到遮罩時誤觸關閉。
-const backdropPointerDown = ref(false);
-
 const isEdit = computed(() => !!props.item);
 
 const typeLabel = computed(() => {
@@ -283,19 +241,81 @@ const typeLabel = computed(() => {
     case 'UI_RESEARCH': return 'UI 設計研究';
     case 'MOTION_RESEARCH': return '動態研究';
     case 'COMPETITORS': return '競品分析';
-    case 'AI_CENTER': return 'AI 工具';
-    case 'RESOURCES': return '資源網頁';
-    case 'PROPOSALS': return '優化提案';
+    case 'AI_CENTER': return 'AI 工具中心';
+    case 'RESOURCES': return '設計資源';
     default: return '';
   }
 });
 
 const form = ref({});
 
-// 自動收集歷史曾添加過的所有標籤
-// 只建議「目前這個類型」自己建過的標籤，不要混進其他頁面的標籤——
-// 跟 historyTools（只拉 MOTION_RESEARCH）是同一種邏輯。
+const PROPOSAL_STATUS_OPTIONS = [
+  { value: 'Idea', label: '提案想法 (Idea)' },
+  { value: 'Evaluating', label: '評估中' },
+  { value: 'Prototype', label: '驗證中' },
+  { value: 'Approved', label: '已採納' }
+];
+
+// 必填規則唯一來源：表單上的「*」與送出檢查都讀這份。
+// 有影片欄位的類型（動態研究）影片也必填；優化提案只有標題必填。
+const REQUIRED_FIELDS = {
+  UI_RESEARCH: ['title', 'category', 'cover'],
+  MOTION_RESEARCH: ['title', 'motionType', 'cover', 'videoUrl'],
+  COMPETITORS: ['name', 'category', 'screenshot'],
+  AI_CENTER: ['name', 'category', 'cover'],
+  RESOURCES: ['name', 'category', 'screenshot'],
+  PROPOSALS: ['title']
+};
+const REQUIRED_MESSAGE = '此欄位為必填';
+
+const fieldId = (field) => `crud-${props.type}-${field}`;
+const isRequired = (field) => (REQUIRED_FIELDS[props.type] || []).includes(field);
+const isEmptyValue = (value) => (Array.isArray(value) ? value.length === 0 : !String(value ?? '').trim());
+
+const errors = ref({});
+const errorCount = computed(() => Object.keys(errors.value).length);
+const modalBodyRef = ref(null);
+
+const collectErrors = () => {
+  const result = {};
+  (REQUIRED_FIELDS[props.type] || []).forEach(field => {
+    if (isEmptyValue(form.value[field])) result[field] = REQUIRED_MESSAGE;
+  });
+  return result;
+};
+
+// 只即時清除已標紅的欄位；還沒按過儲存前不主動驗證
+watch(form, () => {
+  const flagged = Object.keys(errors.value);
+  if (!flagged.length) return;
+  const current = collectErrors();
+  errors.value = Object.fromEntries(flagged.filter(field => current[field]).map(field => [field, current[field]]));
+}, { deep: true });
+
+watch(() => [props.isOpen, props.type, props.item], () => {
+  errors.value = {};
+});
+
+const focusFirstError = async () => {
+  await nextTick();
+  const group = modalBodyRef.value?.querySelector('.form-group.has-error');
+  if (!group) return;
+  group.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
+  const focusable = group.querySelector('input:not([type="file"]):not([type="hidden"]), textarea, select');
+  focusable?.focus({ preventScroll: true });
+};
+
+// localStorage 不是響應式，這個彈窗也一直掛著不會重建：下面三個歷史建議
+// 靠這個版本號在每次開啟或資料變動（design-lab-storage-updated）時重算。
+const historyVersion = ref(0);
+const refreshHistory = () => { historyVersion.value++; };
+watch(() => props.isOpen, (open) => { if (open) refreshHistory(); });
+onMounted(() => window.addEventListener('design-lab-storage-updated', refreshHistory));
+onUnmounted(() => window.removeEventListener('design-lab-storage-updated', refreshHistory));
+
+// 只建議目前這個類型用過的標籤，不混入其他頁面的標籤
 const historyTags = computed(() => {
+  historyVersion.value;
   const allKeyData = getStorageData(props.type);
   const set = new Set();
   allKeyData.forEach(item => {
@@ -311,8 +331,9 @@ const historyTags = computed(() => {
   return [...set].sort();
 });
 
-// 只收集目前表單模組曾使用過的分類，避免不同模組的分類混在一起。
+// 只收集目前表單模組曾使用過的類型，避免不同模組的類型混在一起。
 const historyCategories = computed(() => {
+  historyVersion.value;
   const sourceByType = {
     UI_RESEARCH: ['UI_RESEARCH', 'category'],
     MOTION_RESEARCH: ['MOTION_RESEARCH', 'motionType'],
@@ -332,6 +353,7 @@ const historyCategories = computed(() => {
 });
 
 const historyTools = computed(() => {
+  historyVersion.value;
   const list = getStorageData('MOTION_RESEARCH');
   const set = new Set();
   ['SwiftUI', 'Vue', 'CSS Animation', 'GSAP', 'Lottie', 'AE', 'Principle', 'Three.js', 'Rive', 'Framer Motion'].forEach(t => set.add(t));
@@ -348,10 +370,8 @@ const historyTools = computed(() => {
   return [...set].sort();
 });
 
-// 「實作資訊」表格的預設起始欄位（動態研究專用）；每次呼叫回傳新陣列，
-// 避免多筆資料共用同一個陣列參照、互相污染。「製作工具」不在這裡——
-// 它是獨立的 TagInput 欄位（form.tools），顯示時自動變成表格第一列，
-// 不需要（也不該）讓使用者在這個自訂表格裡重複填一次。
+// 每次回傳新陣列，避免多筆資料共用同一參照。
+// 「製作工具」由 form.tools 自動成為表格第一列，不放在這裡。
 function defaultImplInfo() {
   return [
     { label: '前端技術', value: '' },
@@ -387,13 +407,11 @@ watch(() => [props.isOpen, props.item, props.type], () => {
       itemCopy.tools = toolsArr;
 
       if (props.type === 'MOTION_RESEARCH') {
-        // 舊資料可能還留著一列手動填的「製作工具」（改版前的預設欄位）——
-        // 現在這一列已經改由 form.tools 自動產生，這裡濾掉避免表格重複顯示兩次。
+        // 舊資料可能有手動填的「製作工具」列，現在改由 form.tools 產生，濾掉避免重複
         if (Array.isArray(itemCopy.implInfo)) {
           itemCopy.implInfo = itemCopy.implInfo.filter(row => (row.label || '').trim() !== '製作工具');
         }
-        // 「實作資訊」表格：既有資料沒有這欄（舊資料）就先給預設的 3 個欄位名稱，
-        // 內容留空讓使用者自己填；已經有自訂內容的資料則完全照舊，不覆蓋。
+        // 舊資料沒有這欄時給預設欄位名稱；已有自訂內容的不覆蓋
         if (!(Array.isArray(itemCopy.implInfo) && itemCopy.implInfo.length)) {
           itemCopy.implInfo = defaultImplInfo();
         }
@@ -403,7 +421,7 @@ watch(() => [props.isOpen, props.item, props.type], () => {
     } else {
       form.value = {
         title: '',
-        category: props.type === 'COMPETITORS' ? 'Web' : '',
+        category: '',
         tags: [],
         tools: [],
         toolsInput: '',
@@ -439,62 +457,15 @@ const close = () => {
   emit('close');
 };
 
-const handleBackdropPointerDown = (event) => {
-  backdropPointerDown.value = event.target === event.currentTarget;
-};
-
-const handleBackdropClick = (event) => {
-  const clickedBackdrop = event.target === event.currentTarget;
-  const isKeyboardClick = event.detail === 0;
-
-  if (clickedBackdrop && (backdropPointerDown.value || isKeyboardClick)) {
-    close();
-  }
-
-  backdropPointerDown.value = false;
-};
-
 const handleSubmit = () => {
-  const requiredByType = {
-    UI_RESEARCH: [
-      ['title', '標題'], ['category', '分類'], ['sourceUrl', '來源網址'],
-      ['cover', '圖片'], ['takeaways', '研究心得／可借鏡重點']
-    ],
-    MOTION_RESEARCH: [
-      ['title', '標題'], ['motionType', '動畫類型'], ['sourceUrl', '來源網址'],
-      ['tools', '製作工具'], ['takeaways', '動畫特色／研究心得']
-    ],
-    COMPETITORS: [
-      ['name', '競品名稱'], ['category', '競品分類'], ['url', '競品網址'],
-      ['screenshot', 'Screenshot'], ['pros', '優點'], ['cons', '缺點'], ['takeaways', '值得參考之處']
-    ],
-    AI_CENTER: [
-      ['name', 'AI 工具名稱'], ['category', '工具分類'], ['url', 'AI 工具網址'],
-      ['cover', '工具封面'], ['useCase', '工具簡介'], ['prompt', '提示詞'], ['workflow', '工作流程']
-    ],
-    RESOURCES: [
-      ['name', '網站名稱'], ['category', '資源分類'], ['url', '網站 URL']
-    ]
-  };
-
-  const missingField = (requiredByType[props.type] || []).find(([field]) => {
-    const value = form.value[field];
-    return Array.isArray(value) ? value.length === 0 : !String(value || '').trim();
-  });
-
-  if (missingField) {
-    alert(`請填寫「${missingField[1]}」後再儲存。`);
-    return;
-  }
-
-  if (props.type === 'MOTION_RESEARCH' && !form.value.videoUrl && !form.value.cover) {
-    alert('請提供影片網址或封面圖至少一項。');
+  errors.value = collectErrors();
+  if (errorCount.value) {
+    focusFirstError();
     return;
   }
 
   const formattedItem = { ...form.value };
   
-  // 自動補齊所有網址欄位的 https:// 協定
   if (formattedItem.sourceUrl) formattedItem.sourceUrl = ensureProtocol(formattedItem.sourceUrl);
   if (formattedItem.url) formattedItem.url = ensureProtocol(formattedItem.url);
   if (formattedItem.link) formattedItem.link = ensureProtocol(formattedItem.link);
@@ -503,12 +474,10 @@ const handleSubmit = () => {
   if (formattedItem.videoUrl) formattedItem.videoUrl = ensureProtocol(formattedItem.videoUrl);
   if (formattedItem.cover) formattedItem.cover = ensureProtocol(formattedItem.cover);
 
-  // 確保 tags 為陣列格式
   if (formattedItem.tags && typeof formattedItem.tags === 'string') {
     formattedItem.tags = formattedItem.tags.split(/[,/，#\n\r]+/).map(s => s.trim()).filter(Boolean);
   }
   
-  // 確保 tools 為陣列格式與同步 toolsInput
   if (Array.isArray(formattedItem.tools)) {
     formattedItem.toolsInput = formattedItem.tools.join(', ');
   } else if (typeof formattedItem.tools === 'string') {
@@ -516,21 +485,12 @@ const handleSubmit = () => {
     formattedItem.toolsInput = formattedItem.tools.join(', ');
   }
 
-  // 「實作資訊」表格：兩欄都沒填的預設空列不用存
   if (Array.isArray(formattedItem.implInfo)) {
     formattedItem.implInfo = formattedItem.implInfo.filter(row => (row.label || '').trim() || (row.value || '').trim());
   }
 
-  if (!formattedItem.cover && (props.type === 'UI_RESEARCH' || props.type === 'MOTION_RESEARCH')) {
-    formattedItem.cover = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop";
-  }
-  
-  if (props.type === 'COMPETITORS' && !formattedItem.screenshot) {
-    formattedItem.screenshot = "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?q=80&w=800&auto=format&fit=crop";
-  }
 
-  // 不在這裡關閉彈窗——父層收到 save 事件後要先等雲端同步完成（見 saving prop），
-  // 確認成功才會把 isOpen 關掉，避免看起來存好了、其實還在跟 Sheets 同步或同步失敗。
+  // 不在這裡關閉：父層等雲端同步成功才關（見 saving prop）
   emit('save', {
     type: props.type,
     item: formattedItem
@@ -539,56 +499,6 @@ const handleSubmit = () => {
 </script>
 
 <style scoped>
-.modal-container {
-  width: 100%;
-  max-width: 720px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
-  box-shadow: none;
-  border-radius: var(--modal-radius);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  max-height: var(--modal-max-height);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--modal-header-padding);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.modal-header h2 {
-  font-size: var(--fs-h3);
-  font-weight: var(--fw-bold);
-}
-
-.close-btn {
-  width: var(--modal-control-size);
-  height: var(--modal-control-size);
-  border-radius: var(--radius-sm);
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
-}
-
-.close-btn:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-  border-color: var(--border-color-hover);
-}
-
-.close-btn:focus-visible {
-  outline: 3px solid var(--color-focus);
-  outline-offset: 3px;
-}
 
 .modal-form {
   display: flex;
@@ -598,40 +508,17 @@ const handleSubmit = () => {
   overflow: hidden;
 }
 
-.modal-body {
-  padding: var(--modal-padding);
-  overflow-y: auto;
-  flex: 1;
-  min-height: 0;
-}
-
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--space-4);
 }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.form-group.full-width {
-  grid-column: span 2;
-}
-
-.required {
+.form-error-summary {
+  margin: 0 auto 0 0;
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-semibold);
   color: var(--color-danger);
-}
-
-/* 標籤裡的補充說明（怎麼操作、選填與否），跟前面的欄位名稱做出主次之分：
-   縮小、變淡、拿掉粗體，閱讀時第一眼只會抓到欄位名稱本身。 */
-.field-help-inline {
-  margin-left: 0.5em;
-  font-size: var(--fs-label);
-  font-weight: var(--fw-medium);
-  color: var(--text-muted);
 }
 
 .media-guideline-help {
@@ -643,9 +530,9 @@ const handleSubmit = () => {
   height: 16px;
   margin-left: var(--space-1);
   border-radius: 50%;
-  background: var(--color-primary);
-  color: var(--color-on-primary);
-  font-size: var(--fs-tiny);
+  background: var(--action-primary);
+  color: var(--action-on-primary);
+  font-size: var(--fs-meta);
   font-weight: var(--fw-black);
   cursor: help;
   vertical-align: middle;
@@ -660,12 +547,12 @@ const handleSubmit = () => {
   position: absolute;
   left: -10px;
   top: 10px;
-  z-index: 30;
+  z-index: var(--z-dropdown);
   width: min(360px, 72vw);
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  background: var(--bg-elevated);
+  background: var(--surface-raised);
   color: var(--text-primary);
   box-shadow: var(--shadow-surface);
   font-size: var(--fs-meta);
@@ -675,7 +562,7 @@ const handleSubmit = () => {
   opacity: 0;
   visibility: hidden;
   transform: translateY(4px);
-  transition: opacity 0.16s ease, visibility 0.16s ease, transform 0.16s ease;
+  transition: opacity var(--dur-fast) var(--ease-standard), visibility var(--dur-fast) var(--ease-standard), transform var(--dur-fast) var(--ease-standard);
   pointer-events: none;
 }
 .media-guideline-tooltip b {
@@ -697,9 +584,9 @@ input, select, textarea {
   border: 1px solid var(--border-color);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
-  font-size: var(--fs-label);
+  font-size: var(--fs-body);
   color: var(--text-primary);
-  transition: border-color 0.18s ease;
+  transition: border-color var(--dur-fast) var(--ease-standard);
 }
 
 input::placeholder,
@@ -720,80 +607,9 @@ textarea {
   resize: vertical;
 }
 
-.status-select {
-  color: var(--text-primary);
-  cursor: pointer;
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: var(--space-3);
-  border-top: 1px solid var(--border-color);
-  padding: var(--space-3) var(--modal-padding);
-  background: var(--bg-elevated);
-  backdrop-filter: blur(12px);
-  flex-shrink: 0;
-  box-shadow: none;
-}
-
-.btn-cancel {
-  padding: var(--space-2) var(--space-5);
-  border-radius: var(--radius-md);
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  font-size: var(--fs-label);
-  font-weight: var(--fw-semibold);
-  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
-}
-
-.btn-cancel:hover {
-  background: var(--bg-hover);
-  border-color: var(--border-color-hover);
-}
-
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: opacity 0.22s ease;
-}
-
-.modal-fade-enter-active .modal-container,
-.modal-fade-leave-active .modal-container {
-  transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.modal-fade-enter-from,
-.modal-fade-leave-to {
-  opacity: 0;
-}
-
-.modal-fade-enter-from .modal-container {
-  transform: scale(0.95);
-}
-
-.modal-fade-leave-to .modal-container {
-  transform: scale(0.97);
-}
-
 @media (max-width: 640px) {
-  .modal-backdrop {
-    padding: var(--space-3);
-  }
-  .modal-container {
-    max-height: calc(100dvh - 1.5rem);
-    border-radius: 16px;
-  }
-  .modal-body {
-    padding: var(--space-4);
-    -webkit-overflow-scrolling: touch;
-  }
   .form-grid {
     grid-template-columns: 1fr;
-  }
-  .form-group.full-width {
-    grid-column: span 1;
   }
 }
 </style>

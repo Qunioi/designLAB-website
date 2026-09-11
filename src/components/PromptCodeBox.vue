@@ -41,7 +41,7 @@ defineEmits(['copy']);
   cursor: pointer;
   scrollbar-width: thin;
   scrollbar-color: var(--border-color) transparent;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+  transition: border-color var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
 }
 
 .prompt-code-box::-webkit-scrollbar {
@@ -69,16 +69,16 @@ defineEmits(['copy']);
   bottom: 0.25rem;
   right: 0.45rem;
   font-family: var(--font-body);
-  font-size: var(--fs-tiny);
+  font-size: var(--fs-meta);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-xs);
-  background: var(--bg-elevated);
+  background: var(--surface-raised);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
   box-shadow: var(--shadow-sm);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--dur-base) var(--ease-standard);
 }
 
 .prompt-code-box:hover .click-copy-hint,
@@ -87,8 +87,8 @@ defineEmits(['copy']);
 }
 
 .prompt-code-box.copied .click-copy-hint {
-  background: var(--color-primary);
-  color: #ffffff;
+  background: var(--action-primary);
+  color: var(--action-on-primary);
   border-color: var(--color-primary);
   font-weight: var(--fw-semibold);
 }

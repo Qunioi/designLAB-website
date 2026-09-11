@@ -3,7 +3,7 @@
     <PageHeader
       title="產品優化提案"
       subtitle="將研究發現轉化為具體的產品優化提案，並透過 Prototype 進行概念驗證與進度追蹤"
-      add-btn-label="+ 新增優化提案"
+      add-btn-label="+ 新增"
       @add-click="$emit('trigger-crud', { type: 'PROPOSALS' })"
     />
 
@@ -27,15 +27,15 @@
             v-for="item in getColumnItems(column.status)" 
             :key="item.id" 
             class="proposal-kanban-card"
-            draggable="true"
+            :draggable="canEditItem(item) ? 'true' : 'false'"
             @dragstart="handleDragStart(item, $event)"
             @dragend="handleDragEnd"
           >
             <div class="prop-card-actions">
-              <span class="prop-date">{{ item.createdAt }}</span>
+              <time class="prop-date" :datetime="item.createdAt">{{ formatDateOnly(item.createdAt) }}</time>
               <div class="card-actions card-actions-reveal">
-                <ActionIconButton v-if="canEditItem(item)" variant="edit" @click="$emit('trigger-crud', { type: 'PROPOSALS', item })" title="編輯"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></ActionIconButton>
-                <ActionIconButton v-if="canDeleteItem(item)" variant="delete" @click="handleDelete(item)" title="刪除"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></ActionIconButton>
+                <IconButton v-if="canEditItem(item)" icon="edit" size="sm" variant="edit" :label="`編輯《${item.title}》`" @click="$emit('trigger-crud', { type: 'PROPOSALS', item })" />
+                <IconButton v-if="canDeleteItem(item)" icon="trash-2" size="sm" variant="delete" :label="`刪除《${item.title}》`" @click="handleDelete(item)" />
               </div>
             </div>
 
@@ -53,25 +53,18 @@
               </a>
             </div>
 
-            <div class="prop-move-bar">
+            <div v-if="canEditItem(item)" class="prop-move-bar">
               <label class="status-change-label" :for="`proposal-status-${item.id}`">提案狀態</label>
-              <select
-                :id="`proposal-status-${item.id}`"
-                class="proposal-status-select"
-                :value="item.status"
-                :aria-label="`變更《${item.title}》的提案狀態`"
-                @change="changeStatus(item, $event.target.value)"
-              >
-                <option v-for="status in statusOptions" :key="status.value" :value="status.value">
-                  {{ status.label }}
-                </option>
-              </select>
+              <Select :id="`proposal-status-${item.id}`" class="proposal-status-select" :model-value="item.status" :options="statusOptions" :aria-label="`變更《${item.title}》的提案狀態`" @change="value => changeStatus(item, value)" />
             </div>
           </div>
           
-          <div v-if="getColumnItems(column.status).length === 0" class="column-empty-state">
-            拖曳或新增提案至此
-          </div>
+          <EmptyState
+            v-if="getColumnItems(column.status).length === 0"
+            size="sm"
+            bordered
+            :title="isGuestUser() ? '目前沒有提案' : '拖曳或新增提案至此'"
+          />
         </div>
       </div>
     </div>
@@ -79,12 +72,16 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import EmptyState from '../components/base/EmptyState.vue';
+import Select from '../components/base/Select.vue';
+import { confirmDialog } from '../utils/confirm';
+import { toast } from '../utils/toast';
+import { ref, onMounted, onUnmounted } from 'vue';
 import PageHeader from '../components/PageHeader.vue';
-import ActionIconButton from '../components/ActionIconButton.vue';
+import IconButton from '../components/base/IconButton.vue';
 import { getStorageData, addOrUpdateItem, deleteItem } from '../utils/storage';
+import { formatDateOnly } from '../utils/formatters';
 import { checkDeletePermission, isGuestUser } from '../utils/notifications';
-import NotificationBell from '../components/NotificationBell.vue';
 
 const emit = defineEmits(['trigger-crud', 'delete-done', 'navigate-to-view']);
 
@@ -103,9 +100,15 @@ const loadData = () => {
   items.value = getStorageData('PROPOSALS');
 };
 
+// 直接用網址進到這頁時本機還沒有資料，雲端同步與增刪改後都要重讀
 onMounted(() => {
   loadData();
+  window.addEventListener('design-lab-storage-updated', loadData);
 });
+onUnmounted(() => {
+  window.removeEventListener('design-lab-storage-updated', loadData);
+});
+defineExpose({ loadData });
 
 const getColumnItems = (status) => {
   return items.value.filter(i => i.status === status);
@@ -136,7 +139,7 @@ const handleDragOver = (status) => {
 
 const handleDrop = (status) => {
   const item = items.value.find(candidate => String(candidate.id) === draggedItemId.value);
-  if (item) changeStatus(item, status);
+  if (item && canEditItem(item)) changeStatus(item, status);
   handleDragEnd();
 };
 
@@ -186,17 +189,21 @@ const canDeleteItem = (item) => {
   return checkDeletePermission(item).allowed;
 };
 
-const handleDelete = (item) => {
+const handleDelete = async (item) => {
   const perm = checkDeletePermission(item);
   if (!perm.allowed) {
-    alert(`⚠️ 權限受限：此提案由原建立者「${perm.creatorName}」發表，非原建立者不得刪除！`);
+    toast.error('沒有刪除權限', { detail: `這筆提案由「${perm.creatorName}」建立，只有建立者或管理員可以刪除。` });
     return;
   }
-
-  if (confirm(`確定要刪除《${item.title}》這筆提案嗎？`)) {
-    items.value = deleteItem('PROPOSALS', item.id);
-    emit('delete-done');
-  }
+  const ok = await confirmDialog({
+    title: `確定要刪除《${item.title}》這筆提案嗎？`,
+    message: '刪除後無法復原。',
+    confirmText: '刪除',
+    danger: true
+  });
+  if (!ok) return;
+  items.value = deleteItem('PROPOSALS', item.id);
+  emit('delete-done');
 };
 </script>
 
@@ -204,22 +211,19 @@ const handleDelete = (item) => {
 .proposals-container {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-stack);
   min-width: 0;
 }
 
-
 .kanban-board {
   display: grid;
-  grid-template-columns: repeat(4, minmax(360px, 1fr));
-  gap: var(--space-4);
+  grid-template-columns: repeat(4, minmax(240px, 1fr));
+  gap: var(--grid-gap);
   align-items: start;
   min-width: 0;
   overflow-x: auto;
   padding-bottom: var(--space-4);
-  /* Smooth scroll on touch */
   -webkit-overflow-scrolling: touch;
-  /* Hide scrollbar aesthetically */
   scrollbar-width: thin;
   scrollbar-color: var(--border-color) transparent;
 }
@@ -237,19 +241,19 @@ const handleDelete = (item) => {
 }
 
 .kanban-column {
-  background: var(--bg-card);
+  background: var(--surface-card);
   padding: var(--space-4);
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
   min-height: 60vh;
   min-width: 220px;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: border-color var(--dur-base) var(--ease-standard), background var(--dur-base) var(--ease-standard);
 }
 
 .kanban-column.is-drag-over {
   border-color: var(--color-primary);
-  background: var(--bg-card-hover);
+  background: var(--surface-card-hover);
 }
 
 .column-header {
@@ -263,7 +267,7 @@ const handleDelete = (item) => {
 }
 
 .column-header h3 {
-  font-size: var(--fs-label);
+  font-size: var(--fs-meta);
   font-weight: var(--fw-bold);
   white-space: nowrap;
   overflow: hidden;
@@ -287,7 +291,7 @@ const handleDelete = (item) => {
   font-size: var(--fs-meta);
   background: var(--bg-hover);
   padding: var(--space-1) var(--space-2);
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
   font-weight: var(--fw-semibold);
@@ -300,26 +304,26 @@ const handleDelete = (item) => {
 }
 
 .proposal-kanban-card {
-  background: var(--bg-card);
+  background: var(--surface-card);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  padding: var(--card-padding);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  transition: transform var(--dur-base) var(--ease-standard), border-color var(--dur-base) var(--ease-standard), box-shadow var(--dur-base) var(--ease-standard);
   cursor: grab;
-  box-shadow: var(--shadow-sm);
 }
 
 .proposal-kanban-card:active {
   cursor: grabbing;
+  transform: translateY(0);
 }
 
 .proposal-kanban-card:hover {
   border-color: var(--border-color-hover);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-hover);
 }
 
 .prop-card-actions {
@@ -335,8 +339,7 @@ const handleDelete = (item) => {
 }
 
 .prop-title {
-  /* line-height 跟 h1~h6 共用規則一樣，不重複寫 */
-  font-size: var(--fs-body-lg);
+  font-size: var(--fs-card-title);
   font-weight: var(--fw-bold);
   letter-spacing: -0.015em;
 }
@@ -363,7 +366,7 @@ const handleDelete = (item) => {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
-  transition: background-color 0.18s ease, color 0.18s ease;
+  transition: background-color var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
 }
 
 .related-research-badge:hover {
@@ -386,7 +389,7 @@ const handleDelete = (item) => {
   background: var(--bg-subtle);
   border: 1px solid var(--border-color);
   color: var(--color-primary);
-  transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+  transition: color var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard);
 }
 
 .figma-btn:hover {
@@ -396,7 +399,9 @@ const handleDelete = (item) => {
 
 .prop-move-bar {
   display: flex;
+  align-items: center;
   justify-content: space-between;
+  gap: var(--space-2);
   margin-top: var(--space-2);
   border-top: 1px solid var(--color-divider);
   padding-top: var(--space-2);
@@ -409,35 +414,24 @@ const handleDelete = (item) => {
 }
 
 .proposal-status-select {
-  min-height: var(--control-height-md);
-  padding: var(--space-1) var(--space-8) var(--space-1) var(--space-2);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background-color: var(--bg-input);
-  color: var(--text-primary);
-  font-family: var(--font-body);
-  font-size: var(--fs-meta);
-  cursor: pointer;
+  flex: 1;
+  max-width: 180px;
 }
 
-.column-empty-state {
-  text-align: center;
-  font-size: var(--fs-label);
-  color: var(--text-secondary);
-  border: 1px dashed var(--border-color);
-  border-radius: 8px;
-  padding: var(--space-8) var(--space-4);
-}
-
-@media (max-width: 1024px) {
+/* 平板以下放不下 4 欄：改成橫向滑動，露出下一欄的一部分提示還能往右滑 */
+@media (max-width: 1023px) {
   .kanban-board {
-    grid-template-columns: repeat(4, minmax(360px, 1fr));
+    grid-template-columns: repeat(4, minmax(280px, 1fr));
+    scroll-snap-type: x mandatory;
+  }
+  .kanban-column {
+    scroll-snap-align: start;
   }
 }
 
 @media (max-width: 640px) {
   .kanban-board {
-    grid-template-columns: repeat(4, minmax(360px, 1fr));
+    grid-template-columns: repeat(4, 82%);
   }
   .kanban-column {
     min-height: auto;

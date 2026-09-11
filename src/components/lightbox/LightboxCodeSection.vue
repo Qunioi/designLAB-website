@@ -9,8 +9,8 @@
         :aria-label="copied ? '已複製到剪貼簿' : '複製內容'"
         @click="handleCopy"
       >
-        <svg v-if="!copied" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-        <svg v-else xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <Icon name="copy" :size="13" v-if="!copied" />
+        <Icon name="check" :size="13" :stroke-width="2.5" v-else />
         <span>{{ copied ? '已複製' : '複製' }}</span>
       </button>
       <ul v-if="lines.length > 1" class="lbs-code-lines">
@@ -22,9 +22,8 @@
 </template>
 
 <script setup>
-// 格式 4：標題 + 可複製的內容框。對應示意圖的「提示詞」——內容可以
-// 是一整段文字，也可以是字串陣列（會逐行顯示成條列）；右上角固定
-// 一顆複製按鈕，複製的是完整內容（多行會用換行接起來）。
+import Icon from '../base/Icon.vue';
+// content 可以是字串或字串陣列（逐行條列）；複製時多行用換行接起來
 import { ref, computed } from 'vue';
 import LightboxSection from './LightboxSection.vue';
 import { copyToClipboard } from '../../utils/clipboard';
@@ -68,15 +67,15 @@ const handleCopy = async () => {
   align-items: center;
   gap: var(--space-1);
   padding: var(--space-1) var(--space-2);
-  font-size: var(--fs-tiny);
+  font-size: var(--fs-meta);
   font-weight: var(--fw-semibold);
   color: var(--text-secondary);
-  background: var(--bg-elevated);
+  background: var(--surface-raised);
   border: 1px solid var(--border-color);
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition: opacity var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard);
 }
 
 /* 平常隱藏，滑入內容框或鍵盤 focus 到複製鈕本身才顯示；複製完成後的
@@ -87,20 +86,20 @@ const handleCopy = async () => {
   opacity: 1;
 }
 
-@media (hover: none) {
+@media (hover: none), (pointer: coarse) {
   .lbs-copy-btn { opacity: 1; }
 }
 
 .lbs-copy-btn:hover {
-  background: var(--color-primary);
+  background: var(--action-primary);
   border-color: var(--color-primary);
-  color: #fff;
+  color: var(--action-on-primary);
 }
 
 .lbs-copy-btn.copied {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: #fff;
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: var(--action-on-primary);
 }
 
 .lbs-code-lines {

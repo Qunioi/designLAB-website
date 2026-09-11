@@ -8,9 +8,7 @@
 </template>
 
 <script setup>
-// 燈箱右側「一個區塊」的共用外框：icon+標題（見 LightboxSectionHeading）
-// 加上區塊之間的分隔線。5 種格式元件（Text/Tag/List/Code/Table）都是
-// 包在這層外面，各自只需要實作 <slot> 裡面那段內容本身。
+// 燈箱右側區塊共用外框（標題列＋區塊分隔線），各格式元件只實作 slot 內容
 import LightboxSectionHeading from './LightboxSectionHeading.vue';
 
 defineProps({

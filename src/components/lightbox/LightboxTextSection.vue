@@ -5,7 +5,6 @@
 </template>
 
 <script setup>
-// 格式 1：標題 + 文案。對應示意圖的「資源介紹」「推薦用途」。
 import LightboxSection from './LightboxSection.vue';
 
 defineProps({
@@ -20,7 +19,7 @@ defineProps({
 .lbs-text {
   margin: 0;
   color: var(--text-secondary);
-  font-size: var(--fs-label);
+  font-size: var(--fs-body);
   line-height: var(--lh-relaxed);
   white-space: pre-line;
 }

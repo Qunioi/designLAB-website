@@ -1,15 +1,16 @@
 <template>
   <div class="tag-input-container" ref="containerRef" @click="focusInput">
     <div class="tag-chips-wrapper">
-      <div v-for="(tag, index) in tags" :key="index" class="tag-chip">
+      <div v-for="(tag, index) in tags" :key="index" class="tag-input-chip">
         <span># {{ tag }}</span>
         <button type="button" class="remove-btn" @click.stop="removeTag(index)" title="移除標籤">
-          <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          <Icon name="close" :size="8" :stroke-width="3" />
         </button>
       </div>
 
       <input
         ref="inputRef"
+        :id="inputId || undefined"
         v-model="inputQuery"
         type="text"
         :placeholder="tags.length === 0 ? placeholder : '新增標籤...'"
@@ -22,10 +23,9 @@
       />
     </div>
 
-    <!-- 歷史標籤建議選單 (Suggested Tags) -->
     <Transition name="fade">
-      <div v-show="isFocused && filteredSuggestions.length > 0" class="suggestions-dropdown glass-panel" :class="{ 'drop-up': dropUp }" @mousedown.prevent>
-        <div class="dropdown-header">
+      <div v-show="isFocused && filteredSuggestions.length > 0" class="suggestions-dropdown dropdown-surface" :class="{ 'drop-up': dropUp }" @mousedown.prevent>
+        <div class="dropdown-heading">
           <span>歷史添加過的標籤 (點擊快速新增)</span>
         </div>
         <div class="suggestions-list">
@@ -45,6 +45,7 @@
 </template>
 
 <script setup>
+import Icon from './base/Icon.vue';
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
@@ -59,6 +60,10 @@ const props = defineProps({
   placeholder: {
     type: String,
     default: '請輸入標籤，按 Enter 或逗號分隔'
+  },
+  inputId: {
+    type: String,
+    default: ''
   }
 });
 
@@ -172,7 +177,7 @@ const filteredSuggestions = computed(() => {
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   min-height: 40px;
-  transition: border-color 0.18s ease;
+  transition: border-color var(--dur-fast) var(--ease-standard);
   cursor: text;
 }
 
@@ -180,25 +185,25 @@ const filteredSuggestions = computed(() => {
   border-color: var(--color-primary);
 }
 
-.tag-chip {
+.tag-input-chip {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
   color: var(--text-secondary);
   background: var(--bg-subtle);
   border: 1px solid var(--border-color);
-  font-size: var(--fs-tiny);
+  font-size: var(--fs-meta);
   font-weight: var(--fw-semibold);
   padding: var(--space-1) var(--space-2);
-  border-radius: 16px;
+  border-radius: var(--radius-full);
   line-height: var(--lh-tight);
-  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+  transition: color var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard);
 }
-.tag-chip span {
+.tag-input-chip span {
   text-box: trim-both cap alphabetic;
 }
 
-.tag-chip:hover {
+.tag-input-chip:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
   border-color: var(--border-color-hover);
@@ -211,14 +216,14 @@ const filteredSuggestions = computed(() => {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  font-size: var(--fs-tiny);
+  font-size: var(--fs-meta);
   color: var(--text-muted);
   cursor: pointer;
-  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+  transition: color var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard);
 }
 .remove-btn:hover {
-  background: var(--color-primary);
-  color: #ffffff;
+  background: var(--action-primary);
+  color: var(--action-on-primary);
 }
 
 .chip-input {
@@ -227,7 +232,7 @@ const filteredSuggestions = computed(() => {
   background: transparent;
   border: none;
   outline: none;
-  font-size: var(--fs-label);
+  font-size: var(--fs-body);
   color: var(--text-primary);
   padding: var(--space-1) var(--space-1);
 }
@@ -237,17 +242,12 @@ const filteredSuggestions = computed(() => {
   opacity: 1;
 }
 
-/* 歷史標籤建議選單 */
 .suggestions-dropdown {
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
   right: 0;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-surface);
-  z-index: 100;
+  z-index: var(--z-dropdown);
   overflow: hidden;
 }
 
@@ -256,13 +256,6 @@ const filteredSuggestions = computed(() => {
   bottom: calc(100% + 4px);
 }
 
-.dropdown-header {
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--border-color);
-  font-size: var(--fs-tiny);
-  font-weight: var(--fw-bold);
-  color: var(--text-muted);
-}
 
 .suggestions-list {
   display: flex;
@@ -277,15 +270,15 @@ const filteredSuggestions = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  background: var(--bg-card);
+  background: var(--surface-card);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
-  font-size: var(--fs-tiny);
+  font-size: var(--fs-meta);
   font-weight: var(--fw-medium);
   padding: var(--space-1) var(--space-2);
-  border-radius: 16px;
+  border-radius: var(--radius-full);
   cursor: pointer;
-  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+  transition: color var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard);
 }
 
 .suggestion-item:hover {
@@ -295,6 +288,9 @@ const filteredSuggestions = computed(() => {
   transform: translateY(-1px);
 }
 
-.fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
+.fade-enter-active, .fade-leave-active { transition: opacity var(--dur-base) var(--ease-standard); }
+.fade-leave-active {
+  transition-duration: var(--dur-fast); /* 離場比進場快 */
+}
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>

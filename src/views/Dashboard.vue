@@ -8,143 +8,81 @@
     />
 
     <div class="bento-grid">
-      <!-- 1. Unified overview: orientation + knowledge inventory -->
       <section class="dashboard-overview glass-panel">
       <div class="bento-card welcome-card">
         <div class="welcome-content">
           <button class="search-trigger" @click="$emit('open-search')">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <Icon name="search" :size="16" />
             <span>搜尋研究、提案與工具...</span>
             <kbd class="kbd-badge">⌘ K</kbd>
           </button>
         </div>
       </div>
 
-      <div class="bento-card stats-card">
-        <div class="stats-grid">
-          <button type="button" class="stat-item" @click="$emit('change-view', 'UIResearch')">
-            <span class="stat-icon" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2.05V18h6v-1.25c0-.85.4-1.55 1-2.05A7 7 0 0 0 12 2Z"></path></svg>
-            </span>
-            <span class="stat-text">
-              <span class="stat-val">{{ stats.ui }}</span>
-              <span class="stat-lbl">UI 研究</span>
-            </span>
-          </button>
-          <button type="button" class="stat-item" @click="$emit('change-view', 'MotionResearch')">
-            <span class="stat-icon" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
-            </span>
-            <span class="stat-text">
-              <span class="stat-val">{{ stats.motion }}</span>
-              <span class="stat-lbl">動態案例</span>
-            </span>
-          </button>
-          <button type="button" class="stat-item" @click="$emit('change-view', 'Competitor')">
-            <span class="stat-icon" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="14"></line><line x1="12" y1="20" x2="12" y2="8"></line><line x1="18" y1="20" x2="18" y2="4"></line></svg>
-            </span>
-            <span class="stat-text">
-              <span class="stat-val">{{ stats.comp }}</span>
-              <span class="stat-lbl">競業分析</span>
-            </span>
-          </button>
-          <button type="button" class="stat-item" @click="$emit('change-view', 'AICenter')">
-            <span class="stat-icon" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"></path><path d="m19 16 .8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16Z"></path></svg>
-            </span>
-            <span class="stat-text">
-              <span class="stat-val">{{ stats.ai }}</span>
-              <span class="stat-lbl">AI 工具</span>
-            </span>
-          </button>
-          <button type="button" class="stat-item" @click="$emit('change-view', 'Resources')">
-            <span class="stat-icon" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path></svg>
-            </span>
-            <span class="stat-text">
-              <span class="stat-val">{{ stats.resources }}</span>
-              <span class="stat-lbl">設計資源</span>
-            </span>
-          </button>
-        </div>
-      </div>
       </section>
 
-      <!-- 3. Latest research cards -->
-      <section class="dashboard-latest">
-        <div class="card-header">
-          <h3>最新更新</h3>
-          <!-- <button class="card-action-link" type="button" @click="$emit('open-search')">查看全部 →</button> -->
-        </div>
-        <div class="dashboard-latest-grid">
-          <article
-            v-for="item in recentItems"
-            :key="item.id"
-            class="card-panel"
-            tabindex="0"
-            @click="handleRecentClick(item)"
-            @keydown.enter.prevent="handleRecentClick(item)"
-            @keydown.space.prevent="handleRecentClick(item)"
-          >
-            <div class="card-media-wrapper">
-              <img v-if="item.cover || item.screenshot || item.logo" class="card-media" :src="item.cover || item.screenshot || item.logo" :alt="item.title || item.name" loading="lazy" />
-              <div v-else class="card-media-placeholder" aria-hidden="true">{{ (item.title || item.name || '?').charAt(0) }}</div>
-            </div>
-            <div class="card-info">
-              <div class="card-meta-row">
-                <span class="type-badge" :class="item.type">{{ item.typeLabel }}</span>
-                <time v-if="item.updatedAt || item.createdAt" class="card-time-text">{{ formatDate(item.updatedAt || item.createdAt) }}</time>
+      <SectionBlock title="最新更新" class="dashboard-latest">
+        <CardGrid :class="{ 'stagger-in': staggerIntro }">
+          <template v-if="showSkeleton">
+            <div v-for="n in 4" :key="`skeleton-${n}`" class="card-panel skeleton-card" aria-hidden="true">
+              <span class="skeleton-block skeleton-media"></span>
+              <div class="skeleton-body">
+                <span class="skeleton-block skeleton-line is-badge"></span>
+                <span class="skeleton-block skeleton-line is-title"></span>
+                <span class="skeleton-block skeleton-line is-short"></span>
               </div>
-              <h4 class="card-title">{{ item.title || item.name }}</h4>
+            </div>
+          </template>
+            <ContentCard
+              v-for="item in recentItems"
+              :key="item.id"
+              hit="card"
+              title-tag="h4"
+              :title="item.title || item.name"
+              :cover="item.cover || item.screenshot || item.logo"
+              :placeholder="(item.title || item.name || '?').charAt(0)"
+              @open="handleRecentClick(item)"
+            >
+              <template #meta>
+                <Chip variant="type">{{ item.typeLabel }}</Chip>
+              </template>
+              <template #meta-end>
+                <time v-if="item.updatedAt || item.createdAt" class="card-time-text">{{ formatDate(item.updatedAt || item.createdAt) }}</time>
+              </template>
               <p v-if="isTextDescType(item)" class="card-desc one-line">{{ item.useCase || item.desc }}</p>
               <div v-else-if="item.tags?.length" class="card-tags">
-                <span v-for="tag in normalizedTags(item.tags).slice(0, 2)" :key="tag" class="tag"># {{ tag }}</span>
+                <Chip v-for="tag in normalizedTags(item.tags).slice(0, 2)" :key="tag" variant="tag">{{ tag }}</Chip>
               </div>
-            </div>
-          </article>
-        </div>
-      </section>
+            </ContentCard>
+        </CardGrid>
+      </SectionBlock>
 
-      <!-- 3. Curated content: controlled by administrators -->
-      <section v-if="featuredItems.length" class="dashboard-featured">
-        <div class="card-header">
-          <h3>精選內容</h3>
-          <!-- <button class="card-action-link" type="button" @click="$emit('open-search')">查看全部 →</button> -->
-        </div>
-
-        <div class="featured-grid">
-          <article
-            v-for="item in featuredItems"
-            :key="`featured-${item.type}-${item.id}`"
-            class="card-panel"
-            tabindex="0"
-            @click="handleRecentClick(item)"
-            @keydown.enter.prevent="handleRecentClick(item)"
-            @keydown.space.prevent="handleRecentClick(item)"
-          >
-            <div class="card-media-wrapper">
-              <img v-if="item.cover || item.screenshot || item.logo" class="card-media" :src="item.cover || item.screenshot || item.logo" :alt="item.title || item.name" loading="lazy" />
-              <div v-else class="card-media-placeholder" aria-hidden="true">{{ (item.title || item.name || '?').charAt(0) }}</div>
-            </div>
-            <div class="card-info">
-              <div class="card-meta-row">
-                <span class="type-badge" :class="item.type">{{ item.typeLabel }}</span>
+      <SectionBlock v-if="featuredItems.length" title="精選內容" class="dashboard-featured">
+        <CardGrid :class="{ 'stagger-in': staggerIntro }">
+            <ContentCard
+              v-for="item in featuredItems"
+              :key="`featured-${item.type}-${item.id}`"
+              hit="card"
+              title-tag="h4"
+              :title="item.title || item.name"
+              :cover="item.cover || item.screenshot || item.logo"
+              :placeholder="(item.title || item.name || '?').charAt(0)"
+              @open="handleRecentClick(item)"
+            >
+              <template #meta>
+                <Chip variant="type">{{ item.typeLabel }}</Chip>
+              </template>
+              <template #meta-end>
                 <time v-if="item.updatedAt || item.createdAt" class="card-time-text">{{ formatDate(item.updatedAt || item.createdAt) }}</time>
-              </div>
-              <h4 class="card-title">{{ item.title || item.name }}</h4>
+              </template>
               <p v-if="isTextDescType(item)" class="card-desc one-line">{{ item.useCase || item.desc }}</p>
               <div v-else-if="item.tags?.length" class="card-tags">
-                <span v-for="tag in normalizedTags(item.tags).slice(0, 2)" :key="tag" class="tag"># {{ tag }}</span>
+                <Chip v-for="tag in normalizedTags(item.tags).slice(0, 2)" :key="tag" variant="tag">{{ tag }}</Chip>
               </div>
-            </div>
-          </article>
-        </div>
-      </section>
+            </ContentCard>
+        </CardGrid>
+      </SectionBlock>
 
-      <!-- Removed from Dashboard: proposal progress is managed in Proposals. -->
-
-      <!-- 5. AI Quick Prompt -->
       <div v-if="false" class="bento-card ai-prompt-card glass-panel">
         <div class="card-header">
           <div class="header-title-group">
@@ -157,7 +95,7 @@
               title="切換下一個 Prompt"
               v-if="aiPromptsList.length > 1"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              <Icon name="refresh" :size="13" />
               <span>換一個</span>
             </button>
             <button class="card-action-link" type="button" @click.stop="$emit('change-view', 'AICenter')">前往 AI Center →</button>
@@ -174,115 +112,94 @@
       </div>
     </div>
 
-  <Teleport to="body">
-    <div v-if="featuredManagerOpen" class="featured-modal-backdrop" :class="currentTheme" @click.self="closeFeaturedManager">
-      <section class="featured-manager glass-panel" role="dialog" aria-modal="true" aria-labelledby="featured-manager-title">
-        <!-- 頂部標題與關閉按鈕 -->
-        <header class="featured-manager-header">
-          <div class="header-title-box">
-            <div class="header-icon-box">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2Z"></path></svg>
-            </div>
-            <div>
-              <h3 id="featured-manager-title">管理精選內容 <span class="header-selected-count">已選 {{ featuredItems.length }} 筆</span></h3>
-              <p>勾選要顯示在 Dashboard「精選內容」的項目，選幾筆就顯示幾筆</p>
-            </div>
-          </div>
-          <button type="button" class="featured-manager-close" aria-label="關閉管理精選" @click="closeFeaturedManager">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
-        </header>
+  <MediaPickerModal
+    :open="featuredManagerOpen"
+    title="管理精選內容"
+    subtitle="勾選要顯示在 Dashboard「精選內容」的項目，選幾筆就顯示幾筆"
+    icon="star"
+    close-label="關閉管理精選"
+    panel-class="featured-manager"
+    :tabs="featuredPickerTabs"
+    v-model:tab="featuredFilter"
+    tabs-label="依類型篩選"
+    v-model:search="featuredSearch"
+    search-placeholder="搜尋標題…"
+    :empty="filteredManagerItems.length === 0"
+    @close="closeFeaturedManager"
+  >
+    <template #title-extra>
+      <span class="header-selected-count">已選 {{ featuredItems.length }} 筆</span>
+    </template>
+    <template #toolbar-start>
+      <button
+        type="button"
+        class="quick-filter-toggle"
+        :class="{ active: featuredShowSelectedOnly }"
+        :aria-pressed="featuredShowSelectedOnly ? 'true' : 'false'"
+        @click="featuredShowSelectedOnly = !featuredShowSelectedOnly"
+      >
+        <Icon name="check" :size="13" :stroke-width="2.5" />
+        只看已選取
+      </button>
+    </template>
+    <template #empty>
+      <EmptyState
+        fill
+        icon="search"
+        title="找不到符合條件的項目"
+        description="請調整搜尋關鍵字、切換上方類型篩選，或取消「只看已選取」。"
+      />
+    </template>
 
-        <!-- 分類篩選與搜尋工具列 -->
-        <div class="featured-manager-toolbar">
-          <div class="filter-pill-group">
-            <button
-              v-for="tab in featuredTypeTabs"
-              :key="tab.type"
-              type="button"
-              :class="{ active: featuredFilter === tab.type }"
-              @click="featuredFilter = tab.type"
-            >{{ tab.label }} ({{ featuredCounts[tab.type].selected }}/{{ featuredCounts[tab.type].total }})</button>
-          </div>
-          <div class="featured-manager-toolbar-actions">
-            <button
-              type="button"
-              class="quick-filter-toggle"
-              :class="{ active: featuredShowSelectedOnly }"
-              @click="featuredShowSelectedOnly = !featuredShowSelectedOnly"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              只看已選取
-            </button>
-            <div class="search-input-wrapper">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-              <input v-model="featuredSearch" type="search" placeholder="搜尋標題…" />
-            </div>
-          </div>
-        </div>
-
-        <!-- 內容區：卡片網格 / 空狀態 -->
-        <div v-if="filteredManagerItems.length === 0" class="featured-manager-empty-box">
-          <div class="empty-icon-circle">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          </div>
-          <h4>找不到符合條件的項目</h4>
-          <p>請調整搜尋關鍵字、切換上方分類篩選，或取消「只看已選取」。</p>
-        </div>
-        <div v-else class="featured-manager-grid">
-          <article
+    <SelectCard
             v-for="(item, index) in filteredManagerItems"
             :key="managerItemKey(item, index)"
             class="featured-card"
-            :class="{ selected: isCardSelected(item), 'is-saving': isSavingFeatured }"
-            tabindex="0"
-            role="checkbox"
-            :aria-checked="isCardSelected(item)"
-            :aria-label="`${isCardSelected(item) ? '移除精選' : '設為精選'}：${item.title || item.name}`"
-            @click="toggleFeatured(item)"
-            @keydown.enter.prevent="toggleFeatured(item)"
-            @keydown.space.prevent="toggleFeatured(item)"
+            :class="{ 'is-saving': isSavingFeatured }"
+            selectable
+            multiple
+            :selected="isCardSelected(item)"
+            :label="`${isCardSelected(item) ? '移除精選' : '設為精選'}：${item.title || item.name}`"
+            media-class="featured-card-media"
+            body-class="featured-card-info"
+            @toggle="toggleFeatured(item)"
           >
-            <div class="featured-card-media">
-              <img v-if="item.cover || item.screenshot || item.logo" :src="item.cover || item.screenshot || item.logo" :alt="''" loading="lazy" />
+            <template #media>
+              <img v-if="item.cover || item.screenshot || item.logo" :src="item.cover || item.screenshot || item.logo" alt="" loading="lazy" />
               <span v-else class="featured-card-fallback" aria-hidden="true">{{ (item.title || item.name || '?').charAt(0) }}</span>
-              <span class="featured-card-check">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              </span>
-            </div>
-            <div class="featured-card-info">
-              <strong :title="item.title || item.name">{{ item.title || item.name }}</strong>
-              <span class="type-badge">{{ item.typeLabel }}</span>
-            </div>
-          </article>
-        </div>
+            </template>
+            <strong :title="item.title || item.name">{{ item.title || item.name }}</strong>
+            <Chip variant="type">{{ item.typeLabel }}</Chip>
+          </SelectCard>
 
-        <div class="featured-manager-footer">
-          <span>已選取 {{ pendingFeaturedCount }} 筆<template v-if="isFeaturedDirty">（尚未儲存）</template></span>
-          <button
-            v-if="isFeaturedDirty"
-            type="button"
-            class="btn-cancel"
-            :disabled="isSavingFeatured"
-            @click="saveFeaturedChanges"
-          >
-            <svg v-if="isSavingFeatured" class="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" stroke="none" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-            {{ isSavingFeatured ? '儲存中…' : '儲存' }}
-          </button>
-        </div>
-      </section>
-    </div>
-  </Teleport>
+    <template #footer>
+      <span class="base-modal-status">已選取 {{ pendingFeaturedCount }} 筆<template v-if="isFeaturedDirty">（尚未儲存）</template></span>
+      <BaseButton variant="primary" :loading="isSavingFeatured" v-if="isFeaturedDirty" type="button" @click="saveFeaturedChanges">
+        儲存
+      </BaseButton>
+    </template>
+  </MediaPickerModal>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import SelectCard from '../components/base/SelectCard.vue';
+import EmptyState from '../components/base/EmptyState.vue';
+import Chip from '../components/base/Chip.vue';
+import CardGrid from '../components/base/CardGrid.vue';
+import ContentCard from '../components/base/ContentCard.vue';
+import SectionBlock from '../components/base/SectionBlock.vue';
+import { confirmDialog } from '../utils/confirm';
+import MediaPickerModal from '../components/MediaPickerModal.vue';
+import Icon from '../components/base/Icon.vue';
+import BaseButton from '../components/base/BaseButton.vue';
+import { ref, computed, watch, onMounted, onUnmounted, inject } from 'vue';
+import { identityVersion } from '../utils/identity';
 import PageHeader from '../components/PageHeader.vue';
 import PromptCodeBox from '../components/PromptCodeBox.vue';
 import { getStorageData, addOrUpdateItem } from '../utils/storage';
 import { isAdminUser } from '../utils/userStore';
-import NotificationBell from '../components/NotificationBell.vue';
+import { useStaggerIntro } from '../utils/motion';
 
 defineProps({
   highlightedId: { type: [String, Number], default: '' },
@@ -311,13 +228,12 @@ const handleStorageUpdated = () => {
   refreshTrigger.value++;
 };
 
-// ── 管理精選內容彈窗：勾選只改本機暫存狀態，按「儲存」才真的寫入 ──
+// 管理精選：勾選只改本機暫存，按「儲存」才寫入。
 // itemId → 使用者在這次開啟彈窗期間，暫定要改成的 featured 值；
 // 只存「跟目前已儲存狀態不同」的項目，空物件＝目前沒有未儲存的變更。
 const pendingFeaturedOverrides = ref({});
 const isFeaturedDirty = computed(() => Object.keys(pendingFeaturedOverrides.value).length > 0);
 const isSavingFeatured = ref(false);
-// 關閉彈窗（或被 @click.self 觸發）時，捨棄還沒儲存的勾選暫存狀態。
 watch(featuredManagerOpen, open => {
   if (!open) {
     pendingFeaturedOverrides.value = {};
@@ -337,24 +253,9 @@ onUnmounted(() => {
   }
 });
 
-const stats = computed(() => {
-  // 依賴 refreshTrigger 達到實時即時刷新
-  const _ = refreshTrigger.value;
-  return {
-    ui: getStorageData('UI_RESEARCH').length,
-    motion: getStorageData('MOTION_RESEARCH').length,
-    comp: getStorageData('COMPETITORS').length,
-    ai: getStorageData('AI_CENTER').length,
-    resources: getStorageData('RESOURCES').length,
-    total: getStorageData('UI_RESEARCH').length
-      + getStorageData('MOTION_RESEARCH').length
-      + getStorageData('COMPETITORS').length
-      + getStorageData('AI_CENTER').length
-      + getStorageData('RESOURCES').length
-  };
-});
 
 const isAdmin = computed(() => {
+  identityVersion.value; // 登出／權杖過期／身分模擬切換時重新判斷
   const _ = refreshTrigger.value;
   return isAdminUser();
 });
@@ -372,28 +273,30 @@ const allContentItems = computed(() => {
 });
 const isFeatured = item => item.featured === true || item.featured === 'true' || item.featured === 1 || item.featured === '1';
 const featuredItems = computed(() => allContentItems.value.filter(isFeatured));
-// 管理彈窗的卡片打勾狀態：有暫存變更就顯示暫存值，否則顯示目前已儲存的值。
-// featuredItems／featuredCounts 之外的地方（例如 Dashboard 首頁真正顯示的
-// 「精選內容」）一律只看 isFeatured，未儲存前不受彈窗裡的勾選影響。
+const isSyncing = inject('isSyncing', ref(false));
+const showSkeleton = computed(() => isSyncing.value && allContentItems.value.length === 0);
+// 彈窗裡的勾選狀態看暫存值；首頁真正顯示的精選內容只看 isFeatured，儲存前不受影響
 const isCardSelected = item => Object.prototype.hasOwnProperty.call(pendingFeaturedOverrides.value, item.id)
   ? pendingFeaturedOverrides.value[item.id]
   : isFeatured(item);
-// 彈窗底部「已選取 N 筆」：算的是含暫存變更後的最新選取數，不是已寫入的舊值。
 const pendingFeaturedCount = computed(() => allContentItems.value.filter(isCardSelected).length);
 
-// ── 管理精選內容彈窗：分類篩選 + 搜尋 ──
 const featuredFilter = ref('ui');
 const featuredSearch = ref('');
 const featuredShowSelectedOnly = ref(false);
 const featuredTypeTabs = [
-  { type: 'ui', label: 'UI 研究' },
-  { type: 'motion', label: '動態案例' },
+  { type: 'ui', label: 'UI 設計研究' },
+  { type: 'motion', label: '動態研究' },
   { type: 'competitor', label: '競品分析' },
-  { type: 'ai', label: 'AI 工具' },
+  { type: 'ai', label: 'AI 工具中心' },
   { type: 'resource', label: '設計資源' }
 ];
-// 每個分類「已選取／總筆數」都要顯示，只印已選取數字容易讓人誤會
-// 該分類本來就沒有項目（例如剛好都還沒勾選）。
+const featuredPickerTabs = computed(() => featuredTypeTabs.map(tab => ({
+  value: tab.type,
+  label: `${tab.label} (${featuredCounts.value[tab.type].selected}/${featuredCounts.value[tab.type].total})`
+})));
+// 每個類型「已選取／總筆數」都要顯示，只印已選取數字容易讓人誤會
+// 該類型本來就沒有項目（例如剛好都還沒勾選）。
 const featuredCounts = computed(() => {
   const counts = {};
   featuredTypeTabs.forEach(tab => {
@@ -416,14 +319,12 @@ const filteredManagerItems = computed(() => {
 const managerItemKey = (item, index) => `manage-${item.type}-${item.id || item.sourceUrl || item.url || item.title || item.name || index}`;
 const FEATURED_TYPE_KEY_MAP = { ui: 'UI_RESEARCH', motion: 'MOTION_RESEARCH', competitor: 'COMPETITORS', ai: 'AI_CENTER', resource: 'RESOURCES' };
 
-// 點卡片只切換「暫存」勾選狀態，不會馬上寫入——要按「儲存」才會真的送出。
 const toggleFeatured = item => {
   if (!isAdmin.value || isSavingFeatured.value) return;
   const id = item.id;
   const next = !isCardSelected(item);
   const overrides = { ...pendingFeaturedOverrides.value };
   if (next === isFeatured(item)) {
-    // 切回跟目前已儲存狀態一樣，這筆就不算「有變更」了
     delete overrides[id];
   } else {
     overrides[id] = next;
@@ -431,7 +332,6 @@ const toggleFeatured = item => {
   pendingFeaturedOverrides.value = overrides;
 };
 
-// 按下「儲存」才真的把這次開啟彈窗期間累積的所有勾選/取消勾選一次送出。
 const saveFeaturedChanges = async () => {
   if (isSavingFeatured.value || !isFeaturedDirty.value) return;
   isSavingFeatured.value = true;
@@ -448,18 +348,23 @@ const saveFeaturedChanges = async () => {
       return synced;
     }));
   } finally {
-    // 不論成功或失敗都清空暫存：成功的項目 isFeatured() 已反映新值，
-    // 失敗的項目 rollbackWrite_ 已把本機資料還原成原值——兩種情況下
-    // 卡片打勾狀態改回去看 isFeatured() 都會顯示正確結果。
+    // 成功或失敗都清空暫存：失敗的項目 rollbackWrite_ 已還原，改回看 isFeatured() 都會正確
     pendingFeaturedOverrides.value = {};
     isSavingFeatured.value = false;
   }
 };
 
-const closeFeaturedManager = () => {
+const closeFeaturedManager = async () => {
   if (isSavingFeatured.value) return;
-  if (isFeaturedDirty.value && typeof window !== 'undefined' && !window.confirm('有尚未儲存的精選變更，確定要放棄這些變更嗎？')) {
-    return;
+  if (isFeaturedDirty.value) {
+    const discard = await confirmDialog({
+      title: '放棄尚未儲存的變更？',
+      message: '精選內容的勾選還沒有儲存，關閉後這些變更會消失。',
+      confirmText: '放棄變更',
+      cancelText: '繼續編輯',
+      danger: true
+    });
+    if (!discard) return;
   }
   featuredManagerOpen.value = false;
 };
@@ -494,6 +399,8 @@ const recentItems = computed(() => {
     .sort((a, b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0))
     .slice(0, 4);
 });
+
+const staggerIntro = useStaggerIntro('dashboard', () => !showSkeleton.value && recentItems.value.length > 0);
 
 import { copyToClipboard } from '../utils/clipboard';
 
@@ -567,7 +474,7 @@ const handleRecentClick = (item) => {
 .dashboard-container {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-stack);
 }
 
 .dashboard-overview {
@@ -576,10 +483,11 @@ const handleRecentClick = (item) => {
   grid-template-columns: minmax(0, 1fr);
   align-items: stretch;
   overflow: hidden;
+  width: 100%;
+  max-width: 550px;
 }
 
-.dashboard-overview .welcome-card,
-.dashboard-overview .stats-card {
+.dashboard-overview .welcome-card {
   grid-column: auto;
   min-height: 0;
   background: transparent;
@@ -588,94 +496,16 @@ const handleRecentClick = (item) => {
   box-shadow: none;
 }
 
-.dashboard-overview .stats-card {
-  container: dashboard-stats / inline-size;
-}
-
-.dashboard-overview .stats-card h3 {
-  margin: 0;
-}
-
-.dashboard-overview .stats-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 1px;
-  overflow: hidden;
-  background: var(--bg-card);
-}
-
-.stat-item {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  min-width: 0;
-  min-height: 74px;
-  padding: clamp(0.7rem, 1.4cqi, 0.9rem) clamp(0.75rem, 1.8cqi, 1.1rem);
-  border: 0;
-  border-radius: 0;
-  background: var(--bg-card);
-  color: var(--text-primary);
-  text-align: left;
-  cursor: pointer;
-  transition: background-color 0.18s ease, color 0.18s ease;
-}
-
-.stat-item::after {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 2px;
-  background: var(--color-primary);
-  content: '';
-  opacity: 0;
-  transform: scaleX(0.45);
-  transition: opacity 0.18s ease, transform 0.18s ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .stat-item:hover {
-    background: color-mix(in srgb, var(--color-primary) 9%, var(--bg-card));
-  }
-
-  .stat-item:hover .stat-icon {
-    background: var(--color-primary);
-    color: var(--color-on-primary);
-  }
-
-  .stat-item:hover::after {
-    opacity: 1;
-    transform: scaleX(1);
-  }
-}
-
 .welcome-card {
   grid-column: span 3;
-  background: var(--bg-card);
+  background: var(--surface-card);
   border: 1px solid var(--border-color);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color var(--dur-base) var(--ease-standard), box-shadow var(--dur-base) var(--ease-standard);
 }
 
 .welcome-card:hover {
   border-color: var(--border-color-hover);
-  box-shadow: var(--shadow-md);
-}
-
-.welcome-content h2 {
-  font-size: var(--fs-h1);
-  font-weight: var(--fw-black);
-  letter-spacing: -0.025em;
-  margin-bottom: var(--space-3);
-  color: var(--text-primary);
-}
-
-.welcome-content p {
-  color: var(--text-secondary);
-  font-size: var(--fs-body);
-  line-height: var(--lh-relaxed);
-  max-width: 85%;
-  margin-bottom: var(--space-6);
+  box-shadow: var(--shadow-hover);
 }
 
 .search-trigger {
@@ -684,13 +514,12 @@ const handleRecentClick = (item) => {
   justify-content: flex-start;
   gap: var(--space-3);
   appearance: none;
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border-color);
+  background: var(--surface-card);
   padding: var(--space-3) var(--space-5);
   color: var(--text-secondary);
   width: 100%;
   max-width: 100%;
-  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  transition: background-color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
 }
 
 .search-trigger:hover {
@@ -713,255 +542,27 @@ const handleRecentClick = (item) => {
   background: var(--bg-subtle);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
-  font-size: var(--fs-tiny);
+  font-size: var(--fs-badge);
   font-weight: var(--fw-bold);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
 }
 
-.stats-card h3 {
-  font-size: var(--fs-h3);
-  font-weight: var(--fw-bold);
-  margin-bottom: var(--space-4);
-}
-
-
-
-.stat-item:focus-visible {
-  z-index: 1;
-  outline: 2px solid var(--color-focus);
-  outline-offset: -2px;
-}
-
-.stat-item:focus-visible::after {
-  opacity: 1;
-  transform: scaleX(1);
-}
-
-.stat-item:active {
-  background: color-mix(in srgb, var(--color-primary) 14%, var(--bg-card));
-}
-
-.stat-icon {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--sidebar-bg) 30%, transparent);
-  color: var(--color-primary);
-  transition: background-color 0.18s ease, color 0.18s ease;
-}
-
-.stat-text {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  min-width: 0;
-}
-
-.stat-val {
-  font-size: var(--fs-h2);
-  font-weight: var(--fw-black);
-  color: var(--color-primary);
-  line-height: var(--lh-tight);
-  font-variant-numeric: tabular-nums;
-}
-
-.stat-lbl {
-  font-size: var(--fs-caption);
-  color: var(--text-secondary);
-  text-align: left;
-  font-weight: var(--fw-medium);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-@container dashboard-stats (max-width: 760px) {
-  .dashboard-overview .stats-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@container dashboard-stats (max-width: 500px) {
-  .dashboard-overview .stats-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@container dashboard-stats (max-width: 320px) {
-  .dashboard-overview .stats-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-.dashboard-latest {
-  grid-column: 1 / -1;
-  min-width: 0;
-}
-
-.dashboard-latest-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--space-4);
-}
-
-/* 卡片外殼樣式（底色/邊框/封面圖/標題/標籤…）已經統一改用全域的
-   .card-panel／.card-media-wrapper／.card-info 這一套（見
-   src/styles/components.css），這裡不再各自重刻一份。 */
-
+.dashboard-latest,
 .dashboard-featured {
   grid-column: 1 / -1;
-  min-width: 0;
 }
 
-.featured-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-4); }
-
-/* ============================================================
-   管理精選內容彈窗（比照 FileUploader 媒體庫檔案總管的排版語彙：
-   標題列 + icon box、篩選/搜尋工具列、卡片網格）
-   ============================================================ */
-.featured-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: grid;
-  place-items: center;
-  padding: var(--space-5);
-  background: color-mix(in srgb, var(--bg-page) 72%, transparent);
-  backdrop-filter: blur(8px);
-}
-
-.featured-manager {
-  display: flex;
-  width: min(860px, 94vw);
-  height: min(600px, 88vh);
-  min-height: min(480px, 88vh);
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  background: var(--bg-card);
-  box-shadow: var(--shadow-lg);
-}
-
-.featured-manager-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  padding: var(--space-4) var(--space-6);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.featured-manager-header .header-title-box {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  min-width: 0;
-}
-
-.featured-manager-header .header-icon-box {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md);
-  background: var(--bg-subtle);
-  color: var(--color-primary);
-}
-
-.featured-manager-header h3 {
-  margin: 0;
-  font-size: var(--fs-body-lg);
-  font-weight: var(--fw-bold);
-  color: var(--text-primary);
-}
+/* 首頁卡片用 ContentCard／CardGrid，管理精選用 MediaPickerModal＋SelectCard；以下只有這一頁特有的樣式 */
 
 .header-selected-count {
-  margin-left: var(--space-2);
   padding: var(--space-1) var(--space-2);
-  font-size: var(--fs-tiny);
+  font-size: var(--fs-meta);
   font-weight: var(--fw-semibold);
   color: var(--color-primary);
   background: var(--bg-subtle);
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   vertical-align: middle;
-}
-
-.featured-manager-header p {
-  margin: var(--space-1) 0 0;
-  font-size: var(--fs-tiny);
-  color: var(--text-muted);
-}
-
-.featured-manager-close {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: var(--bg-subtle);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.featured-manager-close:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
-
-.featured-manager-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-6);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.featured-manager-toolbar .filter-pill-group {
-  display: inline-flex;
-  flex-wrap: wrap;
-  padding: 2px;
-  background: var(--bg-subtle);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-color);
-}
-
-.featured-manager-toolbar .filter-pill-group button {
-  border: 0;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: var(--fs-tiny);
-  font-weight: var(--fw-semibold);
-  padding: var(--space-1) var(--space-3);
-  border-radius: 5px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.featured-manager-toolbar .filter-pill-group button.active {
-  background: var(--bg-card);
-  color: var(--color-primary);
-  box-shadow: var(--shadow-sm);
-}
-
-.featured-manager-toolbar-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
 }
 
 .quick-filter-toggle {
@@ -969,7 +570,7 @@ const handleRecentClick = (item) => {
   align-items: center;
   gap: var(--space-1);
   padding: var(--space-2) var(--space-3);
-  font-size: var(--fs-tiny);
+  font-size: var(--fs-meta);
   font-weight: var(--fw-semibold);
   color: var(--text-secondary);
   background: var(--bg-subtle);
@@ -977,7 +578,7 @@ const handleRecentClick = (item) => {
   border-radius: var(--radius-sm);
   cursor: pointer;
   white-space: nowrap;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition: background-color var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard);
 }
 
 .quick-filter-toggle:hover {
@@ -986,111 +587,14 @@ const handleRecentClick = (item) => {
 }
 
 .quick-filter-toggle.active {
-  background: var(--color-primary);
+  background: var(--action-primary);
   border-color: var(--color-primary);
-  color: #fff;
-}
-
-.featured-manager-toolbar .search-input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.featured-manager-toolbar .search-input-wrapper svg {
-  position: absolute;
-  left: 0.65rem;
-  color: var(--text-muted);
-  pointer-events: none;
-}
-
-.featured-manager-toolbar .search-input-wrapper input {
-  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-8);
-  font-size: var(--fs-meta);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  background: var(--bg-subtle);
-  color: var(--text-primary);
-  outline: none;
-  width: 180px;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.featured-manager-toolbar .search-input-wrapper input:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px var(--glow-primary);
-}
-
-.featured-manager-empty-box {
-  flex: 1;
-  min-height: 260px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem var(--space-6);
-  text-align: center;
-  gap: var(--space-2);
-  color: var(--text-muted);
-  font-size: var(--fs-meta);
-}
-
-.featured-manager-empty-box h4 {
-  margin: 0;
-  font-size: var(--fs-body);
-  font-weight: var(--fw-semibold);
-  color: var(--text-primary);
-}
-
-.featured-manager-empty-box .empty-icon-circle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: var(--bg-subtle);
-  color: var(--text-muted);
-  margin-bottom: var(--space-2);
-}
-
-.featured-manager-grid {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  align-content: start;
-  gap: var(--space-4);
-  padding: var(--space-5) var(--space-6);
-  overflow-y: auto;
+  color: var(--action-on-primary);
 }
 
 .featured-card {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  background: var(--bg-card);
-  overflow: hidden;
+  /* 外框、圓角、hover／焦點／選取狀態都用全域 .select-card（components.css） */
   cursor: pointer;
-  outline: none;
-  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
-}
-
-.featured-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--border-color-hover);
-}
-
-.featured-card:focus-visible {
-  outline: 3px solid var(--color-focus);
-  outline-offset: 2px;
-}
-
-.featured-card.selected {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 1px var(--color-primary);
 }
 
 .featured-card.is-saving {
@@ -1098,51 +602,18 @@ const handleRecentClick = (item) => {
   pointer-events: none;
 }
 
-.featured-card-media {
-  position: relative;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
+.featured-card :deep(.featured-card-media) {
   display: grid;
   place-items: center;
-  background: linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
   color: var(--text-secondary);
-  font-size: var(--fs-h2);
+  font-size: var(--fs-glyph);
   font-weight: var(--fw-bold);
 }
 
-.featured-card-media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.featured-card-check {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--bg-page) 55%, transparent);
-  border: 1.5px solid rgba(255, 255, 255, 0.75);
-  color: transparent;
-  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
-}
-
-.featured-card.selected .featured-card-check {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: var(--color-on-primary, #fff);
-}
-
-.featured-card-info {
+.featured-card :deep(.featured-card-info) {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  padding: var(--space-2) var(--space-3);
   border-top: 1px solid var(--border-color);
 }
 
@@ -1155,57 +626,21 @@ const handleRecentClick = (item) => {
   white-space: nowrap;
 }
 
-.featured-card-info .type-badge {
+.featured-card-info .chip {
   align-self: flex-start;
-}
-
-.featured-manager-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  padding: var(--space-3) var(--space-6);
-  border-top: 1px solid var(--border-color);
-  color: var(--text-muted);
-  font-size: var(--fs-meta);
-  height: 60px;
-}
-
-.featured-manager-footer .btn-cancel {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  font-size: var(--fs-meta);
-  font-weight: var(--fw-semibold);
-  background: var(--color-primary);
-  color: var(--color-on-primary, #fff);
-  border: 0;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: opacity 0.15s ease;
-}
-
-.featured-manager-footer .btn-cancel:hover {
-  opacity: 0.9;
-}
-
-.featured-manager-footer .btn-cancel:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-4);
   width: 100%;
 }
 
 .card-header h3 {
-  font-size: var(--fs-h3);
+  font-size: var(--fs-section-title);
   font-weight: var(--fw-bold);
+  padding-left: var(--space-1);
 }
 
 .card-action-link {
@@ -1221,7 +656,7 @@ const handleRecentClick = (item) => {
   cursor: pointer;
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
-  transition: background-color 0.18s ease, color 0.18s ease;
+  transition: background-color var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
 }
 
 .card-action-link:hover {
@@ -1255,7 +690,7 @@ const handleRecentClick = (item) => {
 }
 
 .prop-stat .num {
-  font-size: var(--fs-h2);
+  font-size: var(--fs-glyph);
   font-weight: var(--fw-black);
   font-variant-numeric: tabular-nums;
   line-height: var(--lh-none);
@@ -1267,7 +702,7 @@ const handleRecentClick = (item) => {
 .num.approved { color: var(--color-accent); }
 
 .prop-stat .lbl {
-  font-size: var(--fs-caption);
+  font-size: var(--fs-meta);
   color: var(--text-secondary);
   margin-top: var(--space-1);
   font-weight: var(--fw-medium);
@@ -1278,6 +713,7 @@ const handleRecentClick = (item) => {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  gap: var(--space-heading);
 }
 
 .header-title-group {
@@ -1287,10 +723,10 @@ const handleRecentClick = (item) => {
 }
 
 .ai-tool-pill {
-  font-size: var(--fs-tiny);
+  font-size: var(--fs-meta);
   font-weight: var(--fw-semibold);
   padding: var(--space-1) var(--space-2);
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   background: var(--bg-hover);
   color: var(--color-primary);
   border: 1px solid var(--border-color);
@@ -1300,7 +736,7 @@ const handleRecentClick = (item) => {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  font-size: var(--fs-tiny);
+  font-size: var(--fs-meta);
   font-weight: var(--fw-medium);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
@@ -1308,7 +744,7 @@ const handleRecentClick = (item) => {
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  transition: background-color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
 }
 
 .cycle-btn:hover {
@@ -1342,7 +778,7 @@ const handleRecentClick = (item) => {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--color-primary);
+  background: var(--action-primary);
 }
 
 .usecase-text {
@@ -1374,7 +810,7 @@ const handleRecentClick = (item) => {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--color-primary);
+  background: var(--action-primary);
 }
 
 .quick-action-card {
@@ -1393,9 +829,9 @@ const handleRecentClick = (item) => {
   padding: var(--space-3);
   border-radius: var(--radius-md);
   font-weight: var(--fw-semibold);
-  font-size: var(--fs-label);
+  font-size: var(--fs-meta);
   text-align: center;
-  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+  transition: background-color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard), transform var(--dur-fast) var(--ease-standard);
 }
 
 .btn-primary {
@@ -1404,8 +840,8 @@ const handleRecentClick = (item) => {
   color: var(--color-primary);
 }
 .btn-primary:hover {
-  background: var(--color-primary);
-  color: #ffffff;
+  background: var(--action-primary);
+  color: var(--action-on-primary);
 }
 
 .btn-secondary {
@@ -1415,7 +851,7 @@ const handleRecentClick = (item) => {
 }
 .btn-secondary:hover {
   background: var(--color-secondary);
-  color: #ffffff;
+  color: var(--action-on-primary);
 }
 
 .btn-tertiary {
@@ -1425,37 +861,21 @@ const handleRecentClick = (item) => {
 }
 .btn-tertiary:hover {
   background: var(--color-accent);
-  color: #ffffff;
+  color: var(--action-on-primary);
 }
 
-@media (max-width: 1040px) {
-
-  .dashboard-latest-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+/* 首頁卡片欄數由 CardGrid 負責（超寬／桌機 4 · 筆電 3 · 平板 2 · 手機 1） */
+@media (max-width: 1023px) {
+  .dashboard-overview {
+    max-width: none;
   }
-  .featured-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 1024px) {
   .welcome-card {
     grid-column: span 2;
   }
-  .stats-card {
-    grid-column: span 2;
-  }
-  .welcome-content p {
-    max-width: 100%;
-  }
-  .dashboard-latest-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .welcome-card,
-  .stats-card,
   .proposal-card,
   .ai-prompt-card,
   .quick-action-card {
@@ -1466,22 +886,9 @@ const handleRecentClick = (item) => {
     max-width: 100%;
   }
 
-  .dashboard-latest-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .featured-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
   .dashboard-overview {
     grid-template-columns: minmax(0, 1fr);
   }
-  .dashboard-overview .stats-card {
-    min-height: 0;
-    border-left: 0;
-  }
-}
-
-@media (max-width: 640px) {
   .proposal-summary {
     grid-template-columns: repeat(2, 1fr);
     gap: var(--space-4);

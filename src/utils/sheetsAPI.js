@@ -1,20 +1,13 @@
-// ================================================
-// sheetsAPI.js — Design LAB Google Sheets 整合 (v5.0)
-// ================================================
-//
-// 這支模組是前端與 Google Apps Script 後端（apps-script/Code.gs）
-// 溝通的唯一入口。讀取（GET）維持公開；寫入／刪除／登入／成員管理
-// 一律呼叫後端的對應 action，並附帶登入後取得的 Session Token——
-// 實際的權限判斷全部在後端完成，前端這裡只是轉送與呈現錯誤訊息。
+// 前端與 Apps Script 後端（apps-script/Code.gs）溝通的唯一入口。讀取公開；寫入、登入、成員管理
+// 一律附帶 Session Token，權限判斷全在後端，這裡只轉送請求與呈現錯誤。
+
+import { bumpIdentity } from './identity';
 
 const SESSION_KEY = 'design_lab_session';
 
-// Apps Script Web App 網址，一律由建置期環境變數 VITE_SHEETS_URL 提供（見 .env.example）。
-// 不支援執行期覆寫——每個環境（本機開發／正式站）的網址跟著 .env 走，
-// 與後端部署（apps-script/README.md 的 clasp 流程）綁在一起維護，避免兩邊各自為政。
+// 網址只由建置期環境變數 VITE_SHEETS_URL 提供（見 .env.example），不支援執行期覆寫
 const SHEETS_URL = import.meta.env.VITE_SHEETS_URL || '';
 
-// Storage key → Google Sheet Tab Name
 const KEY_MAP = {
   UI_RESEARCH:     'UI_RESEARCH',
   MOTION_RESEARCH: 'MOTION_RESEARCH',
@@ -26,7 +19,6 @@ const KEY_MAP = {
   NOTIFICATIONS:   'NOTIFICATIONS'
 };
 
-// localStorage key → 各 Tab 名稱的對應
 const STORAGE_KEY_MAP = {
   UI_RESEARCH:     'design_lab_ui_research',
   MOTION_RESEARCH: 'design_lab_motion_research',
@@ -40,8 +32,7 @@ const STORAGE_KEY_MAP = {
 
 const ALL_KEYS = Object.keys(KEY_MAP);
 
-// 同一個 session 內，「完整資料 (JSON)」解析失敗只印一次警告，
-// 避免每筆舊資料都各印一次、洗版 console（fallback 邏輯不受影響，照樣逐筆執行）。
+// 「完整資料 (JSON)」解析失敗只警告一次，避免舊資料逐筆洗版 console
 let hasWarnedLegacyJsonParse = false;
 
 /**
@@ -67,10 +58,8 @@ export function normalizeSheetRecord(record) {
     }
   }
 
-  // 欄位真正存在於 record 就以 record 為準（例如剛編輯過、還沒重新序列化的
-  // 表單資料）；record 完全沒有這個欄位（真正的舊格式資料列）才用 embedded 補上。
-  // 反過來寫（embedded 蓋過 record）會讓每次編輯都被這份夾帶的舊 JSON 快照蓋掉，
-  // 使用者剛存的內容表面上存進去了，實際上馬上被打回原本的舊值。
+  // record 有這個欄位就以 record 為準，完全沒有（真正的舊格式）才用 embedded 補。
+  // 反過來會讓每次編輯都被夾帶的舊 JSON 快照蓋回舊值。
   const normalized = { ...embedded, ...record };
   normalized.id = normalized.id || record.ID || record.Id || '';
   normalized.createdAt = normalized.createdAt || record['建立時間 (createdAt)'] || '';
@@ -86,31 +75,23 @@ export function normalizeSheetRecord(record) {
  * 避免使用者只看到「請重新登入」卻找不到入口，反覆按儲存反覆失敗。
  */
 export function describeWriteFailure(error) {
-  const reason = error || '權限不足或登入已逾期，請重新登入後再試一次。';
+  const reason = error || '權限不足或登入已逾期';
   const needsLogin = !getSession() || /登入|逾期|權限/.test(String(reason));
   return needsLogin
-    ? `${reason}\n（請點左側選單最下方的「個人設定」重新登入後再試一次）`
-    : reason;
+    ? `${reason}。請到左側選單最下方的「個人設定」重新登入後再試一次。`
+    : `${reason}。`;
 }
 
-/** 取得目前設定的 Apps Script URL（由 VITE_SHEETS_URL 環境變數提供） */
 export function getSheetsUrl() {
   return SHEETS_URL;
 }
 
-/** 是否已啟用 Sheets 整合 */
 export function hasSheetsIntegration() {
   return !!SHEETS_URL;
 }
 
-// ------------------------------------------------------------
-// Session（登入權杖）管理
-// ------------------------------------------------------------
-// 權杖本身是由後端核發、儲存在後端 CacheService 的隨機字串，
-// 前端只是原樣保存與附帶送出；真正決定它是否有效、對應哪個帳號、
-// 哪個角色的判斷，一律由後端在每次寫入請求時重新驗證。
+// 權杖由後端核發與驗證，前端只保存並原樣送出
 
-/** 取得目前已登入的 Session（含 token / username / nickname / role），未登入回傳 null */
 export function getSession() {
   try {
     const raw = localStorage.getItem(SESSION_KEY);
@@ -122,11 +103,12 @@ export function getSession() {
 
 function setSession(session) {
   localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  bumpIdentity();
 }
 
-/** 清除本機保存的 Session（登出、或後端回報權杖已失效時呼叫） */
 export function clearSession() {
   localStorage.removeItem(SESSION_KEY);
+  bumpIdentity();
 }
 
 function getToken() {
@@ -134,10 +116,7 @@ function getToken() {
   return session ? session.token : '';
 }
 
-// ------------------------------------------------------------
-// 底層請求：一律真正讀取回應內容（不再使用 no-cors 盲送），
-// 才有辦法判斷後端是否因為權限不足而拒絕這次寫入。
-// ------------------------------------------------------------
+// 一律讀取回應內容（不用 no-cors），才能知道後端是否拒絕這次寫入
 
 async function callAction_(action, payload = {}) {
   const url = getSheetsUrl();
@@ -150,7 +129,6 @@ async function callAction_(action, payload = {}) {
     });
     const json = await res.json().catch(() => ({ success: false, error: '伺服器回應格式錯誤' }));
     if (json && json.code === 'AUTH_REQUIRED') {
-      // 權杖已過期或不存在，清除本機 Session，讓畫面回到未登入狀態
       clearSession();
     }
     return json;
@@ -159,11 +137,6 @@ async function callAction_(action, payload = {}) {
   }
 }
 
-// ------------------------------------------------------------
-// 登入 / 登出 / 密碼
-// ------------------------------------------------------------
-
-/** 以帳號密碼登入，成功會回傳並保存 Session Token */
 export async function loginRequest(username, password) {
   const result = await callAction_('login', { username, password });
   if (result.success && result.token) {
@@ -177,26 +150,21 @@ export async function loginRequest(username, password) {
   return result;
 }
 
-/** 登出：通知後端銷毀 Token，並清除本機 Session */
 export async function logoutRequest() {
   const token = getToken();
   clearSession();
   if (token) await callAction_('logout', { token });
 }
 
-/** 修改自己的密碼（需要正確的舊密碼） */
 export async function changePasswordRequest(oldPassword, newPassword) {
   return callAction_('changePassword', { token: getToken(), oldPassword, newPassword });
 }
 
-/** 管理員將他人密碼重設為臨時密碼，並強制對方下次登入變更 */
 export async function adminResetPasswordRequest(targetUsername) {
   return callAction_('adminResetPassword', { token: getToken(), targetUsername });
 }
 
-// ------------------------------------------------------------
-// 成員管理（後端會再次確認呼叫者是否為管理員，前端呼叫失敗屬正常防護）
-// ------------------------------------------------------------
+// 成員管理：後端會再次確認呼叫者是管理員
 
 export async function addUserRequest(nickname, username, role) {
   return callAction_('addUser', { token: getToken(), nickname, username, role });
@@ -214,11 +182,7 @@ export async function reorderUsersRequest(profiles) {
   });
 }
 
-// ------------------------------------------------------------
-// 一般資料讀取 / 寫入 / 刪除
-// ------------------------------------------------------------
-
-/** 讀取一個 Sheet 的所有資料（公開，不需登入） */
+/** 公開讀取，不需登入 */
 export async function fetchSheetData(key) {
   const url = getSheetsUrl();
   if (!url) throw new Error('Sheets URL 未設定');
@@ -251,7 +215,6 @@ export async function pushToSheet(key, data) {
   return result;
 }
 
-/** 刪除一筆資料，回傳 `{ success, error }`。 */
 export async function deleteFromSheet(key, id) {
   const url = getSheetsUrl();
   if (!url) return { success: false, error: 'Sheets URL 未設定' };
@@ -261,7 +224,6 @@ export async function deleteFromSheet(key, id) {
   return result;
 }
 
-/** 團隊成員重新排序後，同步順序到 Google Sheets（管理員限定，後端授權）。 */
 export async function pushAllUsersToSheet(profiles) {
   if (!Array.isArray(profiles)) return { success: false, error: '資料格式錯誤' };
   const result = await reorderUsersRequest(profiles);
@@ -269,7 +231,6 @@ export async function pushAllUsersToSheet(profiles) {
   return result;
 }
 
-/** 從 Sheets 全量同步到 localStorage */
 export async function syncAllFromSheets(onProgress) {
   const url = getSheetsUrl();
   if (!url) return { success: false, error: 'URL 未設定', counts: {} };
@@ -278,9 +239,16 @@ export async function syncAllFromSheets(onProgress) {
   const errors = [];
 
   let totalCount = 0;
-  for (const key of ALL_KEYS) {
+  // 並行抓取所有表；寫入 localStorage 仍照原順序。fetchSheetData 失敗會回傳 []，不會中斷 Promise.all
+  const fetched = await Promise.all(ALL_KEYS.map(key =>
+    fetchSheetData(key)
+      .then(data => ({ key, data }))
+      .catch(error => ({ key, data: null, error }))
+  ));
+
+  for (const { key, data, error } of fetched) {
     try {
-      const data = await fetchSheetData(key);
+      if (error) throw error;
       if (data && data.length > 0) {
         // 雲端資料可能尚未包含本地上傳的媒體欄位（R2 公開網址）。
         // 同步時保留同 ID 本地已有的媒體，避免重整後封面消失。
@@ -330,9 +298,16 @@ export async function syncAllFromSheets(onProgress) {
     }
   }
 
-  // 如果 Google Sheets 是全新的（0 筆資料），提示需先於 Apps Script 執行 setup 初始化
   if (totalCount === 0 && errors.length === 0) {
     errors.push({ key: 'USERS', error: '尚未初始化：請先於 Apps Script 對後端送出一次 { action: "setup" }' });
+  }
+
+  // 成員名單（含角色）可能跟著雲端更新，依賴身分的畫面要重算
+  bumpIdentity();
+
+  // 同步直接寫 localStorage、沒經過 setStorageData，要自己廣播，否則首頁、⌘K 搜尋、表單建議都不會重讀
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('design-lab-storage-updated', { detail: { key: 'ALL' } }));
   }
 
   return {

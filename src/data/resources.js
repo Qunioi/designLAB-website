@@ -37,7 +37,7 @@ export const initialResources = [
     name: "Pageflows",
     category: "設計靈感",
     url: "https://pageflows.com",
-    desc: "收錄真實 App 的完整 User Flow 錄影，按流程分類（Onboarding, Upgrade, Search 等）。",
+    desc: "收錄真實 App 的完整 User Flow 錄影，按流程類型（Onboarding, Upgrade, Search 等）。",
     createdAt: "2026-07-15 16:45:00",
     updatedAt: "2026-07-28 14:30:00",
     createdBy: "Quni (@quni_jhuang)",

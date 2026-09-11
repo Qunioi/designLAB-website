@@ -2,9 +2,9 @@
   <LightboxSection :icon="icon" :title="title" :accent="accent">
     <div class="lbs-list">
       <div v-for="(text, index) in items" :key="`${index}-${text}`" class="lbs-list-item">
-        <span v-if="marker !== 'none'" class="lbs-list-marker" :style="{ background: accent }">
-          <svg v-if="marker === 'check'" xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          <svg v-else-if="marker === 'cross'" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <span v-if="marker !== 'none'" class="lbs-list-marker" :class="`is-${marker}`" :style="marker === 'number' ? undefined : { background: accent }">
+          <Icon name="check" :size="11" :stroke-width="3" v-if="marker === 'check'" />
+          <Icon name="close" :size="10" :stroke-width="3" v-else-if="marker === 'cross'" />
           <template v-else>{{ index + 1 }}</template>
         </span>
         <span class="lbs-list-text">{{ text }}</span>
@@ -14,8 +14,7 @@
 </template>
 
 <script setup>
-// 格式 3：標題 + 清單。對應示意圖的「做得好的地方」「工作流程」「值得參考」，
-// 每一項前面是一個實心圓圈，顏色跟著 accent 走；圓圈裡放編號還是打勾由 marker 決定。
+import Icon from '../base/Icon.vue';
 import LightboxSection from './LightboxSection.vue';
 
 defineProps({
@@ -44,6 +43,8 @@ defineProps({
   gap: var(--space-2);
 }
 
+/* 編號圓點一律用主色（不跟著區塊的 accent 走）；打勾／打叉帶有「好／壞」語意，
+   仍用傳進來的 accent（例如競品優點綠、缺點紅）。 */
 .lbs-list-marker {
   display: grid;
   place-items: center;
@@ -51,14 +52,19 @@ defineProps({
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  color: #fff;
-  font-size: var(--fs-tiny);
+  background: var(--action-primary);
+  color: var(--action-on-primary);
+  font-size: var(--fs-badge);
   font-weight: var(--fw-bold);
+}
+
+.lbs-list-marker.is-cross {
+  color: var(--action-on-danger);
 }
 
 .lbs-list-text {
   color: var(--text-secondary);
-  font-size: var(--fs-meta);
+  font-size: var(--fs-body);
   line-height: var(--lh-normal);
 }
 </style>
