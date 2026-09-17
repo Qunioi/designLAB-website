@@ -31,7 +31,7 @@
               <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.takeaways" :required="isRequired('takeaways')" rows="3" placeholder="請輸入研究重點"></textarea>
             </FormField>
             <FormField :id="fieldId('highlights')" label="值得參考" help="一行一項，會顯示成條列重點" full v-slot="{ id, invalid, describedby }">
-              <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.highlights" :required="isRequired('highlights')" rows="3" placeholder="請輸入值得參考項目"></textarea>
+              <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.highlights" :required="isRequired('highlights')" rows="3" placeholder="填寫此案例值得學習或借鑑的設計重點"></textarea>
             </FormField>
             <FormField :id="fieldId('tags')" label="適用情境" help="按 Enter 新增標籤，可點選歷史標籤" full v-slot="{ id }">
               <TagInput :input-id="id" v-model="form.tags" :suggested-tags="historyTags" placeholder="請新增或選擇標籤" />
@@ -69,10 +69,6 @@
             <FormField :id="fieldId('tags')" label="適用情境" help="按 Enter 新增標籤，可點選歷史標籤" full v-slot="{ id }">
               <TagInput :input-id="id" v-model="form.tags" :suggested-tags="historyTags" placeholder="請新增或選擇標籤" />
             </FormField>
-            <!-- <div class="form-group full-width">
-              <label :id="`${fieldId('implInfo')}-label`">實作資訊<span class="field-help-inline">欄位名稱與內容都可自訂、新增或刪除</span></label>
-              <KeyValueListInput :aria-labelledby="`${fieldId('implInfo')}-label`" role="group" v-model="form.implInfo" />
-            </div> -->
           </div>
 
           <div v-else-if="type === 'COMPETITORS'" class="form-grid">
@@ -91,14 +87,17 @@
                 <ImagePathInput :aria-labelledby="labelId" v-model="form.screenshot" :required="isRequired('screenshot')" />
               </template>
             </FormField>
-            <FormField :id="fieldId('takeaways')" label="值得參考與借鏡之處" :required="isRequired('takeaways')" :error="errors.takeaways" field="takeaways" full v-slot="{ id, invalid, describedby }">
-              <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.takeaways" :required="isRequired('takeaways')" rows="3" placeholder="請輸入值得參考與借鏡之處" ></textarea>
+            <FormField :id="fieldId('takeaways')" label="分析目標" :required="isRequired('takeaways')" :error="errors.takeaways" field="takeaways" full v-slot="{ id, invalid, describedby }">
+              <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.takeaways" :required="isRequired('takeaways')" rows="3" placeholder="請輸入本次競品分析的主要觀察方向" ></textarea>
             </FormField>
             <FormField :id="fieldId('pros')" label="優點 (Pros)" :required="isRequired('pros')" :error="errors.pros" field="pros" full v-slot="{ id, invalid, describedby }">
-              <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.pros" :required="isRequired('pros')" rows="2" placeholder="請輸入競品設計優點，可條列..." ></textarea>
+              <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.pros" :required="isRequired('pros')" rows="2" placeholder="請輸入競品做得好的地方，可條列說明" ></textarea>
             </FormField>
             <FormField :id="fieldId('cons')" label="缺點 (Cons)" :required="isRequired('cons')" :error="errors.cons" field="cons" full v-slot="{ id, invalid, describedby }">
-              <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.cons" :required="isRequired('cons')" rows="2" placeholder="請輸入競品設計缺點，可條列..." ></textarea>
+              <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.cons" :required="isRequired('cons')" rows="2" placeholder="請輸入競品可改善的地方，可條列說明" ></textarea>
+            </FormField>
+            <FormField :id="fieldId('referencePoints')" label="借鑑重點" full v-slot="{ id, invalid, describedby }">
+              <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.referencePoints" rows="2" placeholder="請輸入可借鑑的設計做法與應用方向"></textarea>
             </FormField>
             <FormField :id="fieldId('tags')" label="相關標籤" help="按 Enter 新增標籤，可點選歷史標籤" full v-slot="{ id }">
               <TagInput :input-id="id" v-model="form.tags" :suggested-tags="historyTags" placeholder="請新增或選擇標籤" />
@@ -107,7 +106,7 @@
 
           <div v-else-if="type === 'AI_CENTER'" class="form-grid">
             <FormField :id="fieldId('name')" label="標題" :required="isRequired('name')" :error="errors.name" field="name" full v-slot="{ id, invalid, describedby }">
-              <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.name" :required="isRequired('name')" type="text" placeholder="請輸入標題" />
+              <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.name" :required="isRequired('name')" type="text" placeholder="請輸入工具名稱" />
             </FormField>
             <FormField :id="fieldId('category')" label="類型" :required="isRequired('category')" :error="errors.category" field="category" v-slot="{ id }">
               <CategoryInput :input-id="id" v-model="form.category" :required="isRequired('category')" :options="historyCategories" placeholder="請選擇或新增類型" />
@@ -128,7 +127,7 @@
               <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.prompt" :required="isRequired('prompt')" rows="3" placeholder="請輸入經測試效果良好的提示詞"></textarea>
             </FormField>
             <FormField :id="fieldId('tags')" label="適合用途" help="按 Enter 新增標籤，可點選歷史標籤" full v-slot="{ id }">
-              <TagInput :input-id="id" v-model="form.tags" :suggested-tags="historyTags" placeholder="請新增或選擇標籤" />
+              <TagInput :input-id="id" v-model="form.tags" :suggested-tags="historyTags" placeholder="請新增或選擇適合用途" />
             </FormField>
             <FormField :id="fieldId('workflow')" label="工作流程" :required="isRequired('workflow')" help="請用 -> 分隔步驟" :error="errors.workflow" field="workflow" full v-slot="{ id, invalid, describedby }">
               <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.workflow" :required="isRequired('workflow')" rows="2" placeholder="請輸入分隔步驟"></textarea>
@@ -137,13 +136,13 @@
 
           <div v-else-if="type === 'RESOURCES'" class="form-grid">
             <FormField :id="fieldId('name')" label="標題" :required="isRequired('name')" :error="errors.name" field="name" full v-slot="{ id, invalid, describedby }">
-              <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.name" :required="isRequired('name')" type="text" placeholder="例如：Awwwards" />
+              <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.name" :required="isRequired('name')" type="text" placeholder="請輸入資源名稱，例如：Awwwards" />
             </FormField>
             <FormField :id="fieldId('category')" label="類型" :required="isRequired('category')" :error="errors.category" field="category" v-slot="{ id }">
-              <CategoryInput :input-id="id" v-model="form.category" :required="isRequired('category')" :options="historyCategories" placeholder="例如：設計靈感, Icon, Font, UI元件" />
+              <CategoryInput :input-id="id" v-model="form.category" :required="isRequired('category')" :options="historyCategories" placeholder="請選擇或新增類型" />
             </FormField>
             <FormField :id="fieldId('url')" label="網址" v-slot="{ id, invalid, describedby }">
-              <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.url" :required="isRequired('url')" type="text" @blur="form.url = ensureProtocol(form.url)" placeholder="例如：https://awwwards.com" />
+              <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.url" :required="isRequired('url')" type="text" @blur="form.url = ensureProtocol(form.url)" placeholder="請貼上資源網址" />
             </FormField>
             <FormField :id="fieldId('screenshot')" label="封面圖" :required="isRequired('screenshot')" help="JPG / JPEG / PNG / GIF / WEBP" :error="errors.screenshot" field="screenshot" full group>
               <template #label-extra><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></template>
@@ -151,14 +150,14 @@
                 <ImagePathInput :aria-labelledby="labelId" v-model="form.screenshot" :required="isRequired('screenshot')" />
               </template>
             </FormField>
-            <FormField :id="fieldId('tags')" label="適合尋找" help="按 Enter 新增標籤，可點選歷史標籤" full v-slot="{ id }">
-              <TagInput :input-id="id" v-model="form.tags" :suggested-tags="historyTags" placeholder="請新增或選擇標籤" />
-            </FormField>
             <FormField :id="fieldId('desc')" label="資源介紹" full v-slot="{ id, invalid, describedby }">
               <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.desc" :required="isRequired('desc')" rows="3" placeholder="請輸入資源介紹"></textarea>
             </FormField>
             <FormField :id="fieldId('usage')" label="推薦用途" full v-slot="{ id, invalid, describedby }">
               <textarea :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.usage" :required="isRequired('usage')" rows="2" placeholder="請輸入推薦用途"></textarea>
+            </FormField>
+            <FormField :id="fieldId('tags')" label="相關標籤" help="按 Enter 新增標籤，可點選歷史標籤" full v-slot="{ id }">
+              <TagInput :input-id="id" v-model="form.tags" :suggested-tags="historyTags" placeholder="請新增或選擇標籤" />
             </FormField>
           </div>
 
@@ -438,6 +437,7 @@ watch(() => [props.isOpen, props.item, props.type], () => {
         screenshot: '',
         pros: '',
         cons: '',
+        referencePoints: '',
         link: '',
         useCase: '',
         prompt: '',

@@ -17,7 +17,7 @@
     deleteConfirmPrefix="確定要刪除《"
     deleteConfirmSuffix="》這筆競品分析嗎？"
     :filters="filters"
-    :searchFields="['name', 'title', 'category', 'url', 'pros', 'cons', 'takeaways', 'tags']"
+    :searchFields="['name', 'title', 'category', 'url', 'pros', 'cons', 'takeaways', 'referencePoints', 'tags']"
     :highlightedId="highlightedId"
     @trigger-crud="$emit('trigger-crud', $event)"
     @delete-done="$emit('delete-done')"
@@ -53,6 +53,13 @@
           />
         </div>
       </div>
+      <LightboxTextSection
+        v-if="item.referencePoints"
+        icon="sparkles"
+        title="借鑑重點"
+        accent="var(--color-primary)"
+        :text="item.referencePoints"
+      />
       <LightboxSection
         v-if="parseList(item.tags).length"
         icon="hashtag-solid"
@@ -139,4 +146,3 @@ const filters = computed(() => [
   border-bottom: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
 }
 </style>
-

@@ -32,10 +32,17 @@
         accent="var(--color-primary)"
         :text="item.desc"
       />
+      <LightboxTextSection
+        v-if="item.usage"
+        icon="thumb-up-solid"
+        title="推薦用途"
+        accent="var(--color-primary)"
+        :text="item.usage"
+      />
       <LightboxSection
         v-if="parseList(item.tags).length"
-        icon="focus-solid"
-        title="適合尋找"
+        icon="hashtag-solid"
+        title="相關標籤"
         accent="var(--color-primary)"
       >
         <div class="card-tags">
@@ -49,13 +56,6 @@
         >{{ tag }}</Chip>
         </div>
       </LightboxSection>
-      <LightboxTextSection
-        v-if="item.usage"
-        icon="thumb-up-solid"
-        title="推薦用途"
-        accent="var(--color-primary)"
-        :text="item.usage"
-      />
     </template>
   </ResearchGrid>
 </template>
