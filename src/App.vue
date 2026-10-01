@@ -69,6 +69,7 @@ import CRUDModal from './components/CRUDModal.vue';
 import ToastHost from './components/ToastHost.vue';
 import ConfirmDialog from './components/ConfirmDialog.vue';
 import { toast } from './utils/toast';
+import { updateThemeFavicon } from './utils/favicon';
 
 import Dashboard from './views/Dashboard.vue';
 import UIResearch from './views/UIResearch.vue';
@@ -152,6 +153,7 @@ watch(currentTheme, (theme, previous) => {
   if (previous) root.classList.remove(previous);
   [...root.classList].filter(c => c.startsWith('theme-')).forEach(c => root.classList.remove(c));
   if (theme) root.classList.add(theme);
+  updateThemeFavicon();
 }, { immediate: true });
 
 const isSyncing = ref(false);
