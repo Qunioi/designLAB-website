@@ -22,7 +22,7 @@
               <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.sourceUrl" :required="isRequired('sourceUrl')" type="url" @blur="form.sourceUrl = ensureProtocol(form.sourceUrl)" placeholder="請貼上研究簡報、Demo 或相關完整內容連結" />
             </FormField>
             <FormField :id="fieldId('cover')" label="封面圖" :required="isRequired('cover')" help="JPG / JPEG / PNG / GIF / WEBP" :error="errors.cover" field="cover" full group>
-              <template #label-extra><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></template>
+              <template #label-extra><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片尺寸：900x500<br>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></template>
               <template #default="{ labelId }">
                 <ImagePathInput :aria-labelledby="labelId" v-model="form.cover" :required="isRequired('cover')" />
               </template>
@@ -49,13 +49,13 @@
               <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.sourceUrl" :required="isRequired('sourceUrl')" type="url" @blur="form.sourceUrl = ensureProtocol(form.sourceUrl)" placeholder="請貼上研究簡報、Demo 或相關完整內容連結" />
             </FormField>
             <FormField :id="fieldId('cover')" label="封面圖" :required="isRequired('cover')" help="JPG / JPEG / PNG / GIF / WEBP" :error="errors.cover" field="cover" full group>
-              <template #label-extra><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></template>
+              <template #label-extra><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片尺寸：900x500<br>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></template>
               <template #default="{ labelId }">
                 <ImagePathInput :aria-labelledby="labelId" v-model="form.cover" :required="isRequired('cover')" />
               </template>
             </FormField>
             <FormField :id="fieldId('videoUrl')" label="影片" :required="isRequired('videoUrl')" help="MP4 / WEBM / MOV" :error="errors.videoUrl" field="videoUrl" full group>
-              <template #label-extra><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></template>
+              <template #label-extra><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片尺寸：900x500<br>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></template>
               <template #default="{ labelId }">
                 <FileUploader :aria-labelledby="labelId" v-model="form.videoUrl" :required="isRequired('videoUrl')" accept="video/mp4,video/webm,video/quicktime" placeholder="選擇影片檔案" />
               </template>
@@ -82,7 +82,7 @@
               <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.url" :required="isRequired('url')" type="url" @blur="form.url = ensureProtocol(form.url)" placeholder="請貼上競品網址" />
             </FormField>
             <FormField :id="fieldId('screenshot')" label="封面圖" :required="isRequired('screenshot')" help="JPG / JPEG / PNG / GIF / WEBP" :error="errors.screenshot" field="screenshot" full group>
-              <template #label-extra><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></template>
+              <template #label-extra><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片尺寸：900x500<br>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></template>
               <template #default="{ labelId }">
                 <ImagePathInput :aria-labelledby="labelId" v-model="form.screenshot" :required="isRequired('screenshot')" />
               </template>
@@ -115,7 +115,7 @@
               <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.url" :required="isRequired('url')" type="url" @blur="form.url = ensureProtocol(form.url)" placeholder="請貼上工具網址" />
             </FormField>
             <FormField :id="fieldId('cover')" label="封面圖" :required="isRequired('cover')" help="JPG / JPEG / PNG / GIF / WEBP" :error="errors.cover" field="cover" full group>
-              <template #label-extra><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></template>
+              <template #label-extra><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片尺寸：900x500<br>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></template>
               <template #default="{ labelId }">
                 <ImagePathInput :aria-labelledby="labelId" v-model="form.cover" :required="isRequired('cover')" />
               </template>
@@ -145,7 +145,7 @@
               <input :id="id" :aria-invalid="invalid || undefined" :aria-describedby="describedby" v-model="form.url" :required="isRequired('url')" type="text" @blur="form.url = ensureProtocol(form.url)" placeholder="請貼上資源網址" />
             </FormField>
             <FormField :id="fieldId('screenshot')" label="封面圖" :required="isRequired('screenshot')" help="JPG / JPEG / PNG / GIF / WEBP" :error="errors.screenshot" field="screenshot" full group>
-              <template #label-extra><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></template>
+              <template #label-extra><span class="media-guideline-help" tabindex="0">?<span class="media-guideline-tooltip"><b>DesignLAB 素材規範</b>圖片尺寸：900x500<br>圖片：單檔 ≤ 5MB<br>GIF：單檔 ≤ 10MB<br>MP4 / WebM：單檔 ≤ 50MB<br>所有素材：單檔最大 ≤ 100MB<br>原始設計檔（PSD / AI / AE 等）不放入 DesignLAB<br>DesignLAB 僅存「展示／預覽版本」<br>優先使用 WebP、WebM、MP4 等適合網頁展示的格式</span></span></template>
               <template #default="{ labelId }">
                 <ImagePathInput :aria-labelledby="labelId" v-model="form.screenshot" :required="isRequired('screenshot')" />
               </template>

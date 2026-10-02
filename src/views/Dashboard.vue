@@ -363,7 +363,7 @@ const cardProps = item => {
   const f = CARD_FIELDS[item.type] || {};
   return {
     title: item.title || item.name || '',
-    cover: item[f.cover] || item.cover || item.logo || '',
+    cover: item[f.cover] || item.cover || item.logo || item.screenshot || '',
     link: item[f.link] || item.link || item.source || item.url || '',
     badge: item[f.badge] || '',
     desc: f.desc ? (item[f.desc] || '') : '',
