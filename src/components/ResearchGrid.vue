@@ -457,7 +457,7 @@ const handleLightboxBadgeClick = (item) => {
 };
 
 const getTitle  = (item) => item?.[props.titleField] || item?.title || item?.name || '';
-const getCover  = (item) => item?.[props.coverField]  || item?.cover || item?.logo  || '';
+const getCover  = (item) => item?.[props.coverField]  || item?.cover || item?.logo || item?.screenshot || '';
 const getLink   = (item) => {
   if (!item) return '';
   return item[props.linkField] || item.link || item.source || item.url || '';
